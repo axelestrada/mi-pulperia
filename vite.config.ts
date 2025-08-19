@@ -12,17 +12,13 @@ export default defineConfig({
     tailwindcss(),
     react(),
     AutoImport({
-      include: [
-         /\.[tj]sx?$/,
-      ],
-      imports: ["react"],
-      dirs: [
-        "./src/components/**/*",
-      ],
-      dts: './src/auto-imports.d.ts',
+      include: [/\.[tj]sx?$/],
+      imports: ["react", "react-router-dom"],
+      dirs: ["./src/components/**/*", "./src/app/**/*"],
+      dts: "./src/auto-imports.d.ts",
       eslintrc: {
         enabled: true,
-      }
+      },
     }),
     electron({
       main: {
