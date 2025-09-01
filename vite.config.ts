@@ -14,7 +14,11 @@ export default defineConfig({
     AutoImport({
       include: [/\.[tj]sx?$/],
       imports: ["react", "react-router-dom"],
-      dirs: ["./src/components/**/*", "./src/app/**/*"],
+      dirs: [
+        "./src/components/**/*",
+        "./src/app/**/*",
+        "./src/components/ui/shadcn-io/**/*",
+      ],
       dts: "./src/auto-imports.d.ts",
       eslintrc: {
         enabled: true,

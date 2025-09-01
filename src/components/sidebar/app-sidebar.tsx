@@ -26,13 +26,13 @@ const data = {
   navMain: [
     {
       title: "Panel Principal",
-      url: "#",
+      url: "/",
       icon: LayoutDashboard,
     },
     {
       title: "Punto de Venta",
       shortcut: "F2",
-      url: "#",
+      url: "/pos",
       icon: ShoppingCart,
     },
     {

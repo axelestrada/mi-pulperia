@@ -27,7 +27,11 @@ export function NavMain({
                 <a href={item.url} className="flex items-center gap-2">
                   <item.icon />
                   <span className="flex-1">{item.title}</span>
-                  {item.shortcut && <Badge variant="outline">{item.shortcut}</Badge>}
+                  {item.shortcut && (
+                    <Kbd>
+                      <KbdKey>{item.shortcut}</KbdKey>
+                    </Kbd>
+                  )}
                 </a>
               </SidebarMenuButton>
               {item.items?.length ? (
