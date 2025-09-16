@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, TrendingUpIcon } from "lucide-react";
 
 export const DashboardPage = () => {
   return (
@@ -28,6 +28,31 @@ export const DashboardPage = () => {
           </>
         }
       />
+
+      <div>
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Ventas de hoy</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+              L. 1,450.00
+            </CardTitle>
+            <CardAction>
+              <Badge variant="outline">
+                <TrendingUpIcon />
+                +12.5%
+              </Badge>
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="line-clamp-1 flex gap-2 font-medium">
+              Trending up this month <TrendingUpIcon className="size-4" />
+            </div>
+            <div className="text-muted-foreground">
+              Visitors for the last 6 months
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };
