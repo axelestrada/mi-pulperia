@@ -58,6 +58,7 @@ declare global {
   const Outlet: typeof import('react-router-dom')['Outlet']
   const PageHeader: typeof import('./components/ui/page-header')['PageHeader']
   const Placeholder: typeof import('./components/placeholder')['Placeholder']
+  const Progress: typeof import('./components/ui/progress')['Progress']
   const Route: typeof import('react-router-dom')['Route']
   const Routes: typeof import('react-router-dom')['Routes']
   const Select: typeof import('./components/ui/select')['Select']

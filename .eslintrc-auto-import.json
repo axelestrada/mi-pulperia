@@ -53,6 +53,7 @@
     "Outlet": true,
     "PageHeader": true,
     "Placeholder": true,
+    "Progress": true,
     "Route": true,
     "Routes": true,
     "Select": true,
