@@ -26,6 +26,12 @@ declare global {
   const CardFooter: typeof import('./components/ui/card')['CardFooter']
   const CardHeader: typeof import('./components/ui/card')['CardHeader']
   const CardTitle: typeof import('./components/ui/card')['CardTitle']
+  const ChartContainer: typeof import('./components/ui/chart')['ChartContainer']
+  const ChartLegend: typeof import('./components/ui/chart')['ChartLegend']
+  const ChartLegendContent: typeof import('./components/ui/chart')['ChartLegendContent']
+  const ChartStyle: typeof import('./components/ui/chart')['ChartStyle']
+  const ChartTooltip: typeof import('./components/ui/chart')['ChartTooltip']
+  const ChartTooltipContent: typeof import('./components/ui/chart')['ChartTooltipContent']
   const Collapsible: typeof import('./components/ui/collapsible')['Collapsible']
   const CollapsibleContent: typeof import('./components/ui/collapsible')['CollapsibleContent']
   const CollapsibleTrigger: typeof import('./components/ui/collapsible')['CollapsibleTrigger']
@@ -150,6 +156,9 @@ declare global {
 }
 // for type re-export
 declare global {
+  // @ts-ignore
+  export type { ChartConfig } from './components/ui/chart'
+  import('./components/ui/chart')
   // @ts-ignore
   export type { KbdProps, KbdKeyProps } from './components/ui/shadcn-io/kbd/index'
   import('./components/ui/shadcn-io/kbd/index')

@@ -6,6 +6,11 @@ import {
   ActivityIcon,
   AlertTriangleIcon,
   CreditCardIcon,
+  ReceiptIcon,
+  TruckIcon,
+  UserRoundPlusIcon,
+  TagsIcon,
+  PackageIcon,
 } from "lucide-react";
 
 import {
@@ -17,6 +22,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { CategorySales } from "@/features/reports/components/category-sales";
+import { ButtonGroup } from "@/components/ui/button-group";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TopProducts } from "@/features/reports/components/top-products";
 
 type TimeRange = "7" | "14" | "30";
 
@@ -266,26 +276,80 @@ export const DashboardPage = () => {
 
         <Card className="@container/card gap-3">
           <CardHeader>
-            <CardTitle className="text-sm">Transacciones</CardTitle>
-
-            <CardAction>
-              <ShoppingCartIcon className="size-4 text-muted-foreground" />
-            </CardAction>
+            <CardTitle className="text-sm">Ventas por Categorías</CardTitle>
+            <CardDescription>
+              Distribución de ventas por categorías
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
-            <CardTitle className="text-2xl mb-2 font-semibold tabular-nums @[250px]/card:text-3xl">
-              45
-            </CardTitle>
-            <CardDescription>Ticket Promedio: L. 52.13</CardDescription>
+            <CategorySales />
           </CardContent>
-          <CardFooter>
-            <CardDescription className="flex items-center gap-2">
-              <ActivityIcon className="size-4 text-blue-600" />
-              Pico: 02:30 PM - 04:00 PM
-            </CardDescription>
-          </CardFooter>
         </Card>
+      </div>
+
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Acciones Rápidas</CardTitle>
+            <CardDescription>
+              Accesos directos a las funciones más utilizadas
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <ButtonGroup className="w-full">
+              <Button variant="outline" className="flex-col h-20 flex-1">
+                <ReceiptIcon className="size-5 mb-1 text-teal-600" />
+                <span className="text-xs">Nueva Venta</span>
+              </Button>
+
+              <Button variant="outline" className="flex-col h-20 flex-1">
+                <TruckIcon className="size-5 mb-1 text-cyan-600" />
+                <span className="text-xs">Recibir Stock</span>
+              </Button>
+
+              <Button variant="outline" className="flex-col h-20 flex-1">
+                <UserRoundPlusIcon className="size-5 mb-1 text-green-600" />
+                <span className="text-xs">Agregar Cliente</span>
+              </Button>
+
+              <Button variant="outline" className="flex-col h-20 flex-1">
+                <TagsIcon className="size-5 mb-1 text-blue-600" />
+                <span className="text-xs">Imprimir Etiquetas</span>
+              </Button>
+
+              <Button variant="outline" className="flex-col h-20 flex-1">
+                <DollarSignIcon className="size-5 mb-1 text-purple-600" />
+                <span className="text-xs">Agregar Gasto</span>
+              </Button>
+
+              <Button variant="outline" className="flex-col h-20 flex-1">
+                <PackageIcon className="size-5 mb-1 text-orange-600" />
+                <span className="text-xs">Agregar Stock</span>
+              </Button>
+            </ButtonGroup>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6">
+        <Tabs defaultValue="top-productos" className="w-full">
+          <TabsList className="mb-2 w-full">
+            <TabsTrigger value="top-productos">Top Productos</TabsTrigger>
+            <TabsTrigger value="stock-bajo">Stock Bajo</TabsTrigger>
+            <TabsTrigger value="deudas">Deudas</TabsTrigger>
+            <TabsTrigger value="rendimiento">Rendimiento</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="top-productos">
+            <TopProducts timeRange={timeRange} />
+          </TabsContent>
+
+          <TabsContent value="stock-bajo">
+            Change your password here.
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
