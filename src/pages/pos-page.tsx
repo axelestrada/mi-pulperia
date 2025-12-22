@@ -1,5 +1,14 @@
 import { formatCurrency } from "@/shared/utils/formatCurrency";
-import { PlusIcon, ScanIcon, SearchIcon } from "lucide-react";
+import {
+  ClockIcon,
+  CreditCardIcon,
+  MousePointerClickIcon,
+  PauseIcon,
+  PlusIcon,
+  ScanIcon,
+  SearchIcon,
+  ShoppingCartIcon,
+} from "lucide-react";
 
 const mockProducts = [
   {
@@ -162,7 +171,10 @@ export const PosPage = () => {
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3 overflow-y-auto">
           {mockProducts.map((product) => (
-            <div className="border rounded-lg p-3 cursor-pointer hover:shadow-xl transition-shadow shadow-slate-200" key={product.id}>
+            <div
+              className="border rounded-lg p-3 cursor-pointer hover:shadow-xl transition-shadow shadow-slate-200"
+              key={product.id}
+            >
               <SafeImage
                 className="aspect-square w-full object-cover mb-2"
                 src={product.image}
@@ -189,8 +201,37 @@ export const PosPage = () => {
         </div>
       </div>
 
-      <div>
-        <Card></Card>
+      <div className="space-y-4">
+        <div className="border rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShoppingCartIcon className="size-5" />
+            <span className="font-semibold">Carrito (2)</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" size="sm">
+              <ClockIcon />
+              Pausadas
+            </Button>
+            <Button variant="outline" size="icon-sm">
+              <PauseIcon />
+            </Button>
+          </div>
+        </div>
+
+        <div className="border rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CreditCardIcon className="size-5" />
+            <span className="font-semibold">Cliente</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" size="sm">
+              <MousePointerClickIcon className="size-5" />
+              Seleccionar
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
