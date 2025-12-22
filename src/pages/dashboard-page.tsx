@@ -19,7 +19,6 @@ import { LowStock } from "@/features/reports/components/low-stock";
 import { TopProducts } from "@/features/reports/components/top-products";
 import { CategorySales } from "@/features/reports/components/category-sales";
 
-import { ComingSoon } from "@/shared/components/ComingSoon";
 import { Debts } from "@/features/reports/components/debts";
 
 type TimeRange = "7" | "14" | "30";
@@ -333,7 +332,6 @@ export const DashboardPage = () => {
             <TabsTrigger value="top-products">Top Productos</TabsTrigger>
             <TabsTrigger value="low-stock">Stock Bajo</TabsTrigger>
             <TabsTrigger value="debts">Deudas</TabsTrigger>
-            <TabsTrigger value="performance">Rendimiento</TabsTrigger>
           </TabsList>
 
           <TabsContent value="top-products">
@@ -346,14 +344,6 @@ export const DashboardPage = () => {
 
           <TabsContent value="debts">
             <Debts />
-          </TabsContent>
-
-          <TabsContent value="performance">
-            <Card>
-              <CardContent>
-                <ComingSoon />
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
