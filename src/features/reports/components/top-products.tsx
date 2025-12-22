@@ -63,7 +63,9 @@ export const TopProducts = ({ timeRange }: Props) => {
               <div className="flex items-center space-x-3">
                 <Avatar>
                   <AvatarFallback>
-                    <span className="font-bold text-primary">{`#${index + 1}`}</span>
+                    <span className="font-bold text-primary">{`#${
+                      index + 1
+                    }`}</span>
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -75,7 +77,9 @@ export const TopProducts = ({ timeRange }: Props) => {
               </div>
               <div className="text-right">
                 <div className="flex items-center space-x-2">
-                  <Badge>{formatCurrency(product.revenue)}</Badge>
+                  <Badge variant="secondary">
+                    {formatCurrency(product.revenue)}
+                  </Badge>
                   {product.trend === "up" ? (
                     <TrendingUpIcon className="h-4 w-4 text-green-600" />
                   ) : (
