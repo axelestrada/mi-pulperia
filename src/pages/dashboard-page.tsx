@@ -27,6 +27,7 @@ import { ButtonGroup } from "@/components/ui/button-group";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TopProducts } from "@/features/reports/components/top-products";
+import { LowStock } from "@/features/reports/components/low-stock";
 
 type TimeRange = "7" | "14" | "30";
 
@@ -347,7 +348,7 @@ export const DashboardPage = () => {
           </TabsContent>
 
           <TabsContent value="stock-bajo">
-            Change your password here.
+            <LowStock />
           </TabsContent>
         </Tabs>
       </div>
