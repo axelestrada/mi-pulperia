@@ -13,21 +13,14 @@ import {
   PackageIcon,
 } from "lucide-react";
 
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { CategorySales } from "@/features/reports/components/category-sales";
-import { ButtonGroup } from "@/components/ui/button-group";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TopProducts } from "@/features/reports/components/top-products";
 import { LowStock } from "@/features/reports/components/low-stock";
+import { TopProducts } from "@/features/reports/components/top-products";
+import { CategorySales } from "@/features/reports/components/category-sales";
+
+import { ComingSoon } from "@/shared/components/ComingSoon";
+import { Debts } from "@/features/reports/components/debts";
 
 type TimeRange = "7" | "14" | "30";
 
@@ -335,20 +328,32 @@ export const DashboardPage = () => {
       </div>
 
       <div className="mt-6">
-        <Tabs defaultValue="top-productos" className="w-full">
+        <Tabs defaultValue="top-products" className="w-full">
           <TabsList className="mb-2 w-full">
-            <TabsTrigger value="top-productos">Top Productos</TabsTrigger>
-            <TabsTrigger value="stock-bajo">Stock Bajo</TabsTrigger>
-            <TabsTrigger value="deudas">Deudas</TabsTrigger>
-            <TabsTrigger value="rendimiento">Rendimiento</TabsTrigger>
+            <TabsTrigger value="top-products">Top Productos</TabsTrigger>
+            <TabsTrigger value="low-stock">Stock Bajo</TabsTrigger>
+            <TabsTrigger value="debts">Deudas</TabsTrigger>
+            <TabsTrigger value="performance">Rendimiento</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="top-productos">
+          <TabsContent value="top-products">
             <TopProducts timeRange={timeRange} />
           </TabsContent>
 
-          <TabsContent value="stock-bajo">
+          <TabsContent value="low-stock">
             <LowStock />
+          </TabsContent>
+
+          <TabsContent value="debts">
+            <Debts />
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <Card>
+              <CardContent>
+                <ComingSoon />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
