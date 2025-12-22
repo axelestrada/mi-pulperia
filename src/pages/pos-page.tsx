@@ -2,15 +2,20 @@ import { formatCurrency } from "@/shared/utils/formatCurrency";
 import {
   ClockIcon,
   CreditCardIcon,
+  MessageSquareMoreIcon,
+  MinusIcon,
   MousePointerClickIcon,
   PauseIcon,
+  PercentIcon,
   PlusIcon,
   ScanIcon,
   SearchIcon,
   ShoppingCartIcon,
+  Trash2Icon,
+  TrashIcon,
 } from "lucide-react";
 
-const mockProducts = [
+const mockProducts: Product[] = [
   {
     id: "1",
     name: "Coca-Cola 600ml",
@@ -127,8 +132,97 @@ const categories = [
   "Panadería",
 ];
 
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  barcode: string;
+  price: number;
+  cost: number;
+  stock: number;
+  category: string;
+  image?: string;
+  brand?: string;
+}
+
+interface ManualItem {
+  id: string;
+  name: string;
+  price: number;
+  isManual: true;
+}
+
+interface CartItem {
+  product: Product | ManualItem;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  discountType: "fixed" | "percent";
+  note?: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  creditLimit: number;
+  currentDebt: number;
+  allowCredit: boolean;
+}
+
+interface Payment {
+  method: "cash" | "card" | "transfer" | "credit";
+  amount: number;
+  reference?: string;
+}
+
+interface Sale {
+  id: string;
+  items: CartItem[];
+  customer: Customer | null;
+  payments: Payment[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  change: number;
+  timestamp: Date;
+  cashier: string;
+  status: "held" | "completed";
+  notes?: string;
+  globalDiscount?: number;
+  globalDiscountType?: "fixed" | "percent";
+}
+
 export const PosPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  const addToCart = (product: Product | ManualItem) => {
+    setCart((prevCart) => {
+      const existingItemIndex = prevCart.findIndex(
+        (item) => item.product.id === product.id
+      );
+
+      if (existingItemIndex !== -1) {
+        const updatedCart = [...prevCart];
+        updatedCart[existingItemIndex].quantity += 1;
+        return updatedCart;
+      } else {
+        return [
+          ...prevCart,
+          {
+            product,
+            quantity: 1,
+            unitPrice: product.price,
+            discount: 0,
+            discountType: "fixed",
+          },
+        ];
+      }
+    });
+  };
 
   return (
     <div className="grid grid-cols-[2fr_1fr] gap-4 pt-4">
@@ -173,6 +267,7 @@ export const PosPage = () => {
           {mockProducts.map((product) => (
             <div
               className="border rounded-lg p-3 cursor-pointer hover:shadow-xl transition-shadow shadow-slate-200"
+              onClick={() => addToCart(product)}
               key={product.id}
             >
               <SafeImage
@@ -232,6 +327,63 @@ export const PosPage = () => {
             </Button>
           </div>
         </div>
+
+        <ScrollArea className="border rounded-xl min-h-72 max-h-full">
+          <div className="p-4">
+            {cart.length === 0 ? (
+              <div className="p-4 text-muted-foreground h-72 flex items-center justify-center">
+                El carrito está vacío.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cart.map((item) => (
+                  <div
+                    className="border border-slate-200 rounded-md p-3"
+                    key={item.product.id}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold">{item.product.name}</span>
+
+                      <Button size="icon-sm" variant="ghost">
+                        <TrashIcon />
+                      </Button>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <Button size="icon-sm" variant="outline">
+                          <MinusIcon />
+                        </Button>
+
+                        <span className="px-4 font-semibold">
+                          {item.quantity}
+                        </span>
+
+                        <Button size="icon-sm" variant="outline">
+                          <PlusIcon />
+                        </Button>
+                      </div>
+
+                      <span className="font-bold text-primary">
+                        {formatCurrency(item.unitPrice * item.quantity)}
+                      </span>
+                    </div>
+
+                    <div className="flex mt-3 gap-3">
+                      <Button variant="outline" className="flex-1" size="sm">
+                        <PercentIcon /> Descuento
+                      </Button>
+
+                      <Button variant="outline" className="flex-1" size="sm">
+                        <MessageSquareMoreIcon /> Nota
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );

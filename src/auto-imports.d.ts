@@ -77,6 +77,8 @@ declare global {
   const Route: typeof import('react-router-dom')['Route']
   const Routes: typeof import('react-router-dom')['Routes']
   const SafeImage: typeof import('./components/ui/safe-image')['SafeImage']
+  const ScrollArea: typeof import('./components/ui/scroll-area')['ScrollArea']
+  const ScrollBar: typeof import('./components/ui/scroll-area')['ScrollBar']
   const Select: typeof import('./components/ui/select')['Select']
   const SelectContent: typeof import('./components/ui/select')['SelectContent']
   const SelectGroup: typeof import('./components/ui/select')['SelectGroup']
