@@ -42,7 +42,6 @@ export const DashboardPage = () => {
   }, []);
 
   const chartData = [
-    { date: "2024-04-01", sales: 2800, margin: 420 },
     { date: "2024-04-02", sales: 3100, margin: 465 },
     { date: "2024-04-03", sales: 2950, margin: 440 },
     { date: "2024-04-04", sales: 3400, margin: 510 },

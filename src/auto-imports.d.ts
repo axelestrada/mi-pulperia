@@ -76,6 +76,7 @@ declare global {
   const Progress: typeof import('./components/ui/progress')['Progress']
   const Route: typeof import('react-router-dom')['Route']
   const Routes: typeof import('react-router-dom')['Routes']
+  const SafeImage: typeof import('./components/ui/safe-image')['SafeImage']
   const Select: typeof import('./components/ui/select')['Select']
   const SelectContent: typeof import('./components/ui/select')['SelectContent']
   const SelectGroup: typeof import('./components/ui/select')['SelectGroup']

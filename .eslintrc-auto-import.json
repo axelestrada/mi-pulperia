@@ -72,6 +72,7 @@
     "Progress": true,
     "Route": true,
     "Routes": true,
+    "SafeImage": true,
     "Select": true,
     "SelectContent": true,
     "SelectGroup": true,
