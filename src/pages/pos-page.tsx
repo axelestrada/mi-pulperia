@@ -2,6 +2,7 @@ import { formatCurrency } from "@/shared/utils/formatCurrency";
 import {
   ClockIcon,
   CreditCardIcon,
+  DollarSignIcon,
   MessageSquareMoreIcon,
   MinusIcon,
   MousePointerClickIcon,
@@ -11,7 +12,6 @@ import {
   ScanIcon,
   SearchIcon,
   ShoppingCartIcon,
-  Trash2Icon,
   TrashIcon,
 } from "lucide-react";
 
@@ -341,35 +341,43 @@ export const PosPage = () => {
                     className="border border-slate-200 rounded-md p-3"
                     key={item.product.id}
                   >
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold">{item.product.name}</span>
+                    <div className="flex gap-3 items-center">
+                      <SafeImage className="aspect-square size-16 object-cover" />
 
-                      <Button size="icon-sm" variant="ghost">
-                        <TrashIcon />
-                      </Button>
-                    </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold">
+                            {item.product.name}
+                          </span>
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <Button size="icon-sm" variant="outline">
-                          <MinusIcon />
-                        </Button>
+                          <Button size="icon-sm" variant="ghost">
+                            <TrashIcon />
+                          </Button>
+                        </div>
 
-                        <span className="px-4 font-semibold">
-                          {item.quantity}
-                        </span>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Button size="icon-sm" variant="outline">
+                              <MinusIcon />
+                            </Button>
 
-                        <Button size="icon-sm" variant="outline">
-                          <PlusIcon />
-                        </Button>
+                            <span className="px-4 font-semibold">
+                              {item.quantity}
+                            </span>
+
+                            <Button size="icon-sm" variant="outline">
+                              <PlusIcon />
+                            </Button>
+                          </div>
+
+                          <span className="font-bold text-primary">
+                            {formatCurrency(item.unitPrice * item.quantity)}
+                          </span>
+                        </div>
                       </div>
-
-                      <span className="font-bold text-primary">
-                        {formatCurrency(item.unitPrice * item.quantity)}
-                      </span>
                     </div>
 
-                    <div className="flex mt-3 gap-3">
+                    {/* <div className="flex mt-3 gap-3">
                       <Button variant="outline" className="flex-1" size="sm">
                         <PercentIcon /> Descuento
                       </Button>
@@ -377,13 +385,61 @@ export const PosPage = () => {
                       <Button variant="outline" className="flex-1" size="sm">
                         <MessageSquareMoreIcon /> Nota
                       </Button>
-                    </div>
+                    </div> */}
                   </div>
                 ))}
               </div>
             )}
           </div>
         </ScrollArea>
+
+        <div className="border rounded-xl p-4 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span>Subtotal</span>
+            <span className="font-semibold">
+              {formatCurrency(
+                cart.reduce(
+                  (total, item) => total + item.unitPrice * item.quantity,
+                  0
+                )
+              )}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between text-sm">
+            <span>Descuento</span>
+            <span className="font-semibold">{formatCurrency(-1)}</span>
+          </div>
+
+          <div className="flex items-center justify-between text-lg font-bold border-t pt-2 mt-4">
+            <span>Total</span>
+            <span className="font-bold text-primary">
+              {formatCurrency(
+                cart.reduce(
+                  (total, item) => total + item.unitPrice * item.quantity,
+                  0
+                ) - 1
+              )}
+            </span>
+          </div>
+
+          <div className="flex gap-2 mt-3">
+            <Button variant="outline" className="flex-1" size="sm">
+              <PercentIcon />
+              Descuento
+            </Button>
+
+            <Button variant="outline" className="flex-1" size="sm">
+              <MessageSquareMoreIcon />
+              Nota
+            </Button>
+          </div>
+
+          <Button size="lg" className="w-full">
+            <DollarSignIcon />
+            Cobrar
+          </Button>
+        </div>
       </div>
     </div>
   );
