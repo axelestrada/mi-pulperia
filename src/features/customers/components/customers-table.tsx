@@ -56,12 +56,20 @@ import {
 } from "@/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Customer = {
   id: string;
   name: string;
   address: string;
   phone: string;
+  email: string;
   creditLimit: number;
   currentDebt: number;
   lastPurchase: Date;
@@ -140,6 +148,7 @@ const mockCustomers: Customer[] = [
     name: "Juan Pérez",
     address: "Calle Falsa 123",
     phone: "9976-4567",
+    email: "juan.perez@email.com",
     creditLimit: 500,
     currentDebt: 150,
     lastPurchase: new Date("2024-06-10"),
@@ -152,6 +161,7 @@ const mockCustomers: Customer[] = [
     name: "María Gómez",
     address: "Avenida Siempre Viva 742",
     phone: "9532-5678",
+    email: "maria.gomez@email.com",
     creditLimit: 300,
     currentDebt: 0,
     lastPurchase: new Date("2024-05-22"),
@@ -170,6 +180,7 @@ export const CustomersTable = () => {
   const [drawerTab, setDrawerTab] = useState("info");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
   const handleOpenDrawer = (customer: Customer, tab = "info") => {
     setSelectedCustomer(customer);
@@ -207,6 +218,12 @@ export const CustomersTable = () => {
     }
   };
 
+  const handleOpenPaymentDialog = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsPaymentDialogOpen(true);
+    setPaymentAmount("");
+  };
+
   const handleRegisterPayment = () => {
     if (selectedCustomer && paymentAmount) {
       const amount = parseFloat(paymentAmount);
@@ -223,6 +240,7 @@ export const CustomersTable = () => {
           currentDebt: Math.max(0, selectedCustomer.currentDebt - amount),
         });
         setPaymentAmount("");
+        setIsPaymentDialogOpen(false);
         alert(`Abono de ${formatCurrency(amount)} registrado exitosamente`);
       }
     }
@@ -388,7 +406,7 @@ export const CustomersTable = () => {
                       </DropdownMenuItem>
                       {customer.currentDebt > 0 && (
                         <DropdownMenuItem
-                          onClick={() => handleOpenDrawer(customer, "payment")}
+                          onClick={() => handleOpenPaymentDialog(customer)}
                         >
                           <DollarSignIcon className="h-4 w-4 mr-2" />
                           Registrar Abono
@@ -608,13 +626,25 @@ export const CustomersTable = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 pt-4 border-t">
+                    <div className="gap-2 pt-4 border-t grid grid-cols-2">
+                      {selectedCustomer && selectedCustomer.currentDebt > 0 && (
+                        <Button
+                          className="col-span-full"
+                          onClick={() =>
+                            handleOpenPaymentDialog(selectedCustomer)
+                          }
+                        >
+                          <DollarSignIcon className="size-4" />
+                          Registrar Abono
+                        </Button>
+                      )}
                       <Button
                         variant={
                           selectedCustomer?.creditBlocked
                             ? "outline"
                             : "destructive"
                         }
+                        size="sm"
                         onClick={handleToggleCreditBlock}
                       >
                         {selectedCustomer?.creditBlocked ? (
@@ -630,6 +660,7 @@ export const CustomersTable = () => {
                         )}
                       </Button>
                       <Button
+                        size="sm"
                         variant={
                           selectedCustomer?.status === "active"
                             ? "destructive"
@@ -683,105 +714,6 @@ export const CustomersTable = () => {
                           : "Nunca"}
                       </span>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Tab: Registrar Abono */}
-              <TabsContent value="payment" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Registrar Pago</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-muted p-4 rounded-lg space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Deuda Actual
-                        </span>
-                        <span className="font-bold text-lg text-red-600">
-                          {formatCurrency(selectedCustomer?.currentDebt || 0)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Monto del Abono
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                        className="text-lg"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Método de Pago
-                      </label>
-                      <Select defaultValue="cash">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cash">Efectivo</SelectItem>
-                          <SelectItem value="transfer">
-                            Transferencia
-                          </SelectItem>
-                          <SelectItem value="card">Tarjeta</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Referencia (Opcional)
-                      </label>
-                      <Input placeholder="Número de referencia o nota" />
-                    </div>
-
-                    {paymentAmount && parseFloat(paymentAmount) > 0 && (
-                      <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Deuda Actual</span>
-                          <span className="font-medium">
-                            {formatCurrency(selectedCustomer?.currentDebt || 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm">Abono</span>
-                          <span className="font-medium text-green-600">
-                            -{formatCurrency(parseFloat(paymentAmount))}
-                          </span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="text-sm font-medium">
-                            Nueva Deuda
-                          </span>
-                          <span className="font-bold text-lg">
-                            {formatCurrency(
-                              Math.max(
-                                0,
-                                (selectedCustomer?.currentDebt || 0) -
-                                  parseFloat(paymentAmount)
-                              )
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      onClick={handleRegisterPayment}
-                    >
-                      <DollarSignIcon className="size-4 mr-2" />
-                      Registrar Abono
-                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -942,6 +874,110 @@ export const CustomersTable = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registrar Abono</DialogTitle>
+            <DialogDescription>
+              Cliente: {selectedCustomer?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Deuda Actual
+                </span>
+                <span className="font-bold text-lg text-red-600">
+                  {formatCurrency(selectedCustomer?.currentDebt || 0)}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Monto del Abono
+              </label>
+              <Input
+                type="number"
+                placeholder="0.00"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                className="text-lg"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Método de Pago
+              </label>
+              <Select defaultValue="cash">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="transfer">Transferencia</SelectItem>
+                  <SelectItem value="card">Tarjeta</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Referencia (Opcional)
+              </label>
+              <Input placeholder="Número de referencia o nota" />
+            </div>
+
+            {paymentAmount && parseFloat(paymentAmount) > 0 && (
+              <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm">Deuda Actual</span>
+                  <span className="font-medium">
+                    {formatCurrency(selectedCustomer?.currentDebt || 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Abono</span>
+                  <span className="font-medium text-green-600">
+                    -{formatCurrency(parseFloat(paymentAmount))}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-sm font-medium">Nueva Deuda</span>
+                  <span className="font-bold text-lg">
+                    {formatCurrency(
+                      Math.max(
+                        0,
+                        (selectedCustomer?.currentDebt || 0) -
+                          parseFloat(paymentAmount)
+                      )
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1" onClick={handleRegisterPayment}>
+                <DollarSignIcon className="size-4 mr-2" />
+                Registrar Abono
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsPaymentDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

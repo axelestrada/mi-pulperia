@@ -408,68 +408,66 @@ export const PosPage = () => {
           </div>
         </div>
 
-        <div className="border rounded-xl flex-1 overflow-y-auto">
-          <div className="p-4 h-full">
-            {cart.length === 0 ? (
-              <div className="p-4 text-muted-foreground h-full flex items-center justify-center">
-                El carrito está vacío.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {cart.map((item) => (
-                  <div
-                    className="border border-slate-200 rounded-md p-3"
-                    key={item.product.id}
-                  >
-                    <div className="flex gap-3 items-center">
-                      {/* TODO: Agregar la imagen */}
-                      <SafeImage className="aspect-square size-14 object-cover" />
+        <div className="rounded-xl border flex-1 overflow-y-auto p-4">
+          {cart.length === 0 ? (
+            <div className="p-4 text-muted-foreground h-full flex items-center justify-center">
+              El carrito está vacío.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {cart.map((item) => (
+                <div
+                  className="border border-slate-200 rounded-md p-3"
+                  key={item.product.id}
+                >
+                  <div className="flex gap-3 items-center">
+                    {/* TODO: Agregar la imagen */}
+                    <SafeImage className="aspect-square size-14 object-cover" />
 
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold">
-                            {item.product.name}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-semibold">
+                          {item.product.name}
+                        </span>
+
+                        <Button size="icon-sm" variant="ghost">
+                          <TrashIcon />
+                        </Button>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <Button
+                            size="icon-sm"
+                            variant="outline"
+                            className="size-7"
+                          >
+                            <MinusIcon />
+                          </Button>
+
+                          <span className="px-3 font-semibold">
+                            {item.quantity}
                           </span>
 
-                          <Button size="icon-sm" variant="ghost">
-                            <TrashIcon />
+                          <Button
+                            size="icon-sm"
+                            variant="outline"
+                            className="size-7"
+                          >
+                            <PlusIcon />
                           </Button>
                         </div>
 
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <Button
-                              size="icon-sm"
-                              variant="outline"
-                              className="size-7"
-                            >
-                              <MinusIcon />
-                            </Button>
-
-                            <span className="px-3 font-semibold">
-                              {item.quantity}
-                            </span>
-
-                            <Button
-                              size="icon-sm"
-                              variant="outline"
-                              className="size-7"
-                            >
-                              <PlusIcon />
-                            </Button>
-                          </div>
-
-                          <span className="font-bold text-primary">
-                            {formatCurrency(item.unitPrice * item.quantity)}
-                          </span>
-                        </div>
+                        <span className="font-bold text-primary">
+                          {formatCurrency(item.unitPrice * item.quantity)}
+                        </span>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="border rounded-xl p-4 space-y-2">

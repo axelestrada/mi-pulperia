@@ -1,9 +1,10 @@
 import { CustomersTable } from "@/features/customers/components/customers-table";
+import { ComingSoon } from "@/shared/components/ComingSoon";
 import { PlusIcon } from "lucide-react";
 
 export const CustomersPage = () => {
   return (
-    <div>
+    <div className="flex-1 flex flex-col">
       <PageHeader
         title="Gestión de Clientes"
         description="Administra clientes y sistema de créditos."
@@ -14,7 +15,7 @@ export const CustomersPage = () => {
         }
       />
 
-      <Tabs defaultValue="customers">
+      <Tabs defaultValue="customers" className="flex-1">
         <TabsList className="mb-2">
           <TabsTrigger value="customers">Clientes</TabsTrigger>
           <TabsTrigger value="credits">Libro de Créditos</TabsTrigger>
@@ -22,6 +23,10 @@ export const CustomersPage = () => {
 
         <TabsContent value="customers">
           <CustomersTable />
+        </TabsContent>
+
+        <TabsContent value="credits">
+          <ComingSoon />
         </TabsContent>
       </Tabs>
     </div>
