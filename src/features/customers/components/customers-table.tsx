@@ -1,4 +1,5 @@
 import { formatCurrency } from "@/shared/utils/formatCurrency";
+import { useState } from "react";
 import {
   AlertTriangleIcon,
   CreditCardIcon,
@@ -9,9 +10,52 @@ import {
   SearchIcon,
   UserRoundCheckIcon,
   UserRoundXIcon,
+  LockIcon,
+  UnlockIcon,
+  CalendarIcon,
+  ShoppingCartIcon,
+  ReceiptIcon,
+  XIcon,
 } from "lucide-react";
-
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Customer = {
   id: string;
@@ -22,42 +66,167 @@ type Customer = {
   currentDebt: number;
   lastPurchase: Date;
   status: "active" | "inactive";
+  creditBlocked: boolean;
+  registrationDate: Date;
 };
+
+type Purchase = {
+  id: string;
+  date: Date;
+  amount: number;
+  items: number;
+  status: "paid" | "pending";
+};
+
+type Payment = {
+  id: string;
+  date: Date;
+  amount: number;
+  method: string;
+  reference: string;
+};
+
+const mockPurchases: Purchase[] = [
+  {
+    id: "1",
+    date: new Date("2024-06-10"),
+    amount: 150,
+    items: 5,
+    status: "pending",
+  },
+  {
+    id: "2",
+    date: new Date("2024-05-20"),
+    amount: 200,
+    items: 8,
+    status: "paid",
+  },
+  {
+    id: "3",
+    date: new Date("2024-05-05"),
+    amount: 75,
+    items: 3,
+    status: "paid",
+  },
+];
+
+const mockPayments: Payment[] = [
+  {
+    id: "1",
+    date: new Date("2024-05-25"),
+    amount: 100,
+    method: "Efectivo",
+    reference: "PAG-001",
+  },
+  {
+    id: "2",
+    date: new Date("2024-05-15"),
+    amount: 50,
+    method: "Transferencia",
+    reference: "PAG-002",
+  },
+  {
+    id: "3",
+    date: new Date("2024-04-30"),
+    amount: 75,
+    method: "Efectivo",
+    reference: "PAG-003",
+  },
+];
 
 const mockCustomers: Customer[] = [
   {
     id: "1",
     name: "Juan Pérez",
     address: "Calle Falsa 123",
-    phone: "555-1234",
+    phone: "9976-4567",
     creditLimit: 500,
     currentDebt: 150,
     lastPurchase: new Date("2024-06-10"),
     status: "active",
+    creditBlocked: false,
+    registrationDate: new Date("2023-01-15"),
   },
   {
     id: "2",
     name: "María Gómez",
     address: "Avenida Siempre Viva 742",
-    phone: "555-5678",
+    phone: "9532-5678",
     creditLimit: 300,
     currentDebt: 0,
     lastPurchase: new Date("2024-05-22"),
     status: "inactive",
+    creditBlocked: false,
+    registrationDate: new Date("2023-03-20"),
   },
 ];
 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-
 export const CustomersTable = () => {
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState("info");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [editMode, setEditMode] = useState(false);
+
+  const handleOpenDrawer = (customer: Customer, tab = "info") => {
+    setSelectedCustomer(customer);
+    setDrawerTab(tab);
+    setIsDrawerOpen(true);
+    setEditMode(false);
+  };
+
+  const handleToggleCreditBlock = () => {
+    if (selectedCustomer) {
+      setCustomers(
+        customers.map((c) =>
+          c.id === selectedCustomer.id
+            ? { ...c, creditBlocked: !c.creditBlocked }
+            : c
+        )
+      );
+      setSelectedCustomer({
+        ...selectedCustomer,
+        creditBlocked: !selectedCustomer.creditBlocked,
+      });
+    }
+  };
+
+  const handleToggleStatus = () => {
+    if (selectedCustomer) {
+      const newStatus =
+        selectedCustomer.status === "active" ? "inactive" : "active";
+      setCustomers(
+        customers.map((c) =>
+          c.id === selectedCustomer.id ? { ...c, status: newStatus } : c
+        )
+      );
+      setSelectedCustomer({ ...selectedCustomer, status: newStatus });
+    }
+  };
+
+  const handleRegisterPayment = () => {
+    if (selectedCustomer && paymentAmount) {
+      const amount = parseFloat(paymentAmount);
+      if (amount > 0) {
+        setCustomers(
+          customers.map((c) =>
+            c.id === selectedCustomer.id
+              ? { ...c, currentDebt: Math.max(0, c.currentDebt - amount) }
+              : c
+          )
+        );
+        setSelectedCustomer({
+          ...selectedCustomer,
+          currentDebt: Math.max(0, selectedCustomer.currentDebt - amount),
+        });
+        setPaymentAmount("");
+        alert(`Abono de ${formatCurrency(amount)} registrado exitosamente`);
+      }
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -195,34 +364,61 @@ export const CustomersTable = () => {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger>
-                      <Button variant="ghost">
-                        <MoreHorizontalIcon />
+                      <Button variant="ghost" size="icon-sm">
+                        <MoreHorizontalIcon className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" side="right">
+                    <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleOpenDrawer(customer, "info")}
+                      >
                         <EyeIcon className="h-4 w-4 mr-2" />
                         Ver Perfil
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          handleOpenDrawer(customer, "info");
+                          setEditMode(true);
+                        }}
+                      >
                         <EditIcon className="h-4 w-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
                       {customer.currentDebt > 0 && (
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleOpenDrawer(customer, "payment")}
+                        >
                           <DollarSignIcon className="h-4 w-4 mr-2" />
                           Registrar Abono
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuItem
+                        onClick={() => handleOpenDrawer(customer, "statement")}
+                      >
+                        <ReceiptIcon className="h-4 w-4 mr-2" />
+                        Ver Estado de Cuenta
+                      </DropdownMenuItem>
                       {customer.status === "active" ? (
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onClick={() => {
+                            handleOpenDrawer(customer, "info");
+                            setTimeout(handleToggleStatus, 100);
+                          }}
+                        >
                           <UserRoundXIcon className="h-4 w-4 mr-2" />
                           Deshabilitar
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem className="text-green-600">
+                        <DropdownMenuItem
+                          className="text-green-600"
+                          onClick={() => {
+                            handleOpenDrawer(customer, "info");
+                            setTimeout(handleToggleStatus, 100);
+                          }}
+                        >
                           <UserRoundCheckIcon className="h-4 w-4 mr-2" />
                           Habilitar
                         </DropdownMenuItem>
@@ -235,6 +431,517 @@ export const CustomersTable = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Customer Profile Drawer */}
+      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <SheetContent className="w-full sm:max-w-lg">
+          <SheetHeader className="border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <SheetTitle className="text-2xl">
+                  {selectedCustomer?.name}
+                </SheetTitle>
+                <SheetDescription>{selectedCustomer?.phone}</SheetDescription>
+              </div>
+              <SheetClose />
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <Tabs value={drawerTab} onValueChange={setDrawerTab}>
+              <TabsList className="w-full mb-2">
+                <TabsTrigger value="info" className="flex-1">
+                  <UserRoundCheckIcon className="size-4 mr-2" />
+                  Información
+                </TabsTrigger>
+                <TabsTrigger value="history" className="flex-1">
+                  <ShoppingCartIcon className="size-4 mr-2" />
+                  Historial
+                </TabsTrigger>
+                <TabsTrigger value="statement" className="flex-1">
+                  <ReceiptIcon className="size-4 mr-2" />
+                  Estado de Cuenta
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="info" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Datos Personales</CardTitle>
+                    <CardAction>
+                      {!editMode && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditMode(true)}
+                        >
+                          <EditIcon className="size-4" />
+                          Editar
+                        </Button>
+                      )}
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Nombre
+                        </label>
+                        {editMode ? (
+                          <Input defaultValue={selectedCustomer?.name} />
+                        ) : (
+                          <p className="font-medium">
+                            {selectedCustomer?.name}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Teléfono
+                        </label>
+                        {editMode ? (
+                          <Input defaultValue={selectedCustomer?.phone} />
+                        ) : (
+                          <p className="font-medium">
+                            {selectedCustomer?.phone}
+                          </p>
+                        )}
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-sm text-muted-foreground">
+                          Dirección
+                        </label>
+                        {editMode ? (
+                          <Input defaultValue={selectedCustomer?.address} />
+                        ) : (
+                          <p className="font-medium">
+                            {selectedCustomer?.address}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {editMode && (
+                      <div className="flex gap-2 pt-2">
+                        <Button>Guardar Cambios</Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setEditMode(false)}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Información de Crédito
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Límite de Crédito
+                        </label>
+                        <p className="font-medium text-lg">
+                          {formatCurrency(selectedCustomer?.creditLimit || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Deuda Actual
+                        </label>
+                        <p
+                          className={`font-medium text-lg ${
+                            selectedCustomer?.currentDebt &&
+                            selectedCustomer.currentDebt > 0
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {formatCurrency(selectedCustomer?.currentDebt || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Crédito Disponible
+                        </label>
+                        <p className="font-medium text-lg text-blue-600">
+                          {formatCurrency(
+                            (selectedCustomer?.creditLimit || 0) -
+                              (selectedCustomer?.currentDebt || 0)
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">
+                          Estado
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              selectedCustomer?.status === "active"
+                                ? "default"
+                                : "destructive"
+                            }
+                            className={
+                              selectedCustomer?.status === "active"
+                                ? "bg-green-600"
+                                : ""
+                            }
+                          >
+                            {selectedCustomer?.status === "active"
+                              ? "Activo"
+                              : "Inactivo"}
+                          </Badge>
+
+                          {selectedCustomer?.creditBlocked && (
+                            <Badge variant="destructive">
+                              Crédito Bloqueado
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-4 border-t">
+                      <Button
+                        variant={
+                          selectedCustomer?.creditBlocked
+                            ? "outline"
+                            : "destructive"
+                        }
+                        onClick={handleToggleCreditBlock}
+                      >
+                        {selectedCustomer?.creditBlocked ? (
+                          <>
+                            <UnlockIcon className="size-4" />
+                            Desbloquear Crédito
+                          </>
+                        ) : (
+                          <>
+                            <LockIcon className="size-4" />
+                            Bloquear Crédito
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant={
+                          selectedCustomer?.status === "active"
+                            ? "destructive"
+                            : "outline"
+                        }
+                        onClick={handleToggleStatus}
+                      >
+                        {selectedCustomer?.status === "active" ? (
+                          <>
+                            <UserRoundXIcon className="size-4" />
+                            Deshabilitar Cliente
+                          </>
+                        ) : (
+                          <>
+                            <UserRoundCheckIcon className="size-4" />
+                            Habilitar Cliente
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Información Adicional
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Fecha de Registro
+                      </span>
+                      <span className="font-medium">
+                        {selectedCustomer?.registrationDate
+                          ? format(
+                              selectedCustomer.registrationDate,
+                              "dd-MM-yyyy"
+                            )
+                          : "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Última Compra
+                      </span>
+                      <span className="font-medium">
+                        {selectedCustomer?.lastPurchase
+                          ? format(selectedCustomer.lastPurchase, "dd-MM-yyyy")
+                          : "Nunca"}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tab: Registrar Abono */}
+              <TabsContent value="payment" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Registrar Pago</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-muted p-4 rounded-lg space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Deuda Actual
+                        </span>
+                        <span className="font-bold text-lg text-red-600">
+                          {formatCurrency(selectedCustomer?.currentDebt || 0)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Monto del Abono
+                      </label>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        className="text-lg"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Método de Pago
+                      </label>
+                      <Select defaultValue="cash">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash">Efectivo</SelectItem>
+                          <SelectItem value="transfer">
+                            Transferencia
+                          </SelectItem>
+                          <SelectItem value="card">Tarjeta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Referencia (Opcional)
+                      </label>
+                      <Input placeholder="Número de referencia o nota" />
+                    </div>
+
+                    {paymentAmount && parseFloat(paymentAmount) > 0 && (
+                      <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Deuda Actual</span>
+                          <span className="font-medium">
+                            {formatCurrency(selectedCustomer?.currentDebt || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Abono</span>
+                          <span className="font-medium text-green-600">
+                            -{formatCurrency(parseFloat(paymentAmount))}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-sm font-medium">
+                            Nueva Deuda
+                          </span>
+                          <span className="font-bold text-lg">
+                            {formatCurrency(
+                              Math.max(
+                                0,
+                                (selectedCustomer?.currentDebt || 0) -
+                                  parseFloat(paymentAmount)
+                              )
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={handleRegisterPayment}
+                    >
+                      <DollarSignIcon className="size-4 mr-2" />
+                      Registrar Abono
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tab: Estado de Cuenta */}
+              <TabsContent value="statement" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Resumen de Cuenta</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                        <span className="text-sm">Límite de Crédito</span>
+                        <span className="font-bold text-lg">
+                          {formatCurrency(selectedCustomer?.creditLimit || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-950 rounded-lg">
+                        <span className="text-sm">Deuda Total</span>
+                        <span className="font-bold text-lg text-red-600">
+                          {formatCurrency(selectedCustomer?.currentDebt || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                        <span className="text-sm">Crédito Disponible</span>
+                        <span className="font-bold text-lg text-blue-600">
+                          {formatCurrency(
+                            (selectedCustomer?.creditLimit || 0) -
+                              (selectedCustomer?.currentDebt || 0)
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Compras Pendientes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {mockPurchases
+                        .filter((p) => p.status === "pending")
+                        .map((purchase) => (
+                          <div
+                            key={purchase.id}
+                            className="flex justify-between items-center p-3 border rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium">
+                                {format(purchase.date, "dd-MM-yyyy")}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {purchase.items} artículos
+                              </p>
+                            </div>
+                            <Badge variant="destructive">
+                              {formatCurrency(purchase.amount)}
+                            </Badge>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tab: Historial */}
+              <TabsContent value="history" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <ShoppingCartIcon className="size-5" />
+                      Historial de Compras
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {mockPurchases.map((purchase) => (
+                        <div
+                          key={purchase.id}
+                          className="flex justify-between items-center p-3 border rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <CalendarIcon className="size-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">
+                                {format(purchase.date, "dd-MM-yyyy")}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {purchase.items} artículos
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">
+                              {formatCurrency(purchase.amount)}
+                            </p>
+                            <Badge
+                              variant={
+                                purchase.status === "paid"
+                                  ? "default"
+                                  : "destructive"
+                              }
+                              className={
+                                purchase.status === "paid" ? "bg-green-600" : ""
+                              }
+                            >
+                              {purchase.status === "paid"
+                                ? "Pagado"
+                                : "Pendiente"}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <DollarSignIcon className="size-5" />
+                      Historial de Pagos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {mockPayments.map((payment) => (
+                        <div
+                          key={payment.id}
+                          className="flex justify-between items-center p-3 border rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <ReceiptIcon className="size-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">
+                                {format(payment.date, "dd-MM-yyyy")}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {payment.method} - {payment.reference}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="font-bold text-green-600">
+                            {formatCurrency(payment.amount)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
