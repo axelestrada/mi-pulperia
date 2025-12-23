@@ -37,12 +37,12 @@ const data = {
     },
     {
       title: "Clientes",
-      url: "#",
+      url: "/customers",
       icon: Users,
     },
     {
       title: "Productos",
-      url: "#",
+      url: "/products",
       icon: Package,
       isActive: true,
       items: [

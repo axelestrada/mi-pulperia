@@ -1,6 +1,9 @@
+import { createBrowserRouter } from "react-router-dom";
+
 import { PosPage } from "@/pages/pos-page";
 import { DashboardPage } from "@/pages/dashboard-page";
-import { createBrowserRouter } from "react-router-dom";
+import { CustomersPage } from "@/pages/customers-page";
+import { NotFoundPage } from "@/pages/not-found-page";
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +26,18 @@ export const router = createBrowserRouter([
         handle: {
           title: "Punto de Venta",
         },
+      },
+      {
+        path: "customers",
+        element: <CustomersPage />,
+        handle: {
+          title: "Clientes",
+        },
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
+        handle: { title: "Página no encontrada" },
       },
     ],
   },

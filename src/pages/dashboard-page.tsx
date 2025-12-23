@@ -327,7 +327,7 @@ export const DashboardPage = () => {
 
       <div className="mt-6">
         <Tabs defaultValue="top-products" className="w-full">
-          <TabsList className="mb-2 w-full">
+          <TabsList className="mb-2">
             <TabsTrigger value="top-products">Top Productos</TabsTrigger>
             <TabsTrigger value="low-stock">Stock Bajo</TabsTrigger>
             <TabsTrigger value="debts">Deudas</TabsTrigger>

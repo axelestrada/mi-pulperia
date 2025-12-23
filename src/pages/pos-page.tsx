@@ -88,7 +88,87 @@ const mockProducts: Product[] = [
     category: "Snacks",
   },
   {
-    id: "8",
+    id: "8245",
+    name: "Arroz Diana 5lb",
+    sku: "ARR-DIA",
+    barcode: "7501003456789",
+    price: 45.0,
+    cost: 38.25,
+    stock: 6,
+    category: "Abarrotes",
+  },
+  {
+    id: "73434323",
+    name: "Taqueritos Rojos",
+    sku: "TAQ-ROJ",
+    barcode: "7501055320028",
+    price: 10.0,
+    cost: 7.0,
+    stock: 18,
+    category: "Snacks",
+  },
+  {
+    id: "834343",
+    name: "Arroz Diana 5lb",
+    sku: "ARR-DIA",
+    barcode: "7501003456789",
+    price: 45.0,
+    cost: 38.25,
+    stock: 6,
+    category: "Abarrotes",
+  },
+  {
+    id: "34437",
+    name: "Taqueritos Rojos",
+    sku: "TAQ-ROJ",
+    barcode: "7501055320028",
+    price: 10.0,
+    cost: 7.0,
+    stock: 18,
+    category: "Snacks",
+  },
+  {
+    id: "348",
+    name: "Arroz Diana 5lb",
+    sku: "ARR-DIA",
+    barcode: "7501003456789",
+    price: 45.0,
+    cost: 38.25,
+    stock: 6,
+    category: "Abarrotes",
+  },
+  {
+    id: "734",
+    name: "Taqueritos Rojos",
+    sku: "TAQ-ROJ",
+    barcode: "7501055320028",
+    price: 10.0,
+    cost: 7.0,
+    stock: 18,
+    category: "Snacks",
+  },
+  {
+    id: "343",
+    name: "Arroz Diana 5lb",
+    sku: "ARR-DIA",
+    barcode: "7501003456789",
+    price: 45.0,
+    cost: 38.25,
+    stock: 6,
+    category: "Abarrotes",
+  },
+  {
+    id: "537",
+    name: "Taqueritos Rojos",
+    sku: "TAQ-ROJ",
+    barcode: "7501055320028",
+    price: 10.0,
+    cost: 7.0,
+    stock: 18,
+    category: "Snacks",
+  },
+  {
+    id: "348",
     name: "Arroz Diana 5lb",
     sku: "ARR-DIA",
     barcode: "7501003456789",
@@ -225,8 +305,8 @@ export const PosPage = () => {
   };
 
   return (
-    <div className="grid grid-cols-[2fr_1fr] gap-4 pt-4">
-      <div className="space-y-4">
+    <div className="grid grid-cols-[2fr_1fr] gap-4 pt-4 max-h-[calc(100dvh-96px)] overflow-hidden">
+      <div className="space-y-4 flex-col flex h-[calc(100dvh-112px)]">
         <div className="p-4 border rounded-xl">
           <div className="flex items-center gap-2">
             <div className="relative w-full">
@@ -263,7 +343,7 @@ export const PosPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3 overflow-y-auto">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 overflow-y-auto max-h-full">
           {mockProducts.map((product) => (
             <div
               className="border rounded-lg p-3 cursor-pointer hover:shadow-xl transition-shadow shadow-slate-200"
@@ -296,7 +376,7 @@ export const PosPage = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 flex-col flex h-[calc(100dvh-112px)]">
         <div className="border rounded-xl p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingCartIcon className="size-5" />
@@ -328,10 +408,10 @@ export const PosPage = () => {
           </div>
         </div>
 
-        <ScrollArea className="border rounded-xl min-h-72 max-h-full">
-          <div className="p-4">
+        <div className="border rounded-xl flex-1 overflow-y-auto">
+          <div className="p-4 h-full">
             {cart.length === 0 ? (
-              <div className="p-4 text-muted-foreground h-72 flex items-center justify-center">
+              <div className="p-4 text-muted-foreground h-full flex items-center justify-center">
                 El carrito está vacío.
               </div>
             ) : (
@@ -342,7 +422,8 @@ export const PosPage = () => {
                     key={item.product.id}
                   >
                     <div className="flex gap-3 items-center">
-                      <SafeImage className="aspect-square size-16 object-cover" />
+                      {/* TODO: Agregar la imagen */}
+                      <SafeImage className="aspect-square size-14 object-cover" />
 
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
@@ -357,15 +438,23 @@ export const PosPage = () => {
 
                         <div className="flex justify-between items-center">
                           <div className="flex items-center">
-                            <Button size="icon-sm" variant="outline">
+                            <Button
+                              size="icon-sm"
+                              variant="outline"
+                              className="size-7"
+                            >
                               <MinusIcon />
                             </Button>
 
-                            <span className="px-4 font-semibold">
+                            <span className="px-3 font-semibold">
                               {item.quantity}
                             </span>
 
-                            <Button size="icon-sm" variant="outline">
+                            <Button
+                              size="icon-sm"
+                              variant="outline"
+                              className="size-7"
+                            >
                               <PlusIcon />
                             </Button>
                           </div>
@@ -376,22 +465,12 @@ export const PosPage = () => {
                         </div>
                       </div>
                     </div>
-
-                    {/* <div className="flex mt-3 gap-3">
-                      <Button variant="outline" className="flex-1" size="sm">
-                        <PercentIcon /> Descuento
-                      </Button>
-
-                      <Button variant="outline" className="flex-1" size="sm">
-                        <MessageSquareMoreIcon /> Nota
-                      </Button>
-                    </div> */}
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="border rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
