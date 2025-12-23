@@ -47,6 +47,15 @@ const mockCustomers: Customer[] = [
   },
 ];
 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
 export const CustomersTable = () => {
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
 
@@ -185,12 +194,12 @@ export const CustomersTable = () => {
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-sm">
-                        <MoreHorizontalIcon className="size-4" />
+                    <DropdownMenuTrigger>
+                      <Button variant="ghost">
+                        <MoreHorizontalIcon />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="start" side="right">
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
