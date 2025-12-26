@@ -6,6 +6,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
     './.eslintrc-auto-import.json',
+    'plugin:@tanstack/query/recommended'
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs', 'src/components/**/*'],
   parser: '@typescript-eslint/parser',

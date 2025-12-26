@@ -85,7 +85,14 @@ declare global {
   const EmptyTitle: typeof import('./components/ui/empty')['EmptyTitle']
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx')['default']
+  const IconLucideSearch: typeof import('~icons/lucide/search.tsx')['default']
   const Input: typeof import('./components/ui/input')['Input']
+  const InputGroup: typeof import('./components/ui/input-group')['InputGroup']
+  const InputGroupAddon: typeof import('./components/ui/input-group')['InputGroupAddon']
+  const InputGroupButton: typeof import('./components/ui/input-group')['InputGroupButton']
+  const InputGroupInput: typeof import('./components/ui/input-group')['InputGroupInput']
+  const InputGroupText: typeof import('./components/ui/input-group')['InputGroupText']
+  const InputGroupTextarea: typeof import('./components/ui/input-group')['InputGroupTextarea']
   const Kbd: typeof import('./components/ui/shadcn-io/kbd/index')['Kbd']
   const KbdKey: typeof import('./components/ui/shadcn-io/kbd/index')['KbdKey']
   const Link: typeof import('react-router-dom')['Link']
@@ -97,10 +104,14 @@ declare global {
   const NavUser: typeof import('./components/sidebar/nav-user')['NavUser']
   const Navigate: typeof import('react-router-dom')['Navigate']
   const Outlet: typeof import('react-router-dom')['Outlet']
+  const PRODUCT_STATUSES: typeof import('./features/products/model/product-status')['PRODUCT_STATUSES']
   const PageHeader: typeof import('./components/ui/page-header')['PageHeader']
   const Placeholder: typeof import('./components/placeholder')['Placeholder']
+  const ProductsFilters: typeof import('./features/products/ui/products-filters')['ProductsFilters']
   const ProductsHeader: typeof import('./features/products/ui/products-header')['ProductsHeader']
   const Progress: typeof import('./components/ui/progress')['Progress']
+  const QueryClient: typeof import('@tanstack/react-query')['QueryClient']
+  const QueryClientProvider: typeof import('@tanstack/react-query')['QueryClientProvider']
   const Route: typeof import('react-router-dom')['Route']
   const Routes: typeof import('react-router-dom')['Routes']
   const SafeImage: typeof import('./components/ui/safe-image')['SafeImage']
@@ -161,6 +172,7 @@ declare global {
   const TabsContent: typeof import('./components/ui/tabs')['TabsContent']
   const TabsList: typeof import('./components/ui/tabs')['TabsList']
   const TabsTrigger: typeof import('./components/ui/tabs')['TabsTrigger']
+  const Textarea: typeof import('./components/ui/textarea')['Textarea']
   const Tooltip: typeof import('./components/ui/tooltip')['Tooltip']
   const TooltipContent: typeof import('./components/ui/tooltip')['TooltipContent']
   const TooltipProvider: typeof import('./components/ui/tooltip')['TooltipProvider']
@@ -192,11 +204,15 @@ declare global {
   const useLinkClickHandler: typeof import('react-router-dom')['useLinkClickHandler']
   const useLocation: typeof import('react-router-dom')['useLocation']
   const useMemo: typeof import('react')['useMemo']
+  const useMutation: typeof import('@tanstack/react-query')['useMutation']
   const useNavigate: typeof import('react-router-dom')['useNavigate']
   const useNavigationType: typeof import('react-router-dom')['useNavigationType']
   const useOutlet: typeof import('react-router-dom')['useOutlet']
   const useOutletContext: typeof import('react-router-dom')['useOutletContext']
   const useParams: typeof import('react-router-dom')['useParams']
+  const useProductsFilters: typeof import('./features/products/hooks/use-products-filters')['useProductsFilters']
+  const useQuery: typeof import('@tanstack/react-query')['useQuery']
+  const useQueryClient: typeof import('@tanstack/react-query')['useQueryClient']
   const useReducer: typeof import('react')['useReducer']
   const useRef: typeof import('react')['useRef']
   const useResolvedPath: typeof import('react-router-dom')['useResolvedPath']
@@ -215,4 +231,7 @@ declare global {
   // @ts-ignore
   export type { KbdProps, KbdKeyProps } from './components/ui/shadcn-io/kbd/index'
   import('./components/ui/shadcn-io/kbd/index')
+  // @ts-ignore
+  export type { ProductStatus } from './features/products/model/product-status'
+  import('./features/products/model/product-status')
 }

@@ -15,7 +15,19 @@ export default defineConfig({
     react(),
     AutoImport({
       include: [/\.[tj]sx?$/, /\.[tj]s?$/],
-      imports: ['react', 'react-router-dom'],
+      imports: [
+        'react',
+        'react-router-dom',
+        {
+          '@tanstack/react-query': [
+            'useQuery',
+            'useMutation',
+            'useQueryClient',
+            'QueryClient',
+            'QueryClientProvider',
+          ],
+        },
+      ],
       dirs: [
         './src/components/**/*',
         './src/app/**/*',
