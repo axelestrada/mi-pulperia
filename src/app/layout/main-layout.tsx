@@ -1,9 +1,9 @@
-import { getRouteTitle } from "@/shared/router/getRouteTitle";
-import { BellIcon, MoonIcon, SearchIcon, SmartphoneIcon } from "lucide-react";
-import { useMatches } from "react-router-dom";
+import { getRouteTitle } from '@/shared/router/getRouteTitle'
+import { BellIcon, MoonIcon, SearchIcon, SmartphoneIcon } from 'lucide-react'
+import { useMatches } from 'react-router-dom'
 
 export const MainLayout = () => {
-  const title = getRouteTitle(useMatches()) ?? "Mi Pulpería";
+  const title = getRouteTitle(useMatches()) ?? 'Mi Pulpería'
 
   return (
     <SidebarProvider>
@@ -80,5 +80,5 @@ export const MainLayout = () => {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
-};
+  )
+}

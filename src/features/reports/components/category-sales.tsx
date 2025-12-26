@@ -1,46 +1,46 @@
-import { Pie, PieChart, Sector } from "recharts";
-import { type PieSectorDataItem } from "recharts/types/polar/Pie";
+import { Pie, PieChart, Sector } from 'recharts'
+import { type PieSectorDataItem } from 'recharts/types/polar/Pie'
 
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
+} from '@/components/ui/chart'
 
 const chartData = [
-  { category: "bebidas", sales: 1250, fill: "var(--color-bebidas)" },
-  { category: "abarrotes", sales: 980, fill: "var(--color-abarrotes)" },
-  { category: "snacks", sales: 620, fill: "var(--color-snacks)" },
-  { category: "limpieza", sales: 310, fill: "var(--color-limpieza)" },
-  { category: "otros", sales: 140, fill: "var(--color-otros)" },
-];
+  { category: 'bebidas', sales: 1250, fill: 'var(--color-bebidas)' },
+  { category: 'abarrotes', sales: 980, fill: 'var(--color-abarrotes)' },
+  { category: 'snacks', sales: 620, fill: 'var(--color-snacks)' },
+  { category: 'limpieza', sales: 310, fill: 'var(--color-limpieza)' },
+  { category: 'otros', sales: 140, fill: 'var(--color-otros)' },
+]
 
 const chartConfig = {
   sales: {
-    label: "Ventas",
+    label: 'Ventas',
   },
   bebidas: {
-    label: "Bebidas",
-    color: "var(--chart-1)",
+    label: 'Bebidas',
+    color: 'var(--chart-1)',
   },
   abarrotes: {
-    label: "Abarrotes",
-    color: "var(--chart-2)",
+    label: 'Abarrotes',
+    color: 'var(--chart-2)',
   },
   snacks: {
-    label: "Snacks",
-    color: "var(--chart-3)",
+    label: 'Snacks',
+    color: 'var(--chart-3)',
   },
   limpieza: {
-    label: "Limpieza",
-    color: "var(--chart-4)",
+    label: 'Limpieza',
+    color: 'var(--chart-4)',
   },
   otros: {
-    label: "Otros",
-    color: "var(--chart-5)",
+    label: 'Otros',
+    color: 'var(--chart-5)',
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export const CategorySales = () => {
   return (
@@ -68,5 +68,5 @@ export const CategorySales = () => {
         <ChartLegend content={<ChartLegendContent />} />
       </PieChart>
     </ChartContainer>
-  );
-};
+  )
+}

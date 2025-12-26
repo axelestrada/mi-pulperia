@@ -11,45 +11,45 @@ import {
   UserRoundPlusIcon,
   TagsIcon,
   PackageIcon,
-} from "lucide-react";
+} from 'lucide-react'
 
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
-import { LowStock } from "@/features/reports/components/low-stock";
-import { TopProducts } from "@/features/reports/components/top-products";
-import { CategorySales } from "@/features/reports/components/category-sales";
+import { LowStock } from '@/features/reports/components/low-stock'
+import { TopProducts } from '@/features/reports/components/top-products'
+import { CategorySales } from '@/features/reports/components/category-sales'
 
-import { Debts } from "@/features/reports/components/debts";
+import { Debts } from '@/features/reports/components/debts'
 
-type TimeRange = "7" | "14" | "30";
+type TimeRange = '7' | '14' | '30'
 
 const chartConfig = {
   sales: {
-    label: "Ventas",
-    color: "var(--chart-1)",
+    label: 'Ventas',
+    color: 'var(--chart-1)',
   },
   margin: {
-    label: "Margen",
-    color: "var(--chart-2)",
+    label: 'Margen',
+    color: 'var(--chart-2)',
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export const DashboardPage = () => {
-  const [timeRange, setTimeRange] = useState<TimeRange>("7");
+  const [timeRange, setTimeRange] = useState<TimeRange>('7')
 
   const handleTimeRangeChange = useCallback((value: TimeRange) => {
-    setTimeRange(value);
-  }, []);
+    setTimeRange(value)
+  }, [])
 
   const chartData = [
-    { date: "2024-04-02", sales: 3100, margin: 465 },
-    { date: "2024-04-03", sales: 2950, margin: 440 },
-    { date: "2024-04-04", sales: 3400, margin: 510 },
-    { date: "2024-04-05", sales: 4200, margin: 630 },
-    { date: "2024-04-06", sales: 5600, margin: 840 },
-    { date: "2024-04-07", sales: 4800, margin: 720 },
-    { date: "2024-04-08", sales: 3000, margin: 450 },
-  ];
+    { date: '2024-04-02', sales: 3100, margin: 465 },
+    { date: '2024-04-03', sales: 2950, margin: 440 },
+    { date: '2024-04-04', sales: 3400, margin: 510 },
+    { date: '2024-04-05', sales: 4200, margin: 630 },
+    { date: '2024-04-06', sales: 5600, margin: 840 },
+    { date: '2024-04-07', sales: 4800, margin: 720 },
+    { date: '2024-04-08', sales: 3000, margin: 450 },
+  ]
 
   return (
     <div>
@@ -72,7 +72,7 @@ export const DashboardPage = () => {
               </SelectContent>
             </Select>
 
-            <Button onClick={() => console.log("Nueva venta")}>
+            <Button onClick={() => console.log('Nueva venta')}>
               <PlusIcon /> Nueva Venta
             </Button>
           </>
@@ -221,28 +221,28 @@ export const DashboardPage = () => {
                 <CartesianGrid vertical={false} />
                 <XAxis
                   className="w-full"
-                  interval={"preserveStartEnd"}
+                  interval={'preserveStartEnd'}
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("es-HN", {
-                      weekday: "short",
-                    });
+                  tickFormatter={value => {
+                    const date = new Date(value)
+                    return date.toLocaleDateString('es-HN', {
+                      weekday: 'short',
+                    })
                   }}
                 />
                 <ChartTooltip
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("es-HN", {
-                          month: "long",
-                          day: "2-digit",
-                          year: "numeric",
-                        });
+                      labelFormatter={value => {
+                        return new Date(value).toLocaleDateString('es-HN', {
+                          month: 'long',
+                          day: '2-digit',
+                          year: 'numeric',
+                        })
                       }}
                       indicator="dot"
                     />
@@ -347,5 +347,5 @@ export const DashboardPage = () => {
         </Tabs>
       </div>
     </div>
-  );
-};
+  )
+}

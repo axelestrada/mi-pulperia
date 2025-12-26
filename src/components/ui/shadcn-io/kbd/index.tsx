@@ -1,6 +1,6 @@
-import { type ComponentProps, Fragment, type ReactNode } from 'react';
-import type { Key } from 'ts-key-enum';
-import { cn } from '@/lib/utils';
+import { type ComponentProps, Fragment, type ReactNode } from 'react'
+import type { Key } from 'ts-key-enum'
+import { cn } from '@/lib/utils'
 
 const DefaultKbdSeparator = ({
   className,
@@ -10,11 +10,11 @@ const DefaultKbdSeparator = ({
   <span className={cn('text-muted-foreground/50', className)} {...props}>
     {children}
   </span>
-);
+)
 
 export type KbdProps = ComponentProps<'span'> & {
-  separator?: ReactNode;
-};
+  separator?: ReactNode
+}
 
 export const Kbd = ({
   className,
@@ -38,12 +38,12 @@ export const Kbd = ({
         ))
       : children}
   </span>
-);
+)
 
 export type KbdKeyProps = Omit<ComponentProps<'kbd'>, 'aria-label'> & {
-  'aria-label'?: keyof typeof Key | (string & {});
-};
+  'aria-label'?: keyof typeof Key | (string & {})
+}
 
 export const KbdKey = ({ className, ...props }: KbdKeyProps) => (
   <kbd {...props} />
-);
+)

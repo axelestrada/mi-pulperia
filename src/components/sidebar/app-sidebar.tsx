@@ -1,6 +1,7 @@
-import * as React from "react";
+import * as React from 'react'
 import {
-  LifeBuoy, ShoppingBasket,
+  LifeBuoy,
+  ShoppingBasket,
   LayoutDashboard,
   ShoppingCart,
   Users,
@@ -10,107 +11,105 @@ import {
   FileChartColumn,
   Coins,
   UserSearch,
-  Settings
-} from "lucide-react";
+  Settings,
+} from 'lucide-react'
 
-import {
-  Sidebar,
-} from "@/components/ui/sidebar";
+import { Sidebar } from '@/components/ui/sidebar'
 
 const data = {
   user: {
-    name: "Ena Raudales",
-    email: "enaraudales@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956",
+    name: 'Ena Raudales',
+    email: 'enaraudales@gmail.com',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956',
   },
   navMain: [
     {
-      title: "Panel Principal",
-      url: "/",
+      title: 'Panel Principal',
+      url: '/',
       icon: LayoutDashboard,
     },
     {
-      title: "Punto de Venta",
-      shortcut: "F2",
-      url: "/pos",
+      title: 'Punto de Venta',
+      shortcut: 'F2',
+      url: '/pos',
       icon: ShoppingCart,
     },
     {
-      title: "Clientes",
-      url: "/customers",
+      title: 'Clientes',
+      url: '/customers',
       icon: Users,
     },
     {
-      title: "Productos",
-      url: "/products",
+      title: 'Productos',
+      url: '/products',
       icon: Package,
       isActive: true,
       items: [
         {
-          title: "Lista de Productos",
-          url: "/products",
+          title: 'Lista de Productos',
+          url: '/products',
         },
         {
-          title: "Categorías",
-          url: "#",
+          title: 'Categorías',
+          url: '#',
         },
         {
-          title: "Movimientos",
-          url: "#",
+          title: 'Movimientos',
+          url: '#',
         },
         {
-          title: "Ordenes de Compra",
-          url: "#",
+          title: 'Ordenes de Compra',
+          url: '#',
         },
         {
-          title: "Ajustes y Merma",
-          url: "#",
+          title: 'Ajustes y Merma',
+          url: '#',
         },
         {
-          title: "Proveedores",
-          url: "#",
+          title: 'Proveedores',
+          url: '#',
         },
       ],
     },
     {
-      title: "Créditos",
-      url: "#",
+      title: 'Créditos',
+      url: '#',
       icon: CreditCard,
     },
     {
-      title: "Gastos",
-      url: "#",
+      title: 'Gastos',
+      url: '#',
       icon: DollarSign,
     },
     {
-      title: "Reportes",
-      url: "#",
+      title: 'Reportes',
+      url: '#',
       icon: FileChartColumn,
     },
     {
-      title: "Caja",
-      url: "#",
+      title: 'Caja',
+      url: '#',
       icon: Coins,
     },
-     {
-      title: "Auditoría",
-      url: "#",
+    {
+      title: 'Auditoría',
+      url: '#',
       icon: UserSearch,
     },
   ],
   navSecondary: [
     {
-      title: "Ayuda",
-      url: "#",
+      title: 'Ayuda',
+      url: '#',
       icon: LifeBuoy,
     },
     {
-      title: "Configuración",
-      url: "#",
+      title: 'Configuración',
+      url: '#',
       icon: Settings,
     },
   ],
-};
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -139,5 +138,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react";
+import { PlusIcon } from 'lucide-react'
 
 export const CustomersPage = () => {
   return (
@@ -7,7 +7,7 @@ export const CustomersPage = () => {
         title="Gestión de Clientes"
         description="Administra clientes y sistema de créditos."
         actions={
-          <Button onClick={() => console.log("Nuevo cliente")}>
+          <Button onClick={() => console.log('Nuevo cliente')}>
             <PlusIcon /> Nuevo Cliente
           </Button>
         }
@@ -28,5 +28,5 @@ export const CustomersPage = () => {
         </TabsContent>
       </Tabs>
     </div>
-  );
-};
+  )
+}

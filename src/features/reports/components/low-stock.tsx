@@ -1,40 +1,40 @@
 const lowStockItems = [
   {
-    name: "Coca-Cola 3L",
+    name: 'Coca-Cola 3L',
     current: 2,
     minimum: 5,
-    supplier: "Distribuidora Central",
-    urgency: "high",
+    supplier: 'Distribuidora Central',
+    urgency: 'high',
   },
   {
-    name: "Detergente Ace 2kg",
+    name: 'Detergente Ace 2kg',
     current: 1,
     minimum: 3,
-    supplier: "Limpieza Total",
-    urgency: "high",
+    supplier: 'Limpieza Total',
+    urgency: 'high',
   },
   {
-    name: "Huevos (Docena)",
+    name: 'Huevos (Docena)',
     current: 3,
     minimum: 10,
-    supplier: "Granja San José",
-    urgency: "medium",
+    supplier: 'Granja San José',
+    urgency: 'medium',
   },
   {
-    name: "Aceite Capullo 1L",
+    name: 'Aceite Capullo 1L',
     current: 4,
     minimum: 8,
-    supplier: "Distribuidora Central",
-    urgency: "medium",
+    supplier: 'Distribuidora Central',
+    urgency: 'medium',
   },
   {
-    name: "Arroz Diana 5lb",
+    name: 'Arroz Diana 5lb',
     current: 6,
     minimum: 12,
-    supplier: "Abarrotes Mayorista",
-    urgency: "low",
+    supplier: 'Abarrotes Mayorista',
+    urgency: 'low',
   },
-];
+]
 
 export const LowStock = () => {
   return (
@@ -48,7 +48,7 @@ export const LowStock = () => {
 
       <CardContent>
         <div className="space-y-4">
-          {lowStockItems.map((item) => (
+          {lowStockItems.map(item => (
             <div
               className="flex items-center justify-between border p-3 rounded-lg"
               key={item.name}
@@ -56,7 +56,7 @@ export const LowStock = () => {
               <div>
                 <p className="font-medium">{item.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  Stock: {item.current} • Mínimo: {item.minimum} •{" "}
+                  Stock: {item.current} • Mínimo: {item.minimum} •{' '}
                   {item.supplier}
                 </p>
               </div>
@@ -64,18 +64,18 @@ export const LowStock = () => {
               <div className="flex items-center space-x-2">
                 <Badge
                   variant={
-                    item.urgency === "high"
-                      ? "destructive"
-                      : item.urgency === "medium"
-                      ? "default"
-                      : "secondary"
+                    item.urgency === 'high'
+                      ? 'destructive'
+                      : item.urgency === 'medium'
+                        ? 'default'
+                        : 'secondary'
                   }
                 >
-                  {item.urgency === "high"
-                    ? "Urgente"
-                    : item.urgency === "medium"
-                    ? "Medio"
-                    : "Bajo"}
+                  {item.urgency === 'high'
+                    ? 'Urgente'
+                    : item.urgency === 'medium'
+                      ? 'Medio'
+                      : 'Bajo'}
                 </Badge>
               </div>
             </div>
@@ -83,5 +83,5 @@ export const LowStock = () => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

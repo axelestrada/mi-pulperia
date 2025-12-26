@@ -1,47 +1,47 @@
-import { formatCurrency } from "@/shared/utils/formatCurrency";
-import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
+import { formatCurrency } from '@/shared/utils/formatCurrency'
+import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
 
 interface Props {
-  timeRange: string;
+  timeRange: string
 }
 
 const topProductsData = [
   {
-    name: "Coca-Cola 600ml",
+    name: 'Coca-Cola 600ml',
     sales: 124,
     revenue: 1860,
     margin: 25,
-    trend: "up",
+    trend: 'up',
   },
   {
-    name: "Taqueritos Verdes",
+    name: 'Taqueritos Verdes',
     sales: 98,
     revenue: 980,
     margin: 30,
-    trend: "up",
+    trend: 'up',
   },
   {
-    name: "Pan Bimbo Blanco",
+    name: 'Pan Bimbo Blanco',
     sales: 85,
     revenue: 1275,
     margin: 20,
-    trend: "down",
+    trend: 'down',
   },
   {
-    name: "Detergente Ace 1kg",
+    name: 'Detergente Ace 1kg',
     sales: 67,
     revenue: 2250,
     margin: 35,
-    trend: "up",
+    trend: 'up',
   },
   {
-    name: "Huevos (Docena)",
+    name: 'Huevos (Docena)',
     sales: 45,
     revenue: 2010,
     margin: 15,
-    trend: "up",
+    trend: 'up',
   },
-];
+]
 
 export const TopProducts = ({ timeRange }: Props) => {
   return (
@@ -80,7 +80,7 @@ export const TopProducts = ({ timeRange }: Props) => {
                   <Badge variant="secondary">
                     {formatCurrency(product.revenue)}
                   </Badge>
-                  {product.trend === "up" ? (
+                  {product.trend === 'up' ? (
                     <TrendingUpIcon className="h-4 w-4 text-green-600" />
                   ) : (
                     <TrendingDownIcon className="h-4 w-4 text-red-600" />
@@ -92,5 +92,5 @@ export const TopProducts = ({ timeRange }: Props) => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

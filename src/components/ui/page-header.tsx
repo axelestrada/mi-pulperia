@@ -1,8 +1,8 @@
 type Props = {
-  title: string;
-  description?: string;
-  actions?: React.ReactNode;
-};
+  title: string
+  description?: string
+  actions?: React.ReactNode
+}
 
 export const PageHeader = ({ title, description, actions }: Props) => {
   return (
@@ -14,5 +14,5 @@ export const PageHeader = ({ title, description, actions }: Props) => {
 
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
-  );
-};
+  )
+}

@@ -10,12 +10,15 @@ export const NotFoundPage = () => {
       </EmptyHeader>
       <EmptyContent>
         <EmptyDescription>
-          ¿Necesitas ayuda?{" "}
-          <a href="mailto:axele1524@gmail.com" className="font-medium underline underline-offset-4">
+          ¿Necesitas ayuda?{' '}
+          <a
+            href="mailto:axele1524@gmail.com"
+            className="font-medium underline underline-offset-4"
+          >
             Contacta a soporte
           </a>
         </EmptyDescription>
       </EmptyContent>
     </Empty>
-  );
-};
+  )
+}

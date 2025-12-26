@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { ImageIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from 'react'
+import { ImageIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type SafeImageProps = {
   src?: string | null
@@ -13,7 +13,7 @@ export const SafeImage = ({
   src,
   alt,
   className,
-  fallbackSrc = "/images/placeholder.svg",
+  fallbackSrc = '/images/placeholder.svg',
 }: SafeImageProps) => {
   const [hasError, setHasError] = useState(false)
 
@@ -22,7 +22,7 @@ export const SafeImage = ({
   return (
     <div
       className={cn(
-        "relative aspect-square w-full overflow-hidden rounded-md bg-muted",
+        'relative aspect-square w-full overflow-hidden rounded-md bg-muted',
         className
       )}
     >

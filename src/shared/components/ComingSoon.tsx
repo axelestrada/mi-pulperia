@@ -1,4 +1,4 @@
-import { TelescopeIcon } from "lucide-react";
+import { TelescopeIcon } from 'lucide-react'
 
 export const ComingSoon = () => (
   <Empty className="h-full">
@@ -12,4 +12,4 @@ export const ComingSoon = () => (
       </EmptyDescription>
     </EmptyHeader>
   </Empty>
-);
+)

@@ -3,14 +3,11 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {}
 export const Placeholder = ({ className }: Props) => (
   <div
     className={
-      "relative overflow-hidden rounded-sm border border-dashed border-zinc-200 opacity-75 px-4 flex items-center justify-center " +
+      'relative overflow-hidden rounded-sm border border-dashed border-zinc-200 opacity-75 px-4 flex items-center justify-center ' +
       className
     }
   >
-    <svg
-      fill="none"
-      className="absolute inset-0 h-full w-full text-zinc-200"
-    >
+    <svg fill="none" className="absolute inset-0 h-full w-full text-zinc-200">
       <defs>
         <pattern
           id="a"
@@ -30,4 +27,4 @@ export const Placeholder = ({ className }: Props) => (
       <rect width="100%" height="100%" fill="url(#a)" />
     </svg>
   </div>
-);
+)

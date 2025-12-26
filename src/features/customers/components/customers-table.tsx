@@ -1,6 +1,6 @@
-import { formatCurrency } from "@/shared/utils/formatCurrency";
+import { formatCurrency } from '@/shared/utils/formatCurrency'
 
-import { useState } from "react";
+import { useState } from 'react'
 import {
   AlertTriangleIcon,
   CreditCardIcon,
@@ -16,191 +16,191 @@ import {
   CalendarIcon,
   ShoppingCartIcon,
   ReceiptIcon,
-} from "lucide-react";
+} from 'lucide-react'
 
-import { format } from "date-fns";
+import { format } from 'date-fns'
 
 type Customer = {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  creditLimit: number;
-  currentDebt: number;
-  lastPurchase: Date;
-  status: "active" | "inactive";
-  creditBlocked: boolean;
-  registrationDate: Date;
-};
+  id: string
+  name: string
+  address: string
+  phone: string
+  email: string
+  creditLimit: number
+  currentDebt: number
+  lastPurchase: Date
+  status: 'active' | 'inactive'
+  creditBlocked: boolean
+  registrationDate: Date
+}
 
 type Purchase = {
-  id: string;
-  date: Date;
-  amount: number;
-  items: number;
-  status: "paid" | "pending";
-};
+  id: string
+  date: Date
+  amount: number
+  items: number
+  status: 'paid' | 'pending'
+}
 
 type Payment = {
-  id: string;
-  date: Date;
-  amount: number;
-  method: string;
-  reference: string;
-};
+  id: string
+  date: Date
+  amount: number
+  method: string
+  reference: string
+}
 
 const mockPurchases: Purchase[] = [
   {
-    id: "1",
-    date: new Date("2024-06-10"),
+    id: '1',
+    date: new Date('2024-06-10'),
     amount: 150,
     items: 5,
-    status: "pending",
+    status: 'pending',
   },
   {
-    id: "2",
-    date: new Date("2024-05-20"),
+    id: '2',
+    date: new Date('2024-05-20'),
     amount: 200,
     items: 8,
-    status: "paid",
+    status: 'paid',
   },
   {
-    id: "3",
-    date: new Date("2024-05-05"),
+    id: '3',
+    date: new Date('2024-05-05'),
     amount: 75,
     items: 3,
-    status: "paid",
+    status: 'paid',
   },
-];
+]
 
 const mockPayments: Payment[] = [
   {
-    id: "1",
-    date: new Date("2024-05-25"),
+    id: '1',
+    date: new Date('2024-05-25'),
     amount: 100,
-    method: "Efectivo",
-    reference: "PAG-001",
+    method: 'Efectivo',
+    reference: 'PAG-001',
   },
   {
-    id: "2",
-    date: new Date("2024-05-15"),
+    id: '2',
+    date: new Date('2024-05-15'),
     amount: 50,
-    method: "Transferencia",
-    reference: "PAG-002",
+    method: 'Transferencia',
+    reference: 'PAG-002',
   },
   {
-    id: "3",
-    date: new Date("2024-04-30"),
+    id: '3',
+    date: new Date('2024-04-30'),
     amount: 75,
-    method: "Efectivo",
-    reference: "PAG-003",
+    method: 'Efectivo',
+    reference: 'PAG-003',
   },
-];
+]
 
 const mockCustomers: Customer[] = [
   {
-    id: "1",
-    name: "Juan Pérez",
-    address: "Calle Falsa 123",
-    phone: "9976-4567",
-    email: "juan.perez@email.com",
+    id: '1',
+    name: 'Juan Pérez',
+    address: 'Calle Falsa 123',
+    phone: '9976-4567',
+    email: 'juan.perez@email.com',
     creditLimit: 500,
     currentDebt: 150,
-    lastPurchase: new Date("2024-06-10"),
-    status: "active",
+    lastPurchase: new Date('2024-06-10'),
+    status: 'active',
     creditBlocked: false,
-    registrationDate: new Date("2023-01-15"),
+    registrationDate: new Date('2023-01-15'),
   },
   {
-    id: "2",
-    name: "María Gómez",
-    address: "Avenida Siempre Viva 742",
-    phone: "9532-5678",
-    email: "maria.gomez@email.com",
+    id: '2',
+    name: 'María Gómez',
+    address: 'Avenida Siempre Viva 742',
+    phone: '9532-5678',
+    email: 'maria.gomez@email.com',
     creditLimit: 300,
     currentDebt: 0,
-    lastPurchase: new Date("2024-05-22"),
-    status: "inactive",
+    lastPurchase: new Date('2024-05-22'),
+    status: 'inactive',
     creditBlocked: false,
-    registrationDate: new Date("2023-03-20"),
+    registrationDate: new Date('2023-03-20'),
   },
-];
+]
 
 export const CustomersTable = () => {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [customers, setCustomers] = useState<Customer[]>(mockCustomers)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
-  );
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [drawerTab, setDrawerTab] = useState("info");
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [editMode, setEditMode] = useState(false);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  )
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [drawerTab, setDrawerTab] = useState('info')
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const [editMode, setEditMode] = useState(false)
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
 
-  const handleOpenDrawer = (customer: Customer, tab = "info") => {
-    setSelectedCustomer(customer);
-    setDrawerTab(tab);
-    setIsDrawerOpen(true);
-    setEditMode(false);
-  };
+  const handleOpenDrawer = (customer: Customer, tab = 'info') => {
+    setSelectedCustomer(customer)
+    setDrawerTab(tab)
+    setIsDrawerOpen(true)
+    setEditMode(false)
+  }
 
   const handleToggleCreditBlock = () => {
     if (selectedCustomer) {
       setCustomers(
-        customers.map((c) =>
+        customers.map(c =>
           c.id === selectedCustomer.id
             ? { ...c, creditBlocked: !c.creditBlocked }
             : c
         )
-      );
+      )
       setSelectedCustomer({
         ...selectedCustomer,
         creditBlocked: !selectedCustomer.creditBlocked,
-      });
+      })
     }
-  };
+  }
 
   const handleToggleStatus = () => {
     if (selectedCustomer) {
       const newStatus =
-        selectedCustomer.status === "active" ? "inactive" : "active";
+        selectedCustomer.status === 'active' ? 'inactive' : 'active'
       setCustomers(
-        customers.map((c) =>
+        customers.map(c =>
           c.id === selectedCustomer.id ? { ...c, status: newStatus } : c
         )
-      );
-      setSelectedCustomer({ ...selectedCustomer, status: newStatus });
+      )
+      setSelectedCustomer({ ...selectedCustomer, status: newStatus })
     }
-  };
+  }
 
   const handleOpenPaymentDialog = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setIsPaymentDialogOpen(true);
-    setPaymentAmount("");
-  };
+    setSelectedCustomer(customer)
+    setIsPaymentDialogOpen(true)
+    setPaymentAmount('')
+  }
 
   const handleRegisterPayment = () => {
     if (selectedCustomer && paymentAmount) {
-      const amount = parseFloat(paymentAmount);
+      const amount = parseFloat(paymentAmount)
       if (amount > 0) {
         setCustomers(
-          customers.map((c) =>
+          customers.map(c =>
             c.id === selectedCustomer.id
               ? { ...c, currentDebt: Math.max(0, c.currentDebt - amount) }
               : c
           )
-        );
+        )
         setSelectedCustomer({
           ...selectedCustomer,
           currentDebt: Math.max(0, selectedCustomer.currentDebt - amount),
-        });
-        setPaymentAmount("");
-        setIsPaymentDialogOpen(false);
-        alert(`Abono de ${formatCurrency(amount)} registrado exitosamente`);
+        })
+        setPaymentAmount('')
+        setIsPaymentDialogOpen(false)
+        alert(`Abono de ${formatCurrency(amount)} registrado exitosamente`)
       }
     }
-  };
+  }
 
   return (
     <div className="space-y-4">
@@ -287,7 +287,7 @@ export const CustomersTable = () => {
           </TableHeader>
 
           <TableBody>
-            {customers.map((customer) => (
+            {customers.map(customer => (
               <TableRow key={customer.id} className="cursor-pointer">
                 <TableCell>
                   <div>
@@ -304,8 +304,8 @@ export const CustomersTable = () => {
                     <span
                       className={
                         customer.currentDebt > 0
-                          ? "text-red-600 font-medium"
-                          : ""
+                          ? 'text-red-600 font-medium'
+                          : ''
                       }
                     >
                       {formatCurrency(customer.currentDebt)}
@@ -320,19 +320,19 @@ export const CustomersTable = () => {
                 </TableCell>
                 <TableCell>
                   {customer.lastPurchase
-                    ? format(customer.lastPurchase, "dd-MM-yyyy")
-                    : "Nunca"}
+                    ? format(customer.lastPurchase, 'dd-MM-yyyy')
+                    : 'Nunca'}
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant={
-                      customer.status === "active" ? "default" : "destructive"
+                      customer.status === 'active' ? 'default' : 'destructive'
                     }
                     className={
-                      customer.status === "active" ? "bg-green-600" : ""
+                      customer.status === 'active' ? 'bg-green-600' : ''
                     }
                   >
-                    {customer.status === "active" ? "Activo" : "Inactivo"}
+                    {customer.status === 'active' ? 'Activo' : 'Inactivo'}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -346,15 +346,15 @@ export const CustomersTable = () => {
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => handleOpenDrawer(customer, "info")}
+                        onClick={() => handleOpenDrawer(customer, 'info')}
                       >
                         <EyeIcon className="h-4 w-4 mr-2" />
                         Ver Perfil
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => {
-                          handleOpenDrawer(customer, "info");
-                          setEditMode(true);
+                          handleOpenDrawer(customer, 'info')
+                          setEditMode(true)
                         }}
                       >
                         <EditIcon className="h-4 w-4 mr-2" />
@@ -369,17 +369,17 @@ export const CustomersTable = () => {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
-                        onClick={() => handleOpenDrawer(customer, "statement")}
+                        onClick={() => handleOpenDrawer(customer, 'statement')}
                       >
                         <ReceiptIcon className="h-4 w-4 mr-2" />
                         Ver Estado de Cuenta
                       </DropdownMenuItem>
-                      {customer.status === "active" ? (
+                      {customer.status === 'active' ? (
                         <DropdownMenuItem
                           className="text-red-600"
                           onClick={() => {
-                            handleOpenDrawer(customer, "info");
-                            setTimeout(handleToggleStatus, 100);
+                            handleOpenDrawer(customer, 'info')
+                            setTimeout(handleToggleStatus, 100)
                           }}
                         >
                           <UserRoundXIcon className="h-4 w-4 mr-2" />
@@ -389,8 +389,8 @@ export const CustomersTable = () => {
                         <DropdownMenuItem
                           className="text-green-600"
                           onClick={() => {
-                            handleOpenDrawer(customer, "info");
-                            setTimeout(handleToggleStatus, 100);
+                            handleOpenDrawer(customer, 'info')
+                            setTimeout(handleToggleStatus, 100)
                           }}
                         >
                           <UserRoundCheckIcon className="h-4 w-4 mr-2" />
@@ -533,8 +533,8 @@ export const CustomersTable = () => {
                           className={`font-medium text-lg ${
                             selectedCustomer?.currentDebt &&
                             selectedCustomer.currentDebt > 0
-                              ? "text-red-600"
-                              : "text-green-600"
+                              ? 'text-red-600'
+                              : 'text-green-600'
                           }`}
                         >
                           {formatCurrency(selectedCustomer?.currentDebt || 0)}
@@ -558,19 +558,19 @@ export const CustomersTable = () => {
                         <div className="flex items-center gap-2">
                           <Badge
                             variant={
-                              selectedCustomer?.status === "active"
-                                ? "default"
-                                : "destructive"
+                              selectedCustomer?.status === 'active'
+                                ? 'default'
+                                : 'destructive'
                             }
                             className={
-                              selectedCustomer?.status === "active"
-                                ? "bg-green-600"
-                                : ""
+                              selectedCustomer?.status === 'active'
+                                ? 'bg-green-600'
+                                : ''
                             }
                           >
-                            {selectedCustomer?.status === "active"
-                              ? "Activo"
-                              : "Inactivo"}
+                            {selectedCustomer?.status === 'active'
+                              ? 'Activo'
+                              : 'Inactivo'}
                           </Badge>
 
                           {selectedCustomer?.creditBlocked && (
@@ -597,8 +597,8 @@ export const CustomersTable = () => {
                       <Button
                         variant={
                           selectedCustomer?.creditBlocked
-                            ? "outline"
-                            : "destructive"
+                            ? 'outline'
+                            : 'destructive'
                         }
                         size="sm"
                         onClick={handleToggleCreditBlock}
@@ -618,13 +618,13 @@ export const CustomersTable = () => {
                       <Button
                         size="sm"
                         variant={
-                          selectedCustomer?.status === "active"
-                            ? "destructive"
-                            : "outline"
+                          selectedCustomer?.status === 'active'
+                            ? 'destructive'
+                            : 'outline'
                         }
                         onClick={handleToggleStatus}
                       >
-                        {selectedCustomer?.status === "active" ? (
+                        {selectedCustomer?.status === 'active' ? (
                           <>
                             <UserRoundXIcon className="size-4" />
                             Deshabilitar Cliente
@@ -655,9 +655,9 @@ export const CustomersTable = () => {
                         {selectedCustomer?.registrationDate
                           ? format(
                               selectedCustomer.registrationDate,
-                              "dd-MM-yyyy"
+                              'dd-MM-yyyy'
                             )
-                          : "-"}
+                          : '-'}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -666,8 +666,8 @@ export const CustomersTable = () => {
                       </span>
                       <span className="font-medium">
                         {selectedCustomer?.lastPurchase
-                          ? format(selectedCustomer.lastPurchase, "dd-MM-yyyy")
-                          : "Nunca"}
+                          ? format(selectedCustomer.lastPurchase, 'dd-MM-yyyy')
+                          : 'Nunca'}
                       </span>
                     </div>
                   </CardContent>
@@ -716,15 +716,15 @@ export const CustomersTable = () => {
                   <CardContent>
                     <div className="space-y-2">
                       {mockPurchases
-                        .filter((p) => p.status === "pending")
-                        .map((purchase) => (
+                        .filter(p => p.status === 'pending')
+                        .map(purchase => (
                           <div
                             key={purchase.id}
                             className="flex justify-between items-center p-3 border rounded-lg"
                           >
                             <div>
                               <p className="font-medium">
-                                {format(purchase.date, "dd-MM-yyyy")}
+                                {format(purchase.date, 'dd-MM-yyyy')}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {purchase.items} artículos
@@ -751,7 +751,7 @@ export const CustomersTable = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {mockPurchases.map((purchase) => (
+                      {mockPurchases.map(purchase => (
                         <div
                           key={purchase.id}
                           className="flex justify-between items-center p-3 border rounded-lg"
@@ -760,7 +760,7 @@ export const CustomersTable = () => {
                             <CalendarIcon className="size-4 text-muted-foreground" />
                             <div>
                               <p className="font-medium">
-                                {format(purchase.date, "dd-MM-yyyy")}
+                                {format(purchase.date, 'dd-MM-yyyy')}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {purchase.items} artículos
@@ -773,17 +773,17 @@ export const CustomersTable = () => {
                             </p>
                             <Badge
                               variant={
-                                purchase.status === "paid"
-                                  ? "default"
-                                  : "destructive"
+                                purchase.status === 'paid'
+                                  ? 'default'
+                                  : 'destructive'
                               }
                               className={
-                                purchase.status === "paid" ? "bg-green-600" : ""
+                                purchase.status === 'paid' ? 'bg-green-600' : ''
                               }
                             >
-                              {purchase.status === "paid"
-                                ? "Pagado"
-                                : "Pendiente"}
+                              {purchase.status === 'paid'
+                                ? 'Pagado'
+                                : 'Pendiente'}
                             </Badge>
                           </div>
                         </div>
@@ -801,7 +801,7 @@ export const CustomersTable = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {mockPayments.map((payment) => (
+                      {mockPayments.map(payment => (
                         <div
                           key={payment.id}
                           className="flex justify-between items-center p-3 border rounded-lg"
@@ -810,7 +810,7 @@ export const CustomersTable = () => {
                             <ReceiptIcon className="size-4 text-muted-foreground" />
                             <div>
                               <p className="font-medium">
-                                {format(payment.date, "dd-MM-yyyy")}
+                                {format(payment.date, 'dd-MM-yyyy')}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {payment.method} - {payment.reference}
@@ -861,7 +861,7 @@ export const CustomersTable = () => {
                 type="number"
                 placeholder="0.00"
                 value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
+                onChange={e => setPaymentAmount(e.target.value)}
                 className="text-lg"
               />
             </div>
@@ -935,5 +935,5 @@ export const CustomersTable = () => {
         </DialogContent>
       </Dialog>
     </div>
-  );
-};
+  )
+}
