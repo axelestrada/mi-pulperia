@@ -1,5 +1,3 @@
-import { PlusIcon } from 'lucide-react'
-
 export const ProductsHeader = () => {
   return (
     <PageHeader
@@ -7,7 +5,7 @@ export const ProductsHeader = () => {
       description="Gestione sus productos aquí."
       actions={
         <Button onClick={() => console.log('Nuevo producto')}>
-          <PlusIcon /> Nuevo Producto
+          <IconLucidePlus /> Nuevo Producto
         </Button>
       }
     />

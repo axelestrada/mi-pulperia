@@ -7,6 +7,7 @@ import electron from 'vite-plugin-electron/simple'
 
 import Icons from 'unplugin-icons/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import IconsResolver from 'unplugin-icons/resolver'
 
 export default defineConfig({
   plugins: [
@@ -28,11 +29,14 @@ export default defineConfig({
       eslintrc: {
         enabled: true,
       },
+      resolvers: [
+        IconsResolver({
+          prefix: 'Icon',
+          extension: 'tsx',
+        }),
+      ],
     }),
-    Icons({
-      compiler: 'jsx',
-      jsx: 'react',
-    }),
+    Icons({ compiler: 'jsx', jsx: 'react' }),
     electron({
       main: {
         entry: 'electron/main.ts',

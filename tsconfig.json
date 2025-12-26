@@ -24,7 +24,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+
+    "types": ["unplugin-icons/types/react"]
   },
   "include": ["src", "electron"],
   "references": [{ "path": "./tsconfig.node.json" }]
