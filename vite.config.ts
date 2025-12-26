@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import electron from "vite-plugin-electron/simple";
 
+import Icons from "unplugin-icons/vite";
 import AutoImport from "unplugin-auto-import/vite";
 
 export default defineConfig({
@@ -12,17 +13,25 @@ export default defineConfig({
     tailwindcss(),
     react(),
     AutoImport({
-      include: [/\.[tj]sx?$/],
+      include: [/\.[tj]sx?$/, /\.[tj]s?$/],
       imports: ["react", "react-router-dom"],
       dirs: [
         "./src/components/**/*",
         "./src/app/**/*",
         "./src/components/ui/shadcn-io/**/*",
+        "./src/features/**/*",
+        "./src/shared/components/**/*",
+        "./src/shared/hooks/**/*",
+        "./src/shared/utils/**/*",
       ],
       dts: "./src/auto-imports.d.ts",
       eslintrc: {
         enabled: true,
       },
+    }),
+    Icons({
+      compiler: "jsx",
+      jsx: "react",
     }),
     electron({
       main: {

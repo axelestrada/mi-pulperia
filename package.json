@@ -51,6 +51,7 @@
     "tw-animate-css": "^1.3.7",
     "typescript": "^5.2.2",
     "unplugin-auto-import": "^20.0.0",
+    "unplugin-icons": "^22.5.0",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5"

@@ -1,5 +1,3 @@
-import { CustomersTable } from "@/features/customers/components/customers-table";
-import { ComingSoon } from "@/shared/components/ComingSoon";
 import { PlusIcon } from "lucide-react";
 
 export const CustomersPage = () => {
