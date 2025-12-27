@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 
-import { CategoriesService } from 'electron/main/services/categories-service'
+import { CategoriesService } from '../services/categories-service'
 
 export const registerCategoriesHandlers = () => {
   ipcMain.on('categories:list', async() => {

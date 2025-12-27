@@ -1,5 +1,5 @@
-import { SelectCategory } from "electron/main/db/schema/categories"
-import { SelectProduct } from "electron/main/db/schema/products"
+import { SelectProduct } from "./electron/main/db/schema"
+import { SelectCategory } from "./electron/main/db/schema/categories"
 
 export {}
 

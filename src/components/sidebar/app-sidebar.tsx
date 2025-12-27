@@ -20,7 +20,7 @@ const data = {
   user: {
     name: 'Ena Raudales',
     email: 'enaraudales@gmail.com',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956',
+    avatar: '/images/avatars/woman.jpg',
   },
   navMain: [
     {
