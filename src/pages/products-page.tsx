@@ -3,6 +3,7 @@ export const ProductsPage = () => {
     <>
       <ProductsHeader />
       <ProductsFilters />
+      <ProductsTable />
     </>
   )
 }

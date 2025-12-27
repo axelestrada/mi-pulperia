@@ -109,6 +109,7 @@ declare global {
   const Placeholder: typeof import('./components/placeholder')['Placeholder']
   const ProductsFilters: typeof import('./features/products/ui/products-filters')['ProductsFilters']
   const ProductsHeader: typeof import('./features/products/ui/products-header')['ProductsHeader']
+  const ProductsTable: typeof import('./features/products/ui/products-table')['ProductsTable']
   const Progress: typeof import('./components/ui/progress')['Progress']
   const QueryClient: typeof import('@tanstack/react-query')['QueryClient']
   const QueryClientProvider: typeof import('@tanstack/react-query')['QueryClientProvider']
@@ -183,7 +184,10 @@ declare global {
   const badgeVariants: typeof import('./components/ui/badge')['badgeVariants']
   const buttonGroupVariants: typeof import('./components/ui/button-group')['buttonGroupVariants']
   const buttonVariants: typeof import('./components/ui/button')['buttonVariants']
+  const categoriesService: typeof import('./features/categories/services/categories-service')['categoriesService']
   const createRef: typeof import('react')['createRef']
+  const fetchCategories: typeof import('./features/categories/api')['fetchCategories']
+  const fetchProducts: typeof import('./features/products/api')['fetchProducts']
   const formatCurrency: typeof import('./shared/utils/formatCurrency')['formatCurrency']
   const forwardRef: typeof import('react')['forwardRef']
   const lazy: typeof import('react')['lazy']
@@ -191,6 +195,7 @@ declare global {
   const router: typeof import('./app/router/routes')['router']
   const startTransition: typeof import('react')['startTransition']
   const useCallback: typeof import('react')['useCallback']
+  const useCategories: typeof import('./features/categories/hooks/use-categories')['useCategories']
   const useContext: typeof import('react')['useContext']
   const useDebugValue: typeof import('react')['useDebugValue']
   const useDeferredValue: typeof import('react')['useDeferredValue']
@@ -210,6 +215,7 @@ declare global {
   const useOutlet: typeof import('react-router-dom')['useOutlet']
   const useOutletContext: typeof import('react-router-dom')['useOutletContext']
   const useParams: typeof import('react-router-dom')['useParams']
+  const useProducts: typeof import('./features/products/hooks/use-products')['useProducts']
   const useProductsFilters: typeof import('./features/products/hooks/use-products-filters')['useProductsFilters']
   const useQuery: typeof import('@tanstack/react-query')['useQuery']
   const useQueryClient: typeof import('@tanstack/react-query')['useQueryClient']
@@ -231,6 +237,9 @@ declare global {
   // @ts-ignore
   export type { KbdProps, KbdKeyProps } from './components/ui/shadcn-io/kbd/index'
   import('./components/ui/shadcn-io/kbd/index')
+  // @ts-ignore
+  export type { Category } from './features/categories/model/category-types'
+  import('./features/categories/model/category-types')
   // @ts-ignore
   export type { ProductStatus } from './features/products/model/product-status'
   import('./features/products/model/product-status')
