@@ -27,6 +27,12 @@ export default defineConfig({
             'QueryClientProvider',
           ],
         },
+        {
+          'react-hook-form': ['useForm', 'Controller', 'useFormContext', 'FormProvider'],
+        },
+        {
+          '@hookform/resolvers/zod': ['zodResolver'],
+        }
       ],
       dirs: [
         './src/components/**/*',

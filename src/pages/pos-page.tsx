@@ -289,7 +289,7 @@ export const PosPage = () => {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 overflow-y-auto max-h-full">
           {mockProducts.map(product => (
             <div
-              className="border rounded-lg p-3 cursor-pointer hover:shadow-xl transition-shadow shadow-slate-200"
+              className="border rounded-lg p-3 cursor-pointer hover:shadow-xl transition-shadow"
               onClick={() => addToCart(product)}
               key={product.id}
             >

@@ -41,6 +41,7 @@ declare global {
   const CollapsibleContent: typeof import('./components/ui/collapsible').CollapsibleContent
   const CollapsibleTrigger: typeof import('./components/ui/collapsible').CollapsibleTrigger
   const ComingSoon: typeof import('./shared/components/ComingSoon').ComingSoon
+  const Controller: typeof import('react-hook-form').Controller
   const CustomersTable: typeof import('./features/customers/components/customers-table').CustomersTable
   const Debts: typeof import('./features/reports/components/debts').Debts
   const Dialog: typeof import('./components/ui/dialog').Dialog
@@ -78,12 +79,24 @@ declare global {
   const DropdownMenuSubContent: typeof import('./components/ui/dropdown-menu').DropdownMenuSubContent
   const DropdownMenuSubTrigger: typeof import('./components/ui/dropdown-menu').DropdownMenuSubTrigger
   const DropdownMenuTrigger: typeof import('./components/ui/dropdown-menu').DropdownMenuTrigger
+  const EMPTY_PRODUCT_FORM: typeof import('./features/products/model/product-constants').EMPTY_PRODUCT_FORM
   const Empty: typeof import('./components/ui/empty').Empty
   const EmptyContent: typeof import('./components/ui/empty').EmptyContent
   const EmptyDescription: typeof import('./components/ui/empty').EmptyDescription
   const EmptyHeader: typeof import('./components/ui/empty').EmptyHeader
   const EmptyMedia: typeof import('./components/ui/empty').EmptyMedia
   const EmptyTitle: typeof import('./components/ui/empty').EmptyTitle
+  const Field: typeof import('./components/ui/field').Field
+  const FieldContent: typeof import('./components/ui/field').FieldContent
+  const FieldDescription: typeof import('./components/ui/field').FieldDescription
+  const FieldError: typeof import('./components/ui/field').FieldError
+  const FieldGroup: typeof import('./components/ui/field').FieldGroup
+  const FieldLabel: typeof import('./components/ui/field').FieldLabel
+  const FieldLegend: typeof import('./components/ui/field').FieldLegend
+  const FieldSeparator: typeof import('./components/ui/field').FieldSeparator
+  const FieldSet: typeof import('./components/ui/field').FieldSet
+  const FieldTitle: typeof import('./components/ui/field').FieldTitle
+  const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
@@ -97,6 +110,7 @@ declare global {
   const InputGroupTextarea: typeof import('./components/ui/input-group').InputGroupTextarea
   const Kbd: typeof import('./components/ui/shadcn-io/kbd/index').Kbd
   const KbdKey: typeof import('./components/ui/shadcn-io/kbd/index').KbdKey
+  const Label: typeof import('./components/ui/label').Label
   const Link: typeof import('react-router-dom').Link
   const LowStock: typeof import('./features/reports/components/low-stock').LowStock
   const MainLayout: typeof import('./app/layout/main-layout').MainLayout
@@ -109,6 +123,9 @@ declare global {
   const PRODUCT_STATUSES: typeof import('./features/products/model/product-status').PRODUCT_STATUSES
   const PageHeader: typeof import('./components/ui/page-header').PageHeader
   const Placeholder: typeof import('./components/placeholder').Placeholder
+  const ProductForm: typeof import('./features/products/ui/product-form').ProductForm
+  const ProductFormDialog: typeof import('./features/products/ui/product-form-dialog').ProductFormDialog
+  const ProductFormField: typeof import('./features/products/ui/product-form-field').ProductFormField
   const ProductsFilters: typeof import('./features/products/ui/products-filters').ProductsFilters
   const ProductsHeader: typeof import('./features/products/ui/products-header').ProductsHeader
   const ProductsTable: typeof import('./features/products/ui/products-table').ProductsTable
@@ -198,6 +215,8 @@ declare global {
   const forwardRef: typeof import('react').forwardRef
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
+  const productFormSchema: typeof import('./features/products/model/product-schema').productFormSchema
+  const productToForm: typeof import('./features/products/model/product-mappers').productToForm
   const router: typeof import('./app/router/routes').router
   const startTransition: typeof import('react').startTransition
   const use: typeof import('react').use
@@ -209,6 +228,8 @@ declare global {
   const useDeferredValue: typeof import('react').useDeferredValue
   const useEffect: typeof import('react').useEffect
   const useEffectEvent: typeof import('react').useEffectEvent
+  const useForm: typeof import('react-hook-form').useForm
+  const useFormContext: typeof import('react-hook-form').useFormContext
   const useHref: typeof import('react-router-dom').useHref
   const useId: typeof import('react').useId
   const useImperativeHandle: typeof import('react').useImperativeHandle
@@ -225,6 +246,7 @@ declare global {
   const useOutlet: typeof import('react-router-dom').useOutlet
   const useOutletContext: typeof import('react-router-dom').useOutletContext
   const useParams: typeof import('react-router-dom').useParams
+  const useProductForm: typeof import('./features/products/hooks/use-product-form').useProductForm
   const useProducts: typeof import('./features/products/hooks/use-products').useProducts
   const useProductsFilters: typeof import('./features/products/hooks/use-products-filters').useProductsFilters
   const useQuery: typeof import('@tanstack/react-query').useQuery
@@ -238,6 +260,7 @@ declare global {
   const useState: typeof import('react').useState
   const useSyncExternalStore: typeof import('react').useSyncExternalStore
   const useTransition: typeof import('react').useTransition
+  const zodResolver: typeof import('@hookform/resolvers/zod').zodResolver
 }
 // for type re-export
 declare global {
@@ -251,6 +274,12 @@ declare global {
   export type { Category } from './features/categories/model/category-types'
   import('./features/categories/model/category-types')
   // @ts-ignore
+  export type { ProductFormData } from './features/products/model/product-schema'
+  import('./features/products/model/product-schema')
+  // @ts-ignore
   export type { ProductStatus } from './features/products/model/product-status'
   import('./features/products/model/product-status')
+  // @ts-ignore
+  export type { Product } from './features/products/model/product-types'
+  import('./features/products/model/product-types')
 }
