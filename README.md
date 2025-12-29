@@ -1,7 +1,5 @@
 # Mi Pulpería
 
-## Descripción
-
 **Mi Pulpería** es una aplicación de escritorio construida con ```Electron```, ```Vite```, ```TypeScript``` y ```Drizzle ORM```, diseñada para la gestión de inventario, ventas y clientes de una pulpería o negocio pequeño.
 
 La aplicación utiliza ```SQLite``` como base de datos local, sin depender de servicios externos, y expone una API interna (backend) accesible desde el frontend mediante ```preload``` y ```contextBridge```.
