@@ -42,6 +42,7 @@ export default defineConfig({
         './src/shared/components/**/*',
         './src/shared/hooks/**/*',
         './src/shared/utils/**/*',
+        './src/pages/**/*',
       ],
       dts: './src/auto-imports.d.ts',
       eslintrc: {

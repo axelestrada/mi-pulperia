@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 export const categoriesTable = sqliteTable('categories', {
@@ -5,7 +6,9 @@ export const categoriesTable = sqliteTable('categories', {
   name: text().notNull(),
   description: text(),
   isActive: int('is_active', { mode: 'boolean' }).default(true).notNull(),
-  createdAt: int('created_at', { mode: 'timestamp' }).notNull(),
+  createdAt: int('created_at', { mode: 'timestamp' })
+    .default(sql`(unixepoch())`)
+    .notNull(),
   deleted: int({ mode: 'boolean' }).default(false).notNull(),
 })
 

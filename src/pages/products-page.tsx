@@ -16,6 +16,7 @@ export const ProductsPage = () => {
     <>
       <ProductsHeader onCreate={handleCreate} />
       <ProductsFilters />
+
       <ProductsTable />
 
       <ProductFormDialog

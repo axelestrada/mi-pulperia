@@ -1,4 +1,8 @@
 export type Category = {
-  id: string
+  id: number
   name: string
+  description: string | null
+  isActive: boolean
+  createdAt: Date
+  deleted: boolean
 }

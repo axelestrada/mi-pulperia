@@ -51,7 +51,7 @@ const data = {
         },
         {
           title: 'Categorías',
-          url: '#',
+          url: '/categories',
         },
         {
           title: 'Movimientos',

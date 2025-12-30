@@ -30,6 +30,14 @@ declare global {
   const CardFooter: typeof import('./components/ui/card').CardFooter
   const CardHeader: typeof import('./components/ui/card').CardHeader
   const CardTitle: typeof import('./components/ui/card').CardTitle
+  const CategoriesFilters: typeof import('./features/categories/ui/catgories-filters').CategoriesFilters
+  const CategoriesHeader: typeof import('./features/categories/ui/categories-header').CategoriesHeader
+  const CategoriesPage: typeof import('./pages/categories-page').CategoriesPage
+  const CategoriesTable: typeof import('./features/categories/ui/categories-table').CategoriesTable
+  const CategoryForm: typeof import('./features/categories/ui/category-form').CategoryForm
+  const CategoryFormDialog: typeof import('./features/categories/ui/category-form-dialog').CategoryFormDialog
+  const CategoryFormField: typeof import('./features/categories/ui/category-form-field').CategoryFormField
+  const CategoryFormFieldProps: typeof import('./features/categories/model/category-types').CategoryFormFieldProps
   const CategorySales: typeof import('./features/reports/components/category-sales').CategorySales
   const ChartContainer: typeof import('./components/ui/chart').ChartContainer
   const ChartLegend: typeof import('./components/ui/chart').ChartLegend
@@ -42,7 +50,9 @@ declare global {
   const CollapsibleTrigger: typeof import('./components/ui/collapsible').CollapsibleTrigger
   const ComingSoon: typeof import('./shared/components/ComingSoon').ComingSoon
   const Controller: typeof import('react-hook-form').Controller
+  const CustomersPage: typeof import('./pages/customers-page').CustomersPage
   const CustomersTable: typeof import('./features/customers/components/customers-table').CustomersTable
+  const DashboardPage: typeof import('./pages/dashboard-page').DashboardPage
   const Debts: typeof import('./features/reports/components/debts').Debts
   const Dialog: typeof import('./components/ui/dialog').Dialog
   const DialogClose: typeof import('./components/ui/dialog').DialogClose
@@ -79,6 +89,7 @@ declare global {
   const DropdownMenuSubContent: typeof import('./components/ui/dropdown-menu').DropdownMenuSubContent
   const DropdownMenuSubTrigger: typeof import('./components/ui/dropdown-menu').DropdownMenuSubTrigger
   const DropdownMenuTrigger: typeof import('./components/ui/dropdown-menu').DropdownMenuTrigger
+  const EMPTY_CATEGORY_FORM: typeof import('./features/categories/model/category-constants').EMPTY_CATEGORY_FORM
   const EMPTY_PRODUCT_FORM: typeof import('./features/products/model/product-constants').EMPTY_PRODUCT_FORM
   const Empty: typeof import('./components/ui/empty').Empty
   const EmptyContent: typeof import('./components/ui/empty').EmptyContent
@@ -119,15 +130,18 @@ declare global {
   const NavSecondary: typeof import('./components/sidebar/nav-secondary').NavSecondary
   const NavUser: typeof import('./components/sidebar/nav-user').NavUser
   const Navigate: typeof import('react-router-dom').Navigate
+  const NotFoundPage: typeof import('./pages/not-found-page').NotFoundPage
   const Outlet: typeof import('react-router-dom').Outlet
   const PRODUCT_STATUSES: typeof import('./features/products/model/product-status').PRODUCT_STATUSES
   const PageHeader: typeof import('./components/ui/page-header').PageHeader
   const Placeholder: typeof import('./components/placeholder').Placeholder
+  const PosPage: typeof import('./pages/pos-page').PosPage
   const ProductForm: typeof import('./features/products/ui/product-form').ProductForm
   const ProductFormDialog: typeof import('./features/products/ui/product-form-dialog').ProductFormDialog
   const ProductFormField: typeof import('./features/products/ui/product-form-field').ProductFormField
   const ProductsFilters: typeof import('./features/products/ui/products-filters').ProductsFilters
   const ProductsHeader: typeof import('./features/products/ui/products-header').ProductsHeader
+  const ProductsPage: typeof import('./pages/products-page').ProductsPage
   const ProductsTable: typeof import('./features/products/ui/products-table').ProductsTable
   const Progress: typeof import('./components/ui/progress').Progress
   const QueryClient: typeof import('@tanstack/react-query').QueryClient
@@ -180,7 +194,9 @@ declare global {
   const SidebarSeparator: typeof import('./components/ui/sidebar').SidebarSeparator
   const SidebarTrigger: typeof import('./components/ui/sidebar').SidebarTrigger
   const Skeleton: typeof import('./components/ui/skeleton').Skeleton
+  const Spinner: typeof import('./components/ui/spinner').Spinner
   const Suspense: typeof import('react').Suspense
+  const Switch: typeof import('./components/ui/switch').Switch
   const Table: typeof import('./components/ui/table').Table
   const TableBody: typeof import('./components/ui/table').TableBody
   const TableCaption: typeof import('./components/ui/table').TableCaption
@@ -207,6 +223,8 @@ declare global {
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal
   const categoriesService: typeof import('./features/categories/services/categories-service')['categoriesService']
+  const categoryFormSchema: typeof import('./features/categories/model/category-form-schema').categoryFormSchema
+  const categoryToForm: typeof import('./features/categories/model/category-mappers').categoryToForm
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
   const fetchCategories: typeof import('./features/categories/api').fetchCategories
@@ -215,7 +233,7 @@ declare global {
   const forwardRef: typeof import('react').forwardRef
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
-  const productFormSchema: typeof import('./features/products/model/product-schema').productFormSchema
+  const productFormSchema: typeof import('./features/products/model/product-form-schema').productFormSchema
   const productToForm: typeof import('./features/products/model/product-mappers').productToForm
   const router: typeof import('./app/router/routes').router
   const startTransition: typeof import('react').startTransition
@@ -223,6 +241,7 @@ declare global {
   const useActionState: typeof import('react').useActionState
   const useCallback: typeof import('react').useCallback
   const useCategories: typeof import('./features/categories/hooks/use-categories').useCategories
+  const useCategoryForm: typeof import('./features/categories/hooks/use-category-form').useCategoryForm
   const useContext: typeof import('react').useContext
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
@@ -271,11 +290,14 @@ declare global {
   export type { KbdProps, KbdKeyProps } from './components/ui/shadcn-io/kbd/index'
   import('./components/ui/shadcn-io/kbd/index')
   // @ts-ignore
+  export type { CategoryFormInput, CategoryFormData } from './features/categories/model/category-form-schema'
+  import('./features/categories/model/category-form-schema')
+  // @ts-ignore
   export type { Category } from './features/categories/model/category-types'
   import('./features/categories/model/category-types')
   // @ts-ignore
-  export type { ProductFormData } from './features/products/model/product-schema'
-  import('./features/products/model/product-schema')
+  export type { ProductFormData } from './features/products/model/product-form-schema'
+  import('./features/products/model/product-form-schema')
   // @ts-ignore
   export type { ProductStatus } from './features/products/model/product-status'
   import('./features/products/model/product-status')

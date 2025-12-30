@@ -1,10 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
-
-import { PosPage } from '@/pages/pos-page'
-import { DashboardPage } from '@/pages/dashboard-page'
-import { CustomersPage } from '@/pages/customers-page'
-import { NotFoundPage } from '@/pages/not-found-page'
-import { ProductsPage } from '@/pages/products-page'
+import { createBrowserRouter } from "react-router-dom"
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +34,13 @@ export const router = createBrowserRouter([
         element: <ProductsPage />,
         handle: {
           title: 'Productos',
+        },
+      },
+      {
+        path: 'categories',
+        element: <CategoriesPage />,
+        handle: {
+          title: 'Categorías',
         },
       },
       {
