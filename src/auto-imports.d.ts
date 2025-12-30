@@ -30,6 +30,7 @@ declare global {
   const CardFooter: typeof import('./components/ui/card').CardFooter
   const CardHeader: typeof import('./components/ui/card').CardHeader
   const CardTitle: typeof import('./components/ui/card').CardTitle
+  const CategoriesEmptyState: typeof import('./features/categories/ui/categories-empty-state').CategoriesEmptyState
   const CategoriesFilters: typeof import('./features/categories/ui/catgories-filters').CategoriesFilters
   const CategoriesHeader: typeof import('./features/categories/ui/categories-header').CategoriesHeader
   const CategoriesPage: typeof import('./pages/categories-page').CategoriesPage
@@ -116,9 +117,12 @@ declare global {
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
+  const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
+  const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
+  const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
   const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default

@@ -5646,11 +5646,11 @@ const categoriesTable = sqliteTable("categories", {
   deleted: int({ mode: "boolean" }).default(false).notNull()
 });
 const CategoriesRepository = {
-  findAll: async () => db.select().from(categoriesTable),
+  findAll: async () => db.select().from(categoriesTable).where(eq(categoriesTable.deleted, false)),
   findById: async (id) => db.select().from(categoriesTable).where(eq(categoriesTable.id, id)).get(),
-  create: async (data) => db.insert(categoriesTable).values(data).returning().get(),
-  update: async (id, data) => db.update(categoriesTable).set(data).where(eq(categoriesTable.id, id)).returning().get(),
-  delete: async (id) => db.delete(categoriesTable).where(eq(categoriesTable.id, id))
+  create: async (data) => db.insert(categoriesTable).values(data),
+  update: async (id, data) => db.update(categoriesTable).set(data).where(eq(categoriesTable.id, id)),
+  delete: async (id) => db.update(categoriesTable).set({ deleted: true }).where(eq(categoriesTable.id, id))
 };
 const CategoriesService = {
   async list() {

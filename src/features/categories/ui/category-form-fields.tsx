@@ -30,17 +30,6 @@ export const CategoryFormFields = () => {
           </Field>
         )}
       />
-
-      <Controller
-        name="isActive"
-        control={control}
-        render={({ field }) => (
-          <Field orientation="horizontal">
-            <Switch checked={field.value} onCheckedChange={field.onChange} />
-            <FieldLabel>{field.value ? 'Activa' : 'Inactiva'}</FieldLabel>
-          </Field>
-        )}
-      />
     </>
   )
 }

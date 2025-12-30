@@ -6,13 +6,11 @@ export const categoryService = {
   },
 
   async create(payload: CategoryFormData) {
-    const data = await categoryAdapter.create(payload)
-    return categorySchema.parse(data)
+   await categoryAdapter.create(payload)
   },
 
   async update(id: Category['id'], payload: Partial<CategoryFormData>) {
-    const data = await categoryAdapter.update(id, payload)
-    return categorySchema.parse(data)
+    await categoryAdapter.update(id, payload)
   },
 
   async remove(id: Category['id']) {

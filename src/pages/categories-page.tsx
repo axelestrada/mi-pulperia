@@ -1,6 +1,10 @@
 export const CategoriesPage = () => {
+  const { data: categories = [] } = useCategories()
+
   const [formOpen, setFormOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  )
 
   const handleCreate = () => {
     setSelectedCategory(null)
@@ -17,7 +21,11 @@ export const CategoriesPage = () => {
       <CategoriesHeader onCreate={handleCreate} />
       <CategoriesFilters />
 
-      <CategoriesTable onEdit={handleEdit} />
+      {categories.length > 0 ? (
+        <CategoriesTableContent categories={categories} onEdit={handleEdit} />
+      ) : (
+        <CategoriesEmptyState onCreate={handleCreate} />
+      )}
 
       <CategoryFormDialog
         open={formOpen}

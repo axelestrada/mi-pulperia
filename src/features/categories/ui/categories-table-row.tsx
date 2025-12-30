@@ -5,6 +5,7 @@ type Props = {
 
 export const CategoryTableRow = ({ category, onEdit }: Props) => {
   const { mutateAsync: toggleStatus } = useToggleCategoryStatus()
+  const { mutateAsync: deleteCategory } = useDeleteCategory()
 
   const handleToggleStatus = () => {
     toggleStatus({
@@ -48,9 +49,7 @@ export const CategoryTableRow = ({ category, onEdit }: Props) => {
               <IconLucideEdit className="size-4 mr-2" />
               Editar
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
-              className={category.isActive ? 'text-red-600' : 'text-green-600'}
               onClick={handleToggleStatus}
             >
               {category.isActive ? (
@@ -64,6 +63,15 @@ export const CategoryTableRow = ({ category, onEdit }: Props) => {
                   Activar
                 </>
               )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                deleteCategory(category.id)
+              }}
+            >
+              <IconLucideTrash2 className="size-4 mr-2" />
+              <span className="text-red-600">Eliminar</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
