@@ -1,6 +1,5 @@
-export const useCategories = () => {
-  return useQuery({
-    queryKey: ['categories'],
-    queryFn: fetchCategories,
+export const useCategories = () =>
+  useQuery({
+    queryKey: categoryKeys.all,
+    queryFn: categoryService.list,
   })
-}

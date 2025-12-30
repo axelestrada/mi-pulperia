@@ -34,11 +34,15 @@ declare global {
   const CategoriesHeader: typeof import('./features/categories/ui/categories-header').CategoriesHeader
   const CategoriesPage: typeof import('./pages/categories-page').CategoriesPage
   const CategoriesTable: typeof import('./features/categories/ui/categories-table').CategoriesTable
+  const CategoriesTableContent: typeof import('./features/categories/ui/categories-table-content').CategoriesTableContent
+  const CategoriesTablePagination: typeof import('./features/categories/ui/categories-table-pagination').CategoriesTablePagination
   const CategoryForm: typeof import('./features/categories/ui/category-form').CategoryForm
   const CategoryFormDialog: typeof import('./features/categories/ui/category-form-dialog').CategoryFormDialog
   const CategoryFormField: typeof import('./features/categories/ui/category-form-field').CategoryFormField
   const CategoryFormFieldProps: typeof import('./features/categories/model/category-types').CategoryFormFieldProps
+  const CategoryFormFields: typeof import('./features/categories/ui/category-form-fields').CategoryFormFields
   const CategorySales: typeof import('./features/reports/components/category-sales').CategorySales
+  const CategoryTableRow: typeof import('./features/categories/ui/categories-table-row').CategoryTableRow
   const ChartContainer: typeof import('./components/ui/chart').ChartContainer
   const ChartLegend: typeof import('./components/ui/chart').ChartLegend
   const ChartLegendContent: typeof import('./components/ui/chart').ChartLegendContent
@@ -110,8 +114,14 @@ declare global {
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
+  const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
+  const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
+  const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
+  const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
+  const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
+  const IconLucideX: typeof import('~icons/lucide/x.tsx').default
   const Input: typeof import('./components/ui/input').Input
   const InputGroup: typeof import('./components/ui/input-group').InputGroup
   const InputGroupAddon: typeof import('./components/ui/input-group').InputGroupAddon
@@ -224,12 +234,16 @@ declare global {
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal
   const categoriesService: typeof import('./features/categories/services/categories-service')['categoriesService']
+  const categoryAdapter: typeof import('./features/categories/api/category-adapter').categoryAdapter
   const categoryFormSchema: typeof import('./features/categories/model/category-form-schema').categoryFormSchema
+  const categoryKeys: typeof import('./features/categories/hooks/category-keys').categoryKeys
+  const categorySchema: typeof import('./features/categories/model/category-schema').categorySchema
+  const categoryService: typeof import('./features/categories/api/category-service').categoryService
   const categoryToForm: typeof import('./features/categories/model/category-mappers').categoryToForm
-  const createCategory: typeof import('./features/categories/api').createCategory
+  const createCategory: typeof import('./features/categories/api/category-service').createCategory
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
-  const fetchCategories: typeof import('./features/categories/api').fetchCategories
+  const fetchCategories: typeof import('./features/categories/api/category-service').fetchCategories
   const fetchProducts: typeof import('./features/products/api').fetchProducts
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
   const forwardRef: typeof import('react').forwardRef
@@ -239,14 +253,17 @@ declare global {
   const productToForm: typeof import('./features/products/model/product-mappers').productToForm
   const router: typeof import('./app/router/routes').router
   const startTransition: typeof import('react').startTransition
+  const toast: typeof import('sonner').toast
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
   const useCallback: typeof import('react').useCallback
   const useCategories: typeof import('./features/categories/hooks/use-categories').useCategories
   const useCategoryForm: typeof import('./features/categories/hooks/use-category-form').useCategoryForm
   const useContext: typeof import('react').useContext
+  const useCreateCategory: typeof import('./features/categories/hooks/use-create-category').useCreateCategory
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
+  const useDeleteCategory: typeof import('./features/categories/hooks/use-delete-category').useDeleteCategory
   const useEffect: typeof import('react').useEffect
   const useEffectEvent: typeof import('react').useEffectEvent
   const useForm: typeof import('react-hook-form').useForm
@@ -280,7 +297,9 @@ declare global {
   const useSidebar: typeof import('./components/ui/sidebar').useSidebar
   const useState: typeof import('react').useState
   const useSyncExternalStore: typeof import('react').useSyncExternalStore
+  const useToggleCategoryStatus: typeof import('./features/categories/hooks/use-toggle-category-status').useToggleCategoryStatus
   const useTransition: typeof import('react').useTransition
+  const useUpdateCategory: typeof import('./features/categories/hooks/use-update-category').useUpdateCategory
   const zodResolver: typeof import('@hookform/resolvers/zod').zodResolver
 }
 // for type re-export
@@ -295,8 +314,8 @@ declare global {
   export type { CategoryFormInput, CategoryFormData } from './features/categories/model/category-form-schema'
   import('./features/categories/model/category-form-schema')
   // @ts-ignore
-  export type { Category } from './features/categories/model/category-types'
-  import('./features/categories/model/category-types')
+  export type { Category } from './features/categories/model/category-schema'
+  import('./features/categories/model/category-schema')
   // @ts-ignore
   export type { ProductFormData } from './features/products/model/product-form-schema'
   import('./features/products/model/product-form-schema')

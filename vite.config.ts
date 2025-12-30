@@ -28,11 +28,17 @@ export default defineConfig({
           ],
         },
         {
-          'react-hook-form': ['useForm', 'Controller', 'useFormContext', 'FormProvider'],
+          'react-hook-form': [
+            'useForm',
+            'Controller',
+            'useFormContext',
+            'FormProvider',
+          ],
         },
         {
           '@hookform/resolvers/zod': ['zodResolver'],
-        }
+        },
+        { sonner: ['toast'] },
       ],
       dirs: [
         './src/components/**/*',

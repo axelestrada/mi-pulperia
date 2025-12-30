@@ -6,6 +6,8 @@ electron.contextBridge.exposeInMainWorld("api", {
   },
   categories: {
     list: () => electron.ipcRenderer.invoke("categories:list"),
-    create: (category) => electron.ipcRenderer.invoke("categories:create", category)
+    create: (category) => electron.ipcRenderer.invoke("categories:create", category),
+    update: (id, category) => electron.ipcRenderer.invoke("categories:update", id, category),
+    remove: (id) => electron.ipcRenderer.invoke("categories:remove", id)
   }
 });

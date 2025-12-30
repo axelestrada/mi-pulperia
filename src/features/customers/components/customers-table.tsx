@@ -374,6 +374,7 @@ export const CustomersTable = () => {
                         <ReceiptIcon className="h-4 w-4 mr-2" />
                         Ver Estado de Cuenta
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       {customer.status === 'active' ? (
                         <DropdownMenuItem
                           className="text-red-600"

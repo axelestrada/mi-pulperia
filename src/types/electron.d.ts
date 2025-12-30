@@ -1,6 +1,4 @@
-import { InsertCategory } from 'electron/main/db/schema/categories'
-import { SelectProduct } from './electron/main/db/schema'
-import { SelectCategory } from './electron/main/db/schema/categories'
+import { Category } from "@/features/categories/model/category-schema"
 
 export {}
 
@@ -8,11 +6,16 @@ declare global {
   interface Window {
     api: {
       products: {
-        list: () => Promise<SelectProduct[]>
+        list: () => Promise<Product[]>
       }
       categories: {
-        list: () => Promise<SelectCategory[]>
-        create: (category: InsertCategory) => Promise
+        list: () => Promise<Category[]>
+        create: (category: CategoryFormData) => Promise<Category>
+        update: (
+          id: Category['id'],
+          category: Partial<Category>
+        ) => Promise<Category>
+        remove: (id: Category['id']) => Promise<void>
       }
     }
   }

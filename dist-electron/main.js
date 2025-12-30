@@ -5648,7 +5648,9 @@ const categoriesTable = sqliteTable("categories", {
 const CategoriesRepository = {
   findAll: async () => db.select().from(categoriesTable),
   findById: async (id) => db.select().from(categoriesTable).where(eq(categoriesTable.id, id)).get(),
-  create: async (data) => db.insert(categoriesTable).values(data)
+  create: async (data) => db.insert(categoriesTable).values(data).returning().get(),
+  update: async (id, data) => db.update(categoriesTable).set(data).where(eq(categoriesTable.id, id)).returning().get(),
+  delete: async (id) => db.delete(categoriesTable).where(eq(categoriesTable.id, id))
 };
 const CategoriesService = {
   async list() {
@@ -5669,6 +5671,22 @@ const CategoriesService = {
       throw new Error("Category name is required");
     }
     return CategoriesRepository.create(input);
+  },
+  async update(id, input) {
+    var _a2;
+    if (!Number.isInteger(id)) {
+      throw new Error("Invalid category id");
+    }
+    if (((_a2 = input.name) == null ? void 0 : _a2.trim()) === "") {
+      throw new Error("Category name is required");
+    }
+    return CategoriesRepository.update(id, input);
+  },
+  async remove(id) {
+    if (!Number.isInteger(id)) {
+      throw new Error("Invalid category id");
+    }
+    return CategoriesRepository.delete(id);
   }
 };
 const registerCategoriesHandlers = () => {
@@ -5677,6 +5695,12 @@ const registerCategoriesHandlers = () => {
   });
   ipcMain.handle("categories:create", async (_, category) => {
     return CategoriesService.create(category);
+  });
+  ipcMain.handle("categories:update", async (_, id, category) => {
+    return CategoriesService.update(id, category);
+  });
+  ipcMain.handle("categories:remove", async (_, id) => {
+    return CategoriesService.remove(id);
   });
 };
 const __dirname$1 = path$1.dirname(fileURLToPath(import.meta.url));

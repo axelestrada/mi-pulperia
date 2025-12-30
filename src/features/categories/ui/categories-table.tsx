@@ -3,5 +3,11 @@ type Props = {
 }
 
 export const CategoriesTable = ({ onEdit }: Props) => {
-  return <div>Categories Table</div>
+  const { data: categories } = useCategories()
+
+  return (
+    <div className="border rounded-xl">
+      <CategoriesTableContent categories={categories ?? []} onEdit={onEdit} />
+    </div>
+  )
 }
