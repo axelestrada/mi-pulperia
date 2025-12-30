@@ -5637,6 +5637,48 @@ function runMigrations() {
     console.error("Error running migrations:", error);
   }
 }
+const categoriesTable = sqliteTable("categories", {
+  id: int().primaryKey({ autoIncrement: true }),
+  name: text().notNull(),
+  description: text(),
+  isActive: int("is_active", { mode: "boolean" }).default(true).notNull(),
+  createdAt: int("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  deleted: int({ mode: "boolean" }).default(false).notNull()
+});
+const CategoriesRepository = {
+  findAll: async () => db.select().from(categoriesTable),
+  findById: async (id) => db.select().from(categoriesTable).where(eq(categoriesTable.id, id)).get(),
+  create: async (data) => db.insert(categoriesTable).values(data)
+};
+const CategoriesService = {
+  async list() {
+    return CategoriesRepository.findAll();
+  },
+  async getById(id) {
+    if (!Number.isInteger(id)) {
+      throw new Error("Invalid category id");
+    }
+    const category = await CategoriesRepository.findById(id);
+    if (!category) {
+      throw new Error("Category not found");
+    }
+    return category;
+  },
+  async create(input) {
+    if (!input.name.trim()) {
+      throw new Error("Category name is required");
+    }
+    return CategoriesRepository.create(input);
+  }
+};
+const registerCategoriesHandlers = () => {
+  ipcMain.handle("categories:list", async () => {
+    return CategoriesService.list();
+  });
+  ipcMain.handle("categories:create", async (_, category) => {
+    return CategoriesService.create(category);
+  });
+};
 const __dirname$1 = path$1.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$1.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -5673,12 +5715,14 @@ app.on("activate", async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     runMigrations();
     registerProductsHandlers();
+    registerCategoriesHandlers();
     createWindow();
   }
 });
 app.whenReady().then(async () => {
   runMigrations();
   registerProductsHandlers();
+  registerCategoriesHandlers();
   createWindow();
 });
 export {

@@ -10,5 +10,5 @@ export const CategoriesRepository = {
     db.select().from(categoriesTable).where(eq(categoriesTable.id, id)).get(),
 
   create: async (data: InsertCategory) =>
-    db.insert(categoriesTable).values(data).returning().get(),
+    db.insert(categoriesTable).values(data),
 }

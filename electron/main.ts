@@ -4,6 +4,7 @@ import path from 'node:path'
 
 import { registerProductsHandlers } from './main/ipc/products-ipc'
 import { runMigrations } from './main/db/migrate'
+import { registerCategoriesHandlers } from './main/ipc/categories-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -58,6 +59,7 @@ app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     runMigrations()
     registerProductsHandlers()
+    registerCategoriesHandlers()
     createWindow()
   }
 })
@@ -65,5 +67,6 @@ app.on('activate', async () => {
 app.whenReady().then(async () => {
   runMigrations()
   registerProductsHandlers()
+  registerCategoriesHandlers()
   createWindow()
 })

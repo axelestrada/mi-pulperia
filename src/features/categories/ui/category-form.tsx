@@ -1,16 +1,35 @@
+import { toast } from 'sonner'
+
 type Props = {
   category: Category | null
   onClose: () => void
 }
 
 export const CategoryForm = ({ category, onClose }: Props) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const form = useCategoryForm(category)
 
-  const onSubmit = (data: CategoryFormInput) => {
-    console.table(data) // TODO: Implement submission logic
-    const payload = categoryFormSchema.parse(data)
-    console.log('Submitted Category:', payload)
-    onClose()
+  const onSubmit = async (data: CategoryFormInput) => {
+    try {
+      setIsSubmitting(true)
+
+      const payload = categoryFormSchema.parse(data)
+
+      await createCategory(payload)
+
+      toast.success(
+        category
+          ? 'Categoría actualizada correctamente.'
+          : 'Categoría creada correctamente.'
+      )
+      onClose()
+    } catch (error) {
+      toast.error('Error al guardar la categoría.')
+      console.error('Error submitting category form:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -72,7 +91,10 @@ export const CategoryForm = ({ category, onClose }: Props) => {
                   id={`category-form-is-active`}
                   aria-invalid={fieldState.invalid}
                 />
-                <FieldLabel htmlFor={`category-form-is-active`} className="max-w-fit">
+                <FieldLabel
+                  htmlFor={`category-form-is-active`}
+                  className="max-w-fit"
+                >
                   {value ? 'Activo' : 'Inactivo'}
                 </FieldLabel>
 
@@ -88,8 +110,14 @@ export const CategoryForm = ({ category, onClose }: Props) => {
               Cancelar
             </Button>
 
-            <Button type="submit" form="category-form">
-              {category ? 'Actualizar' : 'Guardar'}
+            <Button type="submit" form="category-form" disabled={isSubmitting}>
+              {isSubmitting && <Spinner />}
+
+              {isSubmitting
+                ? 'Guardando...'
+                : category
+                ? 'Actualizar'
+                : 'Guardar'}
             </Button>
           </Field>
         </FieldGroup>

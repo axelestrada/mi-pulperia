@@ -210,6 +210,7 @@ declare global {
   const TabsList: typeof import('./components/ui/tabs').TabsList
   const TabsTrigger: typeof import('./components/ui/tabs').TabsTrigger
   const Textarea: typeof import('./components/ui/textarea').Textarea
+  const Toaster: typeof import('./components/ui/sonner').Toaster
   const Tooltip: typeof import('./components/ui/tooltip').Tooltip
   const TooltipContent: typeof import('./components/ui/tooltip').TooltipContent
   const TooltipProvider: typeof import('./components/ui/tooltip').TooltipProvider
@@ -225,6 +226,7 @@ declare global {
   const categoriesService: typeof import('./features/categories/services/categories-service')['categoriesService']
   const categoryFormSchema: typeof import('./features/categories/model/category-form-schema').categoryFormSchema
   const categoryToForm: typeof import('./features/categories/model/category-mappers').categoryToForm
+  const createCategory: typeof import('./features/categories/api').createCategory
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
   const fetchCategories: typeof import('./features/categories/api').fetchCategories
