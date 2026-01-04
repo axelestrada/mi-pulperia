@@ -5,6 +5,7 @@ export const categoriesTable = sqliteTable('categories', {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
   description: text(),
+  image: text(), // Nombre del archivo de imagen
   isActive: int('is_active', { mode: 'boolean' }).default(true).notNull(),
   createdAt: int('created_at', { mode: 'timestamp' })
     .default(sql`(unixepoch())`)

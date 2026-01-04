@@ -5,6 +5,8 @@ import path from 'node:path'
 import { registerProductsHandlers } from './main/ipc/products-ipc'
 import { runMigrations } from './main/db/migrate'
 import { registerCategoriesHandlers } from './main/ipc/categories-ipc'
+import { registerImageIpc } from './main/ipc/images-ipc'
+import { registerBackupIpc } from './main/ipc/backup-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -60,6 +62,8 @@ app.on('activate', async () => {
     runMigrations()
     registerProductsHandlers()
     registerCategoriesHandlers()
+    registerImageIpc()
+    registerBackupIpc()
     createWindow()
   }
 })
@@ -68,5 +72,7 @@ app.whenReady().then(async () => {
   runMigrations()
   registerProductsHandlers()
   registerCategoriesHandlers()
+  registerImageIpc()
+  registerBackupIpc()
   createWindow()
 })

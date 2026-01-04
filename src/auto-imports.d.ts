@@ -11,6 +11,7 @@ declare global {
   const Avatar: typeof import('./components/ui/avatar').Avatar
   const AvatarFallback: typeof import('./components/ui/avatar').AvatarFallback
   const AvatarImage: typeof import('./components/ui/avatar').AvatarImage
+  const BackupManager: typeof import('./components/ui/backup-manager').BackupManager
   const Badge: typeof import('./components/ui/badge').Badge
   const Breadcrumb: typeof import('./components/ui/breadcrumb').Breadcrumb
   const BreadcrumbEllipsis: typeof import('./components/ui/breadcrumb').BreadcrumbEllipsis
@@ -102,6 +103,7 @@ declare global {
   const EmptyHeader: typeof import('./components/ui/empty').EmptyHeader
   const EmptyMedia: typeof import('./components/ui/empty').EmptyMedia
   const EmptyTitle: typeof import('./components/ui/empty').EmptyTitle
+  const ExamplePage: typeof import('./pages/example-images-page').ExamplePage
   const Field: typeof import('./components/ui/field').Field
   const FieldContent: typeof import('./components/ui/field').FieldContent
   const FieldDescription: typeof import('./components/ui/field').FieldDescription
@@ -126,6 +128,7 @@ declare global {
   const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
   const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
+  const ImageUploader: typeof import('./components/ui/image-uploader').ImageUploader
   const Input: typeof import('./components/ui/input').Input
   const InputGroup: typeof import('./components/ui/input-group').InputGroup
   const InputGroupAddon: typeof import('./components/ui/input-group').InputGroupAddon
