@@ -41,14 +41,15 @@ export default defineConfig({
         { sonner: ['toast'] },
       ],
       dirs: [
-        './src/components/**/*',
-        './src/app/**/*',
-        './src/components/ui/shadcn-io/**/*',
-        './src/features/**/*',
+        './src/renderer/components/**/*',
+        './src/renderer/components/ui/shadcn-io/**/*',
+        './src/renderer/features/**/*',
         './src/shared/components/**/*',
         './src/shared/hooks/**/*',
         './src/shared/utils/**/*',
-        './src/pages/**/*',
+        './src/renderer/pages/**/*',
+        './src/lib/**/*',
+        './src/renderer/*',
       ],
       dts: './src/auto-imports.d.ts',
       eslintrc: {
@@ -64,22 +65,38 @@ export default defineConfig({
     Icons({ compiler: 'jsx', jsx: 'react' }),
     electron({
       main: {
-        entry: 'electron/main.ts',
+        entry: './src/main/main.ts',
+        vite: {
+          build: {
+            rollupOptions: {
+              external: [
+                'sharp',
+                'better-sqlite3',
+                'electron',
+                'fs',
+                'path',
+                'os',
+              ],
+            },
+          },
+        },
       },
       preload: {
-        input: path.join(__dirname, 'electron/preload.ts'),
+        input: path.join(__dirname, 'src/main/preload.ts'),
       },
       renderer: process.env.NODE_ENV === 'test' ? undefined : {},
     }),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './src/renderer'),
+      '~': path.resolve(__dirname, './'),
+      'shared': path.resolve(__dirname, './src/shared'),
     },
   },
   build: {
     rollupOptions: {
-      external: ['better-sqlite3'],
+      external: ['better-sqlite3', 'sharp'],
     },
   },
 })

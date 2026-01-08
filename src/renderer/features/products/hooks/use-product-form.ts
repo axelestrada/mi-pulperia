@@ -1,0 +1,33 @@
+export const useProductForm = (
+  product: Product | null,
+  onSuccess: () => void
+) => {
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: product ? productToForm(product) : EMPTY_PRODUCT_FORM,
+  })
+
+  const { mutateAsync: createProduct } = useCreateProduct()
+  const { mutateAsync: updateProduct } = useUpdateProduct()
+
+  const onSubmit = async (data: ProductFormData) => {
+    try {
+      if (product) {
+        await updateProduct({
+          id: product.id,
+          data,
+        })
+        toast.success('Producto actualizado correctamente.')
+      } else {
+        await createProduct(data)
+        toast.success('Producto creado correctamente.')
+      }
+      onSuccess()
+    } catch (error) {
+      console.error(error)
+      toast.error('Error al guardar el producto.')
+    }
+  }
+
+  return { form, onSubmit, isEditing: Boolean(product) }
+}

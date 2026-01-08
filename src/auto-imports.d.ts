@@ -7,111 +7,114 @@
 export {}
 declare global {
   const Activity: typeof import('react').Activity
-  const AppSidebar: typeof import('./components/sidebar/app-sidebar').AppSidebar
-  const Avatar: typeof import('./components/ui/avatar').Avatar
-  const AvatarFallback: typeof import('./components/ui/avatar').AvatarFallback
-  const AvatarImage: typeof import('./components/ui/avatar').AvatarImage
-  const Badge: typeof import('./components/ui/badge').Badge
-  const Breadcrumb: typeof import('./components/ui/breadcrumb').Breadcrumb
-  const BreadcrumbEllipsis: typeof import('./components/ui/breadcrumb').BreadcrumbEllipsis
-  const BreadcrumbItem: typeof import('./components/ui/breadcrumb').BreadcrumbItem
-  const BreadcrumbLink: typeof import('./components/ui/breadcrumb').BreadcrumbLink
-  const BreadcrumbList: typeof import('./components/ui/breadcrumb').BreadcrumbList
-  const BreadcrumbPage: typeof import('./components/ui/breadcrumb').BreadcrumbPage
-  const BreadcrumbSeparator: typeof import('./components/ui/breadcrumb').BreadcrumbSeparator
-  const Button: typeof import('./components/ui/button').Button
-  const ButtonGroup: typeof import('./components/ui/button-group').ButtonGroup
-  const ButtonGroupSeparator: typeof import('./components/ui/button-group').ButtonGroupSeparator
-  const ButtonGroupText: typeof import('./components/ui/button-group').ButtonGroupText
-  const Card: typeof import('./components/ui/card').Card
-  const CardAction: typeof import('./components/ui/card').CardAction
-  const CardContent: typeof import('./components/ui/card').CardContent
-  const CardDescription: typeof import('./components/ui/card').CardDescription
-  const CardFooter: typeof import('./components/ui/card').CardFooter
-  const CardHeader: typeof import('./components/ui/card').CardHeader
-  const CardTitle: typeof import('./components/ui/card').CardTitle
-  const CategoriesEmptyState: typeof import('./features/categories/ui/categories-empty-state').CategoriesEmptyState
-  const CategoriesFilters: typeof import('./features/categories/ui/catgories-filters').CategoriesFilters
-  const CategoriesHeader: typeof import('./features/categories/ui/categories-header').CategoriesHeader
-  const CategoriesPage: typeof import('./pages/categories-page').CategoriesPage
-  const CategoriesTable: typeof import('./features/categories/ui/categories-table').CategoriesTable
-  const CategoriesTableContent: typeof import('./features/categories/ui/categories-table-content').CategoriesTableContent
+  const AppSidebar: typeof import('./renderer/components/sidebar/app-sidebar').AppSidebar
+  const Avatar: typeof import('./renderer/components/ui/avatar').Avatar
+  const AvatarFallback: typeof import('./renderer/components/ui/avatar').AvatarFallback
+  const AvatarImage: typeof import('./renderer/components/ui/avatar').AvatarImage
+  const Badge: typeof import('./renderer/components/ui/badge').Badge
+  const Breadcrumb: typeof import('./renderer/components/ui/breadcrumb').Breadcrumb
+  const BreadcrumbEllipsis: typeof import('./renderer/components/ui/breadcrumb').BreadcrumbEllipsis
+  const BreadcrumbItem: typeof import('./renderer/components/ui/breadcrumb').BreadcrumbItem
+  const BreadcrumbLink: typeof import('./renderer/components/ui/breadcrumb').BreadcrumbLink
+  const BreadcrumbList: typeof import('./renderer/components/ui/breadcrumb').BreadcrumbList
+  const BreadcrumbPage: typeof import('./renderer/components/ui/breadcrumb').BreadcrumbPage
+  const BreadcrumbSeparator: typeof import('./renderer/components/ui/breadcrumb').BreadcrumbSeparator
+  const Button: typeof import('./renderer/components/ui/button').Button
+  const ButtonGroup: typeof import('./renderer/components/ui/button-group').ButtonGroup
+  const ButtonGroupSeparator: typeof import('./renderer/components/ui/button-group').ButtonGroupSeparator
+  const ButtonGroupText: typeof import('./renderer/components/ui/button-group').ButtonGroupText
+  const Card: typeof import('./renderer/components/ui/card').Card
+  const CardAction: typeof import('./renderer/components/ui/card').CardAction
+  const CardContent: typeof import('./renderer/components/ui/card').CardContent
+  const CardDescription: typeof import('./renderer/components/ui/card').CardDescription
+  const CardFooter: typeof import('./renderer/components/ui/card').CardFooter
+  const CardHeader: typeof import('./renderer/components/ui/card').CardHeader
+  const CardTitle: typeof import('./renderer/components/ui/card').CardTitle
+  const CategoriesEmptyState: typeof import('./renderer/features/categories/ui/categories-empty-state').CategoriesEmptyState
+  const CategoriesFilters: typeof import('./renderer/features/categories/ui/catgories-filters').CategoriesFilters
+  const CategoriesHeader: typeof import('./renderer/features/categories/ui/categories-header').CategoriesHeader
+  const CategoriesPage: typeof import('./renderer/pages/categories-page').CategoriesPage
+  const CategoriesTable: typeof import('./renderer/features/categories/ui/categories-table').CategoriesTable
+  const CategoriesTableContent: typeof import('./renderer/features/categories/ui/categories-table-content').CategoriesTableContent
+  const CategoriesTableHeader: typeof import('./renderer/features/categories/ui/categories-table-header').CategoriesTableHeader
   const CategoriesTablePagination: typeof import('./features/categories/ui/categories-table-pagination').CategoriesTablePagination
-  const CategoryForm: typeof import('./features/categories/ui/category-form').CategoryForm
-  const CategoryFormDialog: typeof import('./features/categories/ui/category-form-dialog').CategoryFormDialog
+  const CategoriesTableRow: typeof import('./renderer/features/categories/ui/categories-table-row').CategoriesTableRow
+  const CategoryForm: typeof import('./renderer/features/categories/ui/category-form').CategoryForm
+  const CategoryFormDialog: typeof import('./renderer/features/categories/ui/category-form-dialog').CategoryFormDialog
   const CategoryFormField: typeof import('./features/categories/ui/category-form-field').CategoryFormField
   const CategoryFormFieldProps: typeof import('./features/categories/model/category-types').CategoryFormFieldProps
-  const CategoryFormFields: typeof import('./features/categories/ui/category-form-fields').CategoryFormFields
-  const CategorySales: typeof import('./features/reports/components/category-sales').CategorySales
+  const CategoryFormFields: typeof import('./renderer/features/categories/ui/category-form-fields').CategoryFormFields
+  const CategorySales: typeof import('./renderer/features/reports/components/category-sales').CategorySales
+  const CategorySelect: typeof import('./renderer/features/products/ui/category-select').CategorySelect
   const CategoryTableRow: typeof import('./features/categories/ui/categories-table-row').CategoryTableRow
-  const ChartContainer: typeof import('./components/ui/chart').ChartContainer
-  const ChartLegend: typeof import('./components/ui/chart').ChartLegend
-  const ChartLegendContent: typeof import('./components/ui/chart').ChartLegendContent
-  const ChartStyle: typeof import('./components/ui/chart').ChartStyle
-  const ChartTooltip: typeof import('./components/ui/chart').ChartTooltip
-  const ChartTooltipContent: typeof import('./components/ui/chart').ChartTooltipContent
-  const Collapsible: typeof import('./components/ui/collapsible').Collapsible
-  const CollapsibleContent: typeof import('./components/ui/collapsible').CollapsibleContent
-  const CollapsibleTrigger: typeof import('./components/ui/collapsible').CollapsibleTrigger
+  const ChartContainer: typeof import('./renderer/components/ui/chart').ChartContainer
+  const ChartLegend: typeof import('./renderer/components/ui/chart').ChartLegend
+  const ChartLegendContent: typeof import('./renderer/components/ui/chart').ChartLegendContent
+  const ChartStyle: typeof import('./renderer/components/ui/chart').ChartStyle
+  const ChartTooltip: typeof import('./renderer/components/ui/chart').ChartTooltip
+  const ChartTooltipContent: typeof import('./renderer/components/ui/chart').ChartTooltipContent
+  const Collapsible: typeof import('./renderer/components/ui/collapsible').Collapsible
+  const CollapsibleContent: typeof import('./renderer/components/ui/collapsible').CollapsibleContent
+  const CollapsibleTrigger: typeof import('./renderer/components/ui/collapsible').CollapsibleTrigger
   const ComingSoon: typeof import('./shared/components/ComingSoon').ComingSoon
   const Controller: typeof import('react-hook-form').Controller
-  const CustomersPage: typeof import('./pages/customers-page').CustomersPage
-  const CustomersTable: typeof import('./features/customers/components/customers-table').CustomersTable
-  const DashboardPage: typeof import('./pages/dashboard-page').DashboardPage
-  const Debts: typeof import('./features/reports/components/debts').Debts
-  const Dialog: typeof import('./components/ui/dialog').Dialog
-  const DialogClose: typeof import('./components/ui/dialog').DialogClose
-  const DialogContent: typeof import('./components/ui/dialog').DialogContent
-  const DialogDescription: typeof import('./components/ui/dialog').DialogDescription
-  const DialogFooter: typeof import('./components/ui/dialog').DialogFooter
-  const DialogHeader: typeof import('./components/ui/dialog').DialogHeader
-  const DialogOverlay: typeof import('./components/ui/dialog').DialogOverlay
-  const DialogPortal: typeof import('./components/ui/dialog').DialogPortal
-  const DialogTitle: typeof import('./components/ui/dialog').DialogTitle
-  const DialogTrigger: typeof import('./components/ui/dialog').DialogTrigger
-  const Drawer: typeof import('./components/ui/drawer').Drawer
-  const DrawerClose: typeof import('./components/ui/drawer').DrawerClose
-  const DrawerContent: typeof import('./components/ui/drawer').DrawerContent
-  const DrawerDescription: typeof import('./components/ui/drawer').DrawerDescription
-  const DrawerFooter: typeof import('./components/ui/drawer').DrawerFooter
-  const DrawerHeader: typeof import('./components/ui/drawer').DrawerHeader
-  const DrawerOverlay: typeof import('./components/ui/drawer').DrawerOverlay
-  const DrawerPortal: typeof import('./components/ui/drawer').DrawerPortal
-  const DrawerTitle: typeof import('./components/ui/drawer').DrawerTitle
-  const DrawerTrigger: typeof import('./components/ui/drawer').DrawerTrigger
-  const DropdownMenu: typeof import('./components/ui/dropdown-menu').DropdownMenu
-  const DropdownMenuCheckboxItem: typeof import('./components/ui/dropdown-menu').DropdownMenuCheckboxItem
-  const DropdownMenuContent: typeof import('./components/ui/dropdown-menu').DropdownMenuContent
-  const DropdownMenuGroup: typeof import('./components/ui/dropdown-menu').DropdownMenuGroup
-  const DropdownMenuItem: typeof import('./components/ui/dropdown-menu').DropdownMenuItem
-  const DropdownMenuLabel: typeof import('./components/ui/dropdown-menu').DropdownMenuLabel
-  const DropdownMenuPortal: typeof import('./components/ui/dropdown-menu').DropdownMenuPortal
-  const DropdownMenuRadioGroup: typeof import('./components/ui/dropdown-menu').DropdownMenuRadioGroup
-  const DropdownMenuRadioItem: typeof import('./components/ui/dropdown-menu').DropdownMenuRadioItem
-  const DropdownMenuSeparator: typeof import('./components/ui/dropdown-menu').DropdownMenuSeparator
-  const DropdownMenuShortcut: typeof import('./components/ui/dropdown-menu').DropdownMenuShortcut
-  const DropdownMenuSub: typeof import('./components/ui/dropdown-menu').DropdownMenuSub
-  const DropdownMenuSubContent: typeof import('./components/ui/dropdown-menu').DropdownMenuSubContent
-  const DropdownMenuSubTrigger: typeof import('./components/ui/dropdown-menu').DropdownMenuSubTrigger
-  const DropdownMenuTrigger: typeof import('./components/ui/dropdown-menu').DropdownMenuTrigger
-  const EMPTY_CATEGORY_FORM: typeof import('./features/categories/model/category-constants').EMPTY_CATEGORY_FORM
-  const EMPTY_PRODUCT_FORM: typeof import('./features/products/model/product-constants').EMPTY_PRODUCT_FORM
-  const Empty: typeof import('./components/ui/empty').Empty
-  const EmptyContent: typeof import('./components/ui/empty').EmptyContent
-  const EmptyDescription: typeof import('./components/ui/empty').EmptyDescription
-  const EmptyHeader: typeof import('./components/ui/empty').EmptyHeader
-  const EmptyMedia: typeof import('./components/ui/empty').EmptyMedia
-  const EmptyTitle: typeof import('./components/ui/empty').EmptyTitle
-  const Field: typeof import('./components/ui/field').Field
-  const FieldContent: typeof import('./components/ui/field').FieldContent
-  const FieldDescription: typeof import('./components/ui/field').FieldDescription
-  const FieldError: typeof import('./components/ui/field').FieldError
-  const FieldGroup: typeof import('./components/ui/field').FieldGroup
-  const FieldLabel: typeof import('./components/ui/field').FieldLabel
-  const FieldLegend: typeof import('./components/ui/field').FieldLegend
-  const FieldSeparator: typeof import('./components/ui/field').FieldSeparator
-  const FieldSet: typeof import('./components/ui/field').FieldSet
-  const FieldTitle: typeof import('./components/ui/field').FieldTitle
+  const CustomersPage: typeof import('./renderer/pages/customers-page').CustomersPage
+  const CustomersTable: typeof import('./renderer/features/customers/components/customers-table').CustomersTable
+  const DashboardPage: typeof import('./renderer/pages/dashboard-page').DashboardPage
+  const Debts: typeof import('./renderer/features/reports/components/debts').Debts
+  const Dialog: typeof import('./renderer/components/ui/dialog').Dialog
+  const DialogClose: typeof import('./renderer/components/ui/dialog').DialogClose
+  const DialogContent: typeof import('./renderer/components/ui/dialog').DialogContent
+  const DialogDescription: typeof import('./renderer/components/ui/dialog').DialogDescription
+  const DialogFooter: typeof import('./renderer/components/ui/dialog').DialogFooter
+  const DialogHeader: typeof import('./renderer/components/ui/dialog').DialogHeader
+  const DialogOverlay: typeof import('./renderer/components/ui/dialog').DialogOverlay
+  const DialogPortal: typeof import('./renderer/components/ui/dialog').DialogPortal
+  const DialogTitle: typeof import('./renderer/components/ui/dialog').DialogTitle
+  const DialogTrigger: typeof import('./renderer/components/ui/dialog').DialogTrigger
+  const Drawer: typeof import('./renderer/components/ui/drawer').Drawer
+  const DrawerClose: typeof import('./renderer/components/ui/drawer').DrawerClose
+  const DrawerContent: typeof import('./renderer/components/ui/drawer').DrawerContent
+  const DrawerDescription: typeof import('./renderer/components/ui/drawer').DrawerDescription
+  const DrawerFooter: typeof import('./renderer/components/ui/drawer').DrawerFooter
+  const DrawerHeader: typeof import('./renderer/components/ui/drawer').DrawerHeader
+  const DrawerOverlay: typeof import('./renderer/components/ui/drawer').DrawerOverlay
+  const DrawerPortal: typeof import('./renderer/components/ui/drawer').DrawerPortal
+  const DrawerTitle: typeof import('./renderer/components/ui/drawer').DrawerTitle
+  const DrawerTrigger: typeof import('./renderer/components/ui/drawer').DrawerTrigger
+  const DropdownMenu: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenu
+  const DropdownMenuCheckboxItem: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuCheckboxItem
+  const DropdownMenuContent: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuContent
+  const DropdownMenuGroup: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuGroup
+  const DropdownMenuItem: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuItem
+  const DropdownMenuLabel: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuLabel
+  const DropdownMenuPortal: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuPortal
+  const DropdownMenuRadioGroup: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuRadioGroup
+  const DropdownMenuRadioItem: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuRadioItem
+  const DropdownMenuSeparator: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuSeparator
+  const DropdownMenuShortcut: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuShortcut
+  const DropdownMenuSub: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuSub
+  const DropdownMenuSubContent: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuSubContent
+  const DropdownMenuSubTrigger: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuSubTrigger
+  const DropdownMenuTrigger: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuTrigger
+  const EMPTY_CATEGORY_FORM: typeof import('./renderer/features/categories/model/category-constants').EMPTY_CATEGORY_FORM
+  const EMPTY_PRODUCT_FORM: typeof import('./renderer/features/products/model/product-constants').EMPTY_PRODUCT_FORM
+  const Empty: typeof import('./renderer/components/ui/empty').Empty
+  const EmptyContent: typeof import('./renderer/components/ui/empty').EmptyContent
+  const EmptyDescription: typeof import('./renderer/components/ui/empty').EmptyDescription
+  const EmptyHeader: typeof import('./renderer/components/ui/empty').EmptyHeader
+  const EmptyMedia: typeof import('./renderer/components/ui/empty').EmptyMedia
+  const EmptyTitle: typeof import('./renderer/components/ui/empty').EmptyTitle
+  const Field: typeof import('./renderer/components/ui/field').Field
+  const FieldContent: typeof import('./renderer/components/ui/field').FieldContent
+  const FieldDescription: typeof import('./renderer/components/ui/field').FieldDescription
+  const FieldError: typeof import('./renderer/components/ui/field').FieldError
+  const FieldGroup: typeof import('./renderer/components/ui/field').FieldGroup
+  const FieldLabel: typeof import('./renderer/components/ui/field').FieldLabel
+  const FieldLegend: typeof import('./renderer/components/ui/field').FieldLegend
+  const FieldSeparator: typeof import('./renderer/components/ui/field').FieldSeparator
+  const FieldSet: typeof import('./renderer/components/ui/field').FieldSet
+  const FieldTitle: typeof import('./renderer/components/ui/field').FieldTitle
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
@@ -126,124 +129,134 @@ declare global {
   const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
   const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
-  const Input: typeof import('./components/ui/input').Input
-  const InputGroup: typeof import('./components/ui/input-group').InputGroup
-  const InputGroupAddon: typeof import('./components/ui/input-group').InputGroupAddon
-  const InputGroupButton: typeof import('./components/ui/input-group').InputGroupButton
-  const InputGroupInput: typeof import('./components/ui/input-group').InputGroupInput
-  const InputGroupText: typeof import('./components/ui/input-group').InputGroupText
-  const InputGroupTextarea: typeof import('./components/ui/input-group').InputGroupTextarea
-  const Kbd: typeof import('./components/ui/shadcn-io/kbd/index').Kbd
-  const KbdKey: typeof import('./components/ui/shadcn-io/kbd/index').KbdKey
-  const Label: typeof import('./components/ui/label').Label
+  const Input: typeof import('./renderer/components/ui/input').Input
+  const InputGroup: typeof import('./renderer/components/ui/input-group').InputGroup
+  const InputGroupAddon: typeof import('./renderer/components/ui/input-group').InputGroupAddon
+  const InputGroupButton: typeof import('./renderer/components/ui/input-group').InputGroupButton
+  const InputGroupInput: typeof import('./renderer/components/ui/input-group').InputGroupInput
+  const InputGroupText: typeof import('./renderer/components/ui/input-group').InputGroupText
+  const InputGroupTextarea: typeof import('./renderer/components/ui/input-group').InputGroupTextarea
+  const Kbd: typeof import('./renderer/components/ui/shadcn-io/kbd/index').Kbd
+  const KbdKey: typeof import('./renderer/components/ui/shadcn-io/kbd/index').KbdKey
+  const Label: typeof import('./renderer/components/ui/label').Label
+  const Layout: typeof import('./renderer/layout').Layout
   const Link: typeof import('react-router-dom').Link
-  const LowStock: typeof import('./features/reports/components/low-stock').LowStock
+  const LowStock: typeof import('./renderer/features/reports/components/low-stock').LowStock
   const MainLayout: typeof import('./app/layout/main-layout').MainLayout
+  const MainRoutes: typeof import('./@/routes').MainRoutes
   const NavLink: typeof import('react-router-dom').NavLink
-  const NavMain: typeof import('./components/sidebar/nav-main').NavMain
-  const NavSecondary: typeof import('./components/sidebar/nav-secondary').NavSecondary
-  const NavUser: typeof import('./components/sidebar/nav-user').NavUser
+  const NavMain: typeof import('./renderer/components/sidebar/nav-main').NavMain
+  const NavSecondary: typeof import('./renderer/components/sidebar/nav-secondary').NavSecondary
+  const NavUser: typeof import('./renderer/components/sidebar/nav-user').NavUser
   const Navigate: typeof import('react-router-dom').Navigate
-  const NotFoundPage: typeof import('./pages/not-found-page').NotFoundPage
+  const NotFoundPage: typeof import('./renderer/pages/not-found-page').NotFoundPage
   const Outlet: typeof import('react-router-dom').Outlet
-  const PRODUCT_STATUSES: typeof import('./features/products/model/product-status').PRODUCT_STATUSES
-  const PageHeader: typeof import('./components/ui/page-header').PageHeader
-  const Placeholder: typeof import('./components/placeholder').Placeholder
-  const PosPage: typeof import('./pages/pos-page').PosPage
-  const ProductForm: typeof import('./features/products/ui/product-form').ProductForm
-  const ProductFormDialog: typeof import('./features/products/ui/product-form-dialog').ProductFormDialog
+  const PRODUCT_STATUSES: typeof import('./renderer/features/products/model/product-status').PRODUCT_STATUSES
+  const PageHeader: typeof import('./renderer/components/ui/page-header').PageHeader
+  const Placeholder: typeof import('./renderer/components/placeholder').Placeholder
+  const PosPage: typeof import('./renderer/pages/pos-page').PosPage
+  const ProductForm: typeof import('./renderer/features/products/ui/product-form').ProductForm
+  const ProductFormDialog: typeof import('./renderer/features/products/ui/product-form-dialog').ProductFormDialog
   const ProductFormField: typeof import('./features/products/ui/product-form-field').ProductFormField
-  const ProductsFilters: typeof import('./features/products/ui/products-filters').ProductsFilters
-  const ProductsHeader: typeof import('./features/products/ui/products-header').ProductsHeader
-  const ProductsPage: typeof import('./pages/products-page').ProductsPage
-  const ProductsTable: typeof import('./features/products/ui/products-table').ProductsTable
-  const Progress: typeof import('./components/ui/progress').Progress
+  const ProductFormFields: typeof import('./renderer/features/products/ui/product-form-fields').ProductFormFields
+  const ProductImagePicker: typeof import('./renderer/features/products/ui/product-image-picker').ProductImagePicker
+  const ProductsEmptyState: typeof import('./renderer/features/products/ui/products-empty-state').ProductsEmptyState
+  const ProductsFilters: typeof import('./renderer/features/products/ui/products-filters').ProductsFilters
+  const ProductsHeader: typeof import('./renderer/features/products/ui/products-header').ProductsHeader
+  const ProductsPage: typeof import('./renderer/pages/products-page').ProductsPage
+  const ProductsTable: typeof import('./renderer/features/products/ui/products-table').ProductsTable
+  const ProductsTableContent: typeof import('./renderer/features/products/ui/products-table-content').ProductsTableContent
+  const ProductsTableHeader: typeof import('./renderer/features/products/ui/products-table-header').ProductsTableHeader
+  const ProductsTableRow: typeof import('./renderer/features/products/ui/products-table-row').ProductsTableRow
+  const Progress: typeof import('./renderer/components/ui/progress').Progress
   const QueryClient: typeof import('@tanstack/react-query').QueryClient
   const QueryClientProvider: typeof import('@tanstack/react-query').QueryClientProvider
   const Route: typeof import('react-router-dom').Route
+  const Router: typeof import('./lib/electron-router-dom').Router
   const Routes: typeof import('react-router-dom').Routes
-  const SafeImage: typeof import('./components/ui/safe-image').SafeImage
-  const ScrollArea: typeof import('./components/ui/scroll-area').ScrollArea
-  const ScrollBar: typeof import('./components/ui/scroll-area').ScrollBar
-  const Select: typeof import('./components/ui/select').Select
-  const SelectContent: typeof import('./components/ui/select').SelectContent
-  const SelectGroup: typeof import('./components/ui/select').SelectGroup
-  const SelectItem: typeof import('./components/ui/select').SelectItem
-  const SelectLabel: typeof import('./components/ui/select').SelectLabel
-  const SelectScrollDownButton: typeof import('./components/ui/select').SelectScrollDownButton
-  const SelectScrollUpButton: typeof import('./components/ui/select').SelectScrollUpButton
-  const SelectSeparator: typeof import('./components/ui/select').SelectSeparator
-  const SelectTrigger: typeof import('./components/ui/select').SelectTrigger
-  const SelectValue: typeof import('./components/ui/select').SelectValue
-  const Separator: typeof import('./components/ui/separator').Separator
-  const Sheet: typeof import('./components/ui/sheet').Sheet
-  const SheetClose: typeof import('./components/ui/sheet').SheetClose
-  const SheetContent: typeof import('./components/ui/sheet').SheetContent
-  const SheetDescription: typeof import('./components/ui/sheet').SheetDescription
-  const SheetFooter: typeof import('./components/ui/sheet').SheetFooter
-  const SheetHeader: typeof import('./components/ui/sheet').SheetHeader
-  const SheetTitle: typeof import('./components/ui/sheet').SheetTitle
-  const SheetTrigger: typeof import('./components/ui/sheet').SheetTrigger
-  const Sidebar: typeof import('./components/ui/sidebar').Sidebar
-  const SidebarContent: typeof import('./components/ui/sidebar').SidebarContent
-  const SidebarFooter: typeof import('./components/ui/sidebar').SidebarFooter
-  const SidebarGroup: typeof import('./components/ui/sidebar').SidebarGroup
-  const SidebarGroupAction: typeof import('./components/ui/sidebar').SidebarGroupAction
-  const SidebarGroupContent: typeof import('./components/ui/sidebar').SidebarGroupContent
-  const SidebarGroupLabel: typeof import('./components/ui/sidebar').SidebarGroupLabel
-  const SidebarHeader: typeof import('./components/ui/sidebar').SidebarHeader
-  const SidebarInput: typeof import('./components/ui/sidebar').SidebarInput
-  const SidebarInset: typeof import('./components/ui/sidebar').SidebarInset
-  const SidebarMenu: typeof import('./components/ui/sidebar').SidebarMenu
-  const SidebarMenuAction: typeof import('./components/ui/sidebar').SidebarMenuAction
-  const SidebarMenuBadge: typeof import('./components/ui/sidebar').SidebarMenuBadge
-  const SidebarMenuButton: typeof import('./components/ui/sidebar').SidebarMenuButton
-  const SidebarMenuItem: typeof import('./components/ui/sidebar').SidebarMenuItem
-  const SidebarMenuSkeleton: typeof import('./components/ui/sidebar').SidebarMenuSkeleton
-  const SidebarMenuSub: typeof import('./components/ui/sidebar').SidebarMenuSub
-  const SidebarMenuSubButton: typeof import('./components/ui/sidebar').SidebarMenuSubButton
-  const SidebarMenuSubItem: typeof import('./components/ui/sidebar').SidebarMenuSubItem
-  const SidebarProvider: typeof import('./components/ui/sidebar').SidebarProvider
-  const SidebarRail: typeof import('./components/ui/sidebar').SidebarRail
-  const SidebarSeparator: typeof import('./components/ui/sidebar').SidebarSeparator
-  const SidebarTrigger: typeof import('./components/ui/sidebar').SidebarTrigger
-  const Skeleton: typeof import('./components/ui/skeleton').Skeleton
-  const Spinner: typeof import('./components/ui/spinner').Spinner
+  const SafeImage: typeof import('./renderer/components/ui/safe-image').SafeImage
+  const ScrollArea: typeof import('./renderer/components/ui/scroll-area').ScrollArea
+  const ScrollBar: typeof import('./renderer/components/ui/scroll-area').ScrollBar
+  const Select: typeof import('./renderer/components/ui/select').Select
+  const SelectContent: typeof import('./renderer/components/ui/select').SelectContent
+  const SelectGroup: typeof import('./renderer/components/ui/select').SelectGroup
+  const SelectItem: typeof import('./renderer/components/ui/select').SelectItem
+  const SelectLabel: typeof import('./renderer/components/ui/select').SelectLabel
+  const SelectScrollDownButton: typeof import('./renderer/components/ui/select').SelectScrollDownButton
+  const SelectScrollUpButton: typeof import('./renderer/components/ui/select').SelectScrollUpButton
+  const SelectSeparator: typeof import('./renderer/components/ui/select').SelectSeparator
+  const SelectTrigger: typeof import('./renderer/components/ui/select').SelectTrigger
+  const SelectValue: typeof import('./renderer/components/ui/select').SelectValue
+  const Separator: typeof import('./renderer/components/ui/separator').Separator
+  const Sheet: typeof import('./renderer/components/ui/sheet').Sheet
+  const SheetClose: typeof import('./renderer/components/ui/sheet').SheetClose
+  const SheetContent: typeof import('./renderer/components/ui/sheet').SheetContent
+  const SheetDescription: typeof import('./renderer/components/ui/sheet').SheetDescription
+  const SheetFooter: typeof import('./renderer/components/ui/sheet').SheetFooter
+  const SheetHeader: typeof import('./renderer/components/ui/sheet').SheetHeader
+  const SheetTitle: typeof import('./renderer/components/ui/sheet').SheetTitle
+  const SheetTrigger: typeof import('./renderer/components/ui/sheet').SheetTrigger
+  const Sidebar: typeof import('./renderer/components/ui/sidebar').Sidebar
+  const SidebarContent: typeof import('./renderer/components/ui/sidebar').SidebarContent
+  const SidebarFooter: typeof import('./renderer/components/ui/sidebar').SidebarFooter
+  const SidebarGroup: typeof import('./renderer/components/ui/sidebar').SidebarGroup
+  const SidebarGroupAction: typeof import('./renderer/components/ui/sidebar').SidebarGroupAction
+  const SidebarGroupContent: typeof import('./renderer/components/ui/sidebar').SidebarGroupContent
+  const SidebarGroupLabel: typeof import('./renderer/components/ui/sidebar').SidebarGroupLabel
+  const SidebarHeader: typeof import('./renderer/components/ui/sidebar').SidebarHeader
+  const SidebarInput: typeof import('./renderer/components/ui/sidebar').SidebarInput
+  const SidebarInset: typeof import('./renderer/components/ui/sidebar').SidebarInset
+  const SidebarMenu: typeof import('./renderer/components/ui/sidebar').SidebarMenu
+  const SidebarMenuAction: typeof import('./renderer/components/ui/sidebar').SidebarMenuAction
+  const SidebarMenuBadge: typeof import('./renderer/components/ui/sidebar').SidebarMenuBadge
+  const SidebarMenuButton: typeof import('./renderer/components/ui/sidebar').SidebarMenuButton
+  const SidebarMenuItem: typeof import('./renderer/components/ui/sidebar').SidebarMenuItem
+  const SidebarMenuSkeleton: typeof import('./renderer/components/ui/sidebar').SidebarMenuSkeleton
+  const SidebarMenuSub: typeof import('./renderer/components/ui/sidebar').SidebarMenuSub
+  const SidebarMenuSubButton: typeof import('./renderer/components/ui/sidebar').SidebarMenuSubButton
+  const SidebarMenuSubItem: typeof import('./renderer/components/ui/sidebar').SidebarMenuSubItem
+  const SidebarProvider: typeof import('./renderer/components/ui/sidebar').SidebarProvider
+  const SidebarRail: typeof import('./renderer/components/ui/sidebar').SidebarRail
+  const SidebarSeparator: typeof import('./renderer/components/ui/sidebar').SidebarSeparator
+  const SidebarTrigger: typeof import('./renderer/components/ui/sidebar').SidebarTrigger
+  const Skeleton: typeof import('./renderer/components/ui/skeleton').Skeleton
+  const Spinner: typeof import('./renderer/components/ui/spinner').Spinner
   const Suspense: typeof import('react').Suspense
-  const Switch: typeof import('./components/ui/switch').Switch
-  const Table: typeof import('./components/ui/table').Table
-  const TableBody: typeof import('./components/ui/table').TableBody
-  const TableCaption: typeof import('./components/ui/table').TableCaption
-  const TableCell: typeof import('./components/ui/table').TableCell
-  const TableFooter: typeof import('./components/ui/table').TableFooter
-  const TableHead: typeof import('./components/ui/table').TableHead
-  const TableHeader: typeof import('./components/ui/table').TableHeader
-  const TableRow: typeof import('./components/ui/table').TableRow
-  const Tabs: typeof import('./components/ui/tabs').Tabs
-  const TabsContent: typeof import('./components/ui/tabs').TabsContent
-  const TabsList: typeof import('./components/ui/tabs').TabsList
-  const TabsTrigger: typeof import('./components/ui/tabs').TabsTrigger
-  const Textarea: typeof import('./components/ui/textarea').Textarea
-  const Toaster: typeof import('./components/ui/sonner').Toaster
-  const Tooltip: typeof import('./components/ui/tooltip').Tooltip
-  const TooltipContent: typeof import('./components/ui/tooltip').TooltipContent
-  const TooltipProvider: typeof import('./components/ui/tooltip').TooltipProvider
-  const TooltipTrigger: typeof import('./components/ui/tooltip').TooltipTrigger
-  const TopProducts: typeof import('./features/reports/components/top-products').TopProducts
-  const TypographyH3: typeof import('./components/ui/typography').TypographyH3
-  const TypographyP: typeof import('./components/ui/typography').TypographyP
-  const badgeVariants: typeof import('./components/ui/badge').badgeVariants
-  const buttonGroupVariants: typeof import('./components/ui/button-group').buttonGroupVariants
-  const buttonVariants: typeof import('./components/ui/button').buttonVariants
+  const Switch: typeof import('./renderer/components/ui/switch').Switch
+  const Table: typeof import('./renderer/components/ui/table').Table
+  const TableBody: typeof import('./renderer/components/ui/table').TableBody
+  const TableCaption: typeof import('./renderer/components/ui/table').TableCaption
+  const TableCell: typeof import('./renderer/components/ui/table').TableCell
+  const TableFooter: typeof import('./renderer/components/ui/table').TableFooter
+  const TableHead: typeof import('./renderer/components/ui/table').TableHead
+  const TableHeader: typeof import('./renderer/components/ui/table').TableHeader
+  const TableRow: typeof import('./renderer/components/ui/table').TableRow
+  const Tabs: typeof import('./renderer/components/ui/tabs').Tabs
+  const TabsContent: typeof import('./renderer/components/ui/tabs').TabsContent
+  const TabsList: typeof import('./renderer/components/ui/tabs').TabsList
+  const TabsTrigger: typeof import('./renderer/components/ui/tabs').TabsTrigger
+  const Textarea: typeof import('./renderer/components/ui/textarea').Textarea
+  const Toaster: typeof import('./renderer/components/ui/sonner').Toaster
+  const Tooltip: typeof import('./renderer/components/ui/tooltip').Tooltip
+  const TooltipContent: typeof import('./renderer/components/ui/tooltip').TooltipContent
+  const TooltipProvider: typeof import('./renderer/components/ui/tooltip').TooltipProvider
+  const TooltipTrigger: typeof import('./renderer/components/ui/tooltip').TooltipTrigger
+  const TopProducts: typeof import('./renderer/features/reports/components/top-products').TopProducts
+  const TypographyH3: typeof import('./renderer/components/ui/typography').TypographyH3
+  const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
+  const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
+  const buttonGroupVariants: typeof import('./renderer/components/ui/button-group').buttonGroupVariants
+  const buttonVariants: typeof import('./renderer/components/ui/button').buttonVariants
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal
   const categoriesService: typeof import('./features/categories/services/categories-service')['categoriesService']
-  const categoryAdapter: typeof import('./features/categories/api/category-adapter').categoryAdapter
-  const categoryFormSchema: typeof import('./features/categories/model/category-form-schema').categoryFormSchema
-  const categoryKeys: typeof import('./features/categories/hooks/category-keys').categoryKeys
-  const categorySchema: typeof import('./features/categories/model/category-schema').categorySchema
-  const categoryService: typeof import('./features/categories/api/category-service').categoryService
-  const categoryToForm: typeof import('./features/categories/model/category-mappers').categoryToForm
+  const categoryAdapter: typeof import('./renderer/features/categories/api/category-adapter').categoryAdapter
+  const categoryFormSchema: typeof import('./renderer/features/categories/model/category-form-schema').categoryFormSchema
+  const categoryKeys: typeof import('./renderer/features/categories/hooks/category-keys').categoryKeys
+  const categorySchema: typeof import('./renderer/features/categories/model/category-schema').categorySchema
+  const categoryService: typeof import('./renderer/features/categories/services/category-service').categoryService
+  const categoryToForm: typeof import('./renderer/features/categories/model/category-mappers').categoryToForm
+  const cn: typeof import('./@/lib/utils').cn
   const createCategory: typeof import('./features/categories/api/category-service').createCategory
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
@@ -251,29 +264,40 @@ declare global {
   const fetchProducts: typeof import('./features/products/api').fetchProducts
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
   const forwardRef: typeof import('react').forwardRef
+  const imageAdapter: typeof import('./renderer/features/images/api/image-adapter').imageAdapter
+  const imageService: typeof import('./renderer/features/images/services/image-service').imageService
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
-  const productFormSchema: typeof import('./features/products/model/product-form-schema').productFormSchema
-  const productToForm: typeof import('./features/products/model/product-mappers').productToForm
-  const router: typeof import('./app/router/routes').router
+  const productAdapter: typeof import('./renderer/features/products/api/product-adapter').productAdapter
+  const productFormSchema: typeof import('./renderer/features/products/model/product-form-schema').productFormSchema
+  const productKeys: typeof import('./renderer/features/products/hooks/product-keys').productKeys
+  const productSchema: typeof import('./renderer/features/products/model/product-schema').productSchema
+  const productService: typeof import('./renderer/features/products/services/product-service').productService
+  const productToForm: typeof import('./renderer/features/products/model/product-mappers').productToForm
+  const registerRoute: typeof import('./lib/electron-router-dom').registerRoute
+  const router: typeof import('./renderer/routes').router
   const startTransition: typeof import('react').startTransition
   const toast: typeof import('sonner').toast
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
   const useCallback: typeof import('react').useCallback
-  const useCategories: typeof import('./features/categories/hooks/use-categories').useCategories
-  const useCategoryForm: typeof import('./features/categories/hooks/use-category-form').useCategoryForm
+  const useCategories: typeof import('./renderer/features/categories/hooks/use-categories').useCategories
+  const useCategoryForm: typeof import('./renderer/features/categories/hooks/use-category-form').useCategoryForm
   const useContext: typeof import('react').useContext
-  const useCreateCategory: typeof import('./features/categories/hooks/use-create-category').useCreateCategory
+  const useCreateCategory: typeof import('./renderer/features/categories/hooks/use-create-category').useCreateCategory
+  const useCreateProduct: typeof import('./renderer/features/products/hooks/use-create-product').useCreateProduct
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
-  const useDeleteCategory: typeof import('./features/categories/hooks/use-delete-category').useDeleteCategory
+  const useDeleteCategory: typeof import('./renderer/features/categories/hooks/use-delete-category').useDeleteCategory
+  const useDeleteImage: typeof import('./renderer/features/images/hooks/use-delete-image').useDeleteImage
   const useEffect: typeof import('react').useEffect
   const useEffectEvent: typeof import('react').useEffectEvent
   const useForm: typeof import('react-hook-form').useForm
   const useFormContext: typeof import('react-hook-form').useFormContext
   const useHref: typeof import('react-router-dom').useHref
   const useId: typeof import('react').useId
+  const useImagePath: typeof import('./renderer/features/images/hooks/use-image-path').useImagePath
+  const useImageUpload: typeof import('./features/products/hooks/use-image-upload').useImageUpload
   const useImperativeHandle: typeof import('react').useImperativeHandle
   const useInRouterContext: typeof import('react-router-dom').useInRouterContext
   const useInsertionEffect: typeof import('react').useInsertionEffect
@@ -288,9 +312,9 @@ declare global {
   const useOutlet: typeof import('react-router-dom').useOutlet
   const useOutletContext: typeof import('react-router-dom').useOutletContext
   const useParams: typeof import('react-router-dom').useParams
-  const useProductForm: typeof import('./features/products/hooks/use-product-form').useProductForm
-  const useProducts: typeof import('./features/products/hooks/use-products').useProducts
-  const useProductsFilters: typeof import('./features/products/hooks/use-products-filters').useProductsFilters
+  const useProductForm: typeof import('./renderer/features/products/hooks/use-product-form').useProductForm
+  const useProducts: typeof import('./renderer/features/products/hooks/use-products').useProducts
+  const useProductsFilters: typeof import('./renderer/features/products/hooks/use-products-filters').useProductsFilters
   const useQuery: typeof import('@tanstack/react-query').useQuery
   const useQueryClient: typeof import('@tanstack/react-query').useQueryClient
   const useReducer: typeof import('react').useReducer
@@ -298,35 +322,37 @@ declare global {
   const useResolvedPath: typeof import('react-router-dom').useResolvedPath
   const useRoutes: typeof import('react-router-dom').useRoutes
   const useSearchParams: typeof import('react-router-dom').useSearchParams
-  const useSidebar: typeof import('./components/ui/sidebar').useSidebar
+  const useSidebar: typeof import('./renderer/components/ui/sidebar').useSidebar
   const useState: typeof import('react').useState
   const useSyncExternalStore: typeof import('react').useSyncExternalStore
-  const useToggleCategoryStatus: typeof import('./features/categories/hooks/use-toggle-category-status').useToggleCategoryStatus
+  const useToggleCategoryStatus: typeof import('./renderer/features/categories/hooks/use-toggle-category-status').useToggleCategoryStatus
   const useTransition: typeof import('react').useTransition
-  const useUpdateCategory: typeof import('./features/categories/hooks/use-update-category').useUpdateCategory
+  const useUpdateCategory: typeof import('./renderer/features/categories/hooks/use-update-category').useUpdateCategory
+  const useUpdateProduct: typeof import('./renderer/features/products/hooks/use-update-product').useUpdateProduct
+  const useUploadImage: typeof import('./renderer/features/images/hooks/use-upload-image').useUploadImage
   const zodResolver: typeof import('@hookform/resolvers/zod').zodResolver
 }
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { ChartConfig } from './components/ui/chart'
-  import('./components/ui/chart')
+  export type { ChartConfig } from './renderer/components/ui/chart'
+  import('./renderer/components/ui/chart')
   // @ts-ignore
-  export type { KbdProps, KbdKeyProps } from './components/ui/shadcn-io/kbd/index'
-  import('./components/ui/shadcn-io/kbd/index')
+  export type { KbdProps, KbdKeyProps } from './renderer/components/ui/shadcn-io/kbd/index'
+  import('./renderer/components/ui/shadcn-io/kbd/index')
   // @ts-ignore
-  export type { CategoryFormInput, CategoryFormData } from './features/categories/model/category-form-schema'
-  import('./features/categories/model/category-form-schema')
+  export type { CategoryFormInput, CategoryFormData } from './renderer/features/categories/model/category-form-schema'
+  import('./renderer/features/categories/model/category-form-schema')
   // @ts-ignore
-  export type { Category } from './features/categories/model/category-schema'
-  import('./features/categories/model/category-schema')
+  export type { Category } from './renderer/features/categories/model/category-schema'
+  import('./renderer/features/categories/model/category-schema')
   // @ts-ignore
-  export type { ProductFormData } from './features/products/model/product-form-schema'
-  import('./features/products/model/product-form-schema')
+  export type { ProductFormData } from './renderer/features/products/model/product-form-schema'
+  import('./renderer/features/products/model/product-form-schema')
   // @ts-ignore
-  export type { ProductStatus } from './features/products/model/product-status'
-  import('./features/products/model/product-status')
+  export type { Product } from './renderer/features/products/model/product-schema'
+  import('./renderer/features/products/model/product-schema')
   // @ts-ignore
-  export type { Product } from './features/products/model/product-types'
-  import('./features/products/model/product-types')
+  export type { ProductStatus } from './renderer/features/products/model/product-status'
+  import('./renderer/features/products/model/product-status')
 }

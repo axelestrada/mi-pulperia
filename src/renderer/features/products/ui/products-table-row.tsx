@@ -1,0 +1,89 @@
+type Props = {
+  product: Product
+  onEdit: (product: Product) => void
+}
+
+export const ProductsTableRow = ({ product, onEdit }: Props) => {
+  const { data: imagePath } = useImagePath(product.image)
+
+  return (
+    <TableRow>
+      <TableCell>
+        <SafeImage
+          src={imagePath}
+          alt={product.name}
+          className="h-12 w-12 object-cover rounded"
+        />
+      </TableCell>
+
+      <TableCell>
+        <p className="font-medium">{product.name}</p>
+      </TableCell>
+
+      <TableCell>{product.description}</TableCell>
+
+      <TableCell>{product.sku}</TableCell>
+
+      <TableCell>{product.barcode}</TableCell>
+
+      <TableCell>{product.categoryId}</TableCell>
+
+      <TableCell>{product.baseUnit}</TableCell>
+
+      <TableCell className="text-right">
+        L {(product.salePrice / 100).toFixed(2)}
+      </TableCell>
+
+      <TableCell className="text-right">0 / {product.minStock}</TableCell>
+
+      <TableCell>
+        <Badge
+          variant={product.isActive ? 'default' : 'destructive'}
+          className={product.isActive ? 'bg-green-600' : ''}
+        >
+          {product.isActive ? 'Activo' : 'Inactivo'}
+        </Badge>
+      </TableCell>
+
+      <TableCell className="text-right">
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button variant="ghost" size="icon-sm">
+              <IconLucideMoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                onEdit(product)
+              }}
+            >
+              <IconLucideEdit className="size-4 mr-2" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              {product.isActive ? (
+                <>
+                  <IconLucideX className="mr-2 size-4" />
+                  Desactivar
+                </>
+              ) : (
+                <>
+                  <IconLucideCheck className="mr-2 size-4" />
+                  Activar
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">
+              <IconLucideTrash2 className="size-4 mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+    </TableRow>
+  )
+}
