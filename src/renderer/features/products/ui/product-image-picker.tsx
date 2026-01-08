@@ -4,11 +4,13 @@ export const ProductImagePicker = () => {
   const { setValue, watch } = useFormContext<ProductFormData>()
 
   const { mutate: deleteImage } = useDeleteImage()
+  const { mutate: updateProduct } = useUpdateProduct()
   const { mutate: uploadImage, isPending } = useUploadImage()
 
   const [preview, setPreview] = useState<string | null>(null)
 
   const imageValue = watch('image')
+  const productId = watch('id')
 
   const { data: imagePath } = useImagePath(imageValue)
 
@@ -41,6 +43,15 @@ export const ProductImagePicker = () => {
       onSuccess: () => {
         setValue('image', '', { shouldDirty: true, shouldTouch: true })
         setPreview(null)
+
+        if (!productId) return
+
+        updateProduct({
+          id: productId,
+          data: {
+            image: '',
+          },
+        })
       },
       onError: err => {
         console.error(err)

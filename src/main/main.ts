@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, protocol } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { autoUpdater } from 'electron-updater'
@@ -28,7 +28,6 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
-      webSecurity: false,
     },
     width: 1280,
     height: 720,
@@ -71,6 +70,13 @@ app.on('activate', async () => {
     createWindow()
   }
 })
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'myapp',
+    privileges: { standard: true, secure: true, supportFetchAPI: true },
+  },
+])
 
 app.whenReady().then(async () => {
   autoUpdater.checkForUpdatesAndNotify()

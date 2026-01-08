@@ -1,8 +1,9 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, net, protocol } from 'electron'
 import path from 'path'
 import fs from 'fs/promises'
 
 import { createRequire } from 'module'
+import { pathToFileURL } from 'url'
 const require = createRequire(import.meta.url)
 
 const sharp = require('sharp')
@@ -24,9 +25,15 @@ export const registerImagesHandlers = () => {
     return { filename }
   })
 
+  protocol.handle('myapp', request => {
+    const relativePath = request.url.replace('myapp://', '')
+    const absolutePath = path.join(app.getPath('userData'), relativePath)
+
+    return net.fetch(pathToFileURL(absolutePath).toString())
+  })
+
   ipcMain.handle('get-product-image-path', async (_, filename: string) => {
-    const imagesDir = path.join(app.getPath('userData'), 'products')
-    return path.join(imagesDir, filename)
+    return path.join('products', filename)
   })
 
   ipcMain.handle('delete-product-image', async (_, filename: string) => {

@@ -1,6 +1,6 @@
 type UpdateProductInput = {
   id: Product['id']
-  data: ProductFormData
+  data: Partial<ProductFormData>
 }
 
 export const useUpdateProduct = () => {

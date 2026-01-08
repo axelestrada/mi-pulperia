@@ -14,7 +14,7 @@ export const imageService = {
   async getPath(filename: string) {
     if (!filename) return null
     const path = await imageAdapter.getPath(filename)
-    return `file://${path}`
+    return `myapp://${path}`
   },
 
   async delete(filename: string) {
