@@ -9,7 +9,10 @@
     "dev": "vite --host",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:frontend": "vite build",
+    "build:electron": "npm run build:frontend && electron-builder",
+    "release": "npm run build:frontend && electron-builder --publish always"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
