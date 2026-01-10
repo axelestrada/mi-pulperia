@@ -118,12 +118,15 @@ declare global {
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
+  const IconLucideBell: typeof import('~icons/lucide/bell.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
+  const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
+  const IconLucideSmartphone: typeof import('~icons/lucide/smartphone.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
@@ -268,6 +271,7 @@ declare global {
   const imageService: typeof import('./renderer/features/images/services/image-service').imageService
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
+  const parseError: typeof import('./shared/errors/parse-error').parseError
   const productAdapter: typeof import('./renderer/features/products/api/product-adapter').productAdapter
   const productFormSchema: typeof import('./renderer/features/products/model/product-form-schema').productFormSchema
   const productKeys: typeof import('./renderer/features/products/hooks/product-keys').productKeys
@@ -347,7 +351,7 @@ declare global {
   export type { Category } from './renderer/features/categories/model/category-schema'
   import('./renderer/features/categories/model/category-schema')
   // @ts-ignore
-  export type { ProductFormData } from './renderer/features/products/model/product-form-schema'
+  export type { ProductFormInput, ProductFormData } from './renderer/features/products/model/product-form-schema'
   import('./renderer/features/products/model/product-form-schema')
   // @ts-ignore
   export type { Product } from './renderer/features/products/model/product-schema'

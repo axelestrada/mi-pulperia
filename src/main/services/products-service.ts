@@ -8,7 +8,7 @@ export const ProductsService = {
 
   async create(input: InsertProduct) {
     if (!input.name.trim()) {
-      throw new Error('Product name is required')
+      throw new Error('El nombre del producto es obligatorio')
     }
 
     return ProductsRepository.create(input)
@@ -16,11 +16,11 @@ export const ProductsService = {
 
   async update(id: SelectProduct['id'], input: Partial<SelectProduct>) {
     if (!Number.isInteger(id)) {
-      throw new Error('Invalid product id')
+      throw new Error('ID inválido para el producto')
     }
 
     if (input.name?.trim() === '') {
-      throw new Error('Product name is required')
+      throw new Error('El nombre del producto es obligatorio')
     }
 
     return ProductsRepository.update(id, input)
@@ -28,7 +28,7 @@ export const ProductsService = {
 
   async remove(id: SelectProduct['id']) {
     if (!Number.isInteger(id)) {
-      throw new Error('Invalid product id')
+      throw new Error('ID inválido para el producto')
     }
 
     return ProductsRepository.delete(id)

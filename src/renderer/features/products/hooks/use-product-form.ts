@@ -2,7 +2,7 @@ export const useProductForm = (
   product: Product | null,
   onSuccess: () => void
 ) => {
-  const form = useForm<ProductFormData>({
+  const form = useForm<ProductFormInput, unknown, ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: product ? productToForm(product) : EMPTY_PRODUCT_FORM,
   })
@@ -25,7 +25,10 @@ export const useProductForm = (
       onSuccess()
     } catch (error) {
       console.error(error)
-      toast.error('Error al guardar el producto.')
+
+      toast.error('Error al guardar el producto.', {
+        description: parseError(error),
+      })
     }
   }
 

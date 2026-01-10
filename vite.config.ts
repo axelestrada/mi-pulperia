@@ -47,6 +47,7 @@ export default defineConfig({
         './src/shared/components/**/*',
         './src/shared/hooks/**/*',
         './src/shared/utils/**/*',
+        './src/shared/errors/**/*',
         './src/renderer/pages/**/*',
         './src/lib/**/*',
         './src/renderer/*',

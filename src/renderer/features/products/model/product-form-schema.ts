@@ -3,15 +3,17 @@ import { z } from 'zod'
 export const productFormSchema = z.object({
   id: z.number().optional(),
 
-  name: z.string().min(1, 'Ingrese el nombre del producto'),
+  name: z.string().refine(value => value.trim() !== '', {
+    message: 'Ingrese el nombre del producto',
+  }),
 
-  description: z.string().optional(),
+  description: z.string().transform(value => value || null),
 
-  image: z.string().optional(),
+  image: z.string().transform(value => value || null),
 
-  barcode: z.string().optional(),
+  barcode: z.string().transform(value => value || null),
 
-  sku: z.string().optional(),
+  sku: z.string().transform(value => value || null),
 
   categoryId: z
     .number({
@@ -36,4 +38,5 @@ export const productFormSchema = z.object({
   isActive: z.boolean(),
 })
 
-export type ProductFormData = z.infer<typeof productFormSchema>
+export type ProductFormInput = z.input<typeof productFormSchema>
+export type ProductFormData = z.output<typeof productFormSchema>

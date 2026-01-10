@@ -48,7 +48,7 @@ export const Layout = () => {
             />
 
             <Button size="icon" variant="ghost" className="relative">
-              {/* <IconLucideBell /> */}
+              <IconLucideBell />
               <Badge className="h-4 min-w-4 w-max text-[11px] tabular-nums rounded-full px-1 absolute top-0 right-1">
                 8
               </Badge>
@@ -60,7 +60,7 @@ export const Layout = () => {
             />
 
             <Button size="icon" variant="ghost">
-              {/* <IconLucideSmartphone /> */}
+              <IconLucideSmartphone />
             </Button>
 
             <Separator
@@ -69,7 +69,7 @@ export const Layout = () => {
             />
 
             <Button size="icon" variant="ghost">
-              {/* <IconLucideMoon /> */}
+              <IconLucideMoon />
             </Button>
           </div>
         </header>

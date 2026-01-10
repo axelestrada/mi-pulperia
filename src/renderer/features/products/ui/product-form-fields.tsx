@@ -19,11 +19,12 @@ export const ProductFormFields = () => {
       <Controller
         name="description"
         control={control}
-        render={({ field, fieldState }) => (
+        render={({ field: { value, ...field }, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Descripción</FieldLabel>
             <Textarea
               {...field}
+              value={value ?? ''}
               placeholder="Arroz blanco de grano largo"
               className="min-h-20 resize-none"
             />
@@ -76,10 +77,10 @@ export const ProductFormFields = () => {
         <Controller
           name="sku"
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field: { value, ...field }, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>SKU</FieldLabel>
-              <Input {...field} placeholder="ARROZ-1KG" />
+              <Input {...field} value={value ?? ''} placeholder="ARROZ-1KG" />
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
@@ -88,10 +89,14 @@ export const ProductFormFields = () => {
         <Controller
           name="barcode"
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field: { value, ...field }, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>Código de barras</FieldLabel>
-              <Input {...field} placeholder="7421234567890" />
+              <Input
+                {...field}
+                value={value ?? ''}
+                placeholder="7421234567890"
+              />
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}

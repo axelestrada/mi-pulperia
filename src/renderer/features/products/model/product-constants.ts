@@ -1,4 +1,5 @@
-export const EMPTY_PRODUCT_FORM: Partial<ProductFormData> = {
+
+export const EMPTY_PRODUCT_FORM: Partial<ProductFormInput> = {
   name: '',
   description: '',
   image: '',
