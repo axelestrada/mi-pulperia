@@ -18,7 +18,7 @@ export const CategoriesRepository = {
   update: async (id: SelectCategory['id'], data: Partial<SelectCategory>) =>
     db
       .update(categoriesTable)
-      .set({ updatedAt: new Date(), ...data })
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(categoriesTable.id, id)),
 
   delete: async (id: SelectCategory['id']) =>

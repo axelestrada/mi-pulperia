@@ -28,11 +28,11 @@ export const productsTable = sqliteTable('products', {
 
   isActive: int('is_active', { mode: 'boolean' }).notNull().default(true),
 
-  createdAt: text('created_at')
+  createdAt: int('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
 
-  updatedAt: text('updated_at')
+  updatedAt: int('updated_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
 

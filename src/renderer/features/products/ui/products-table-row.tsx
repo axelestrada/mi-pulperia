@@ -6,6 +6,8 @@ type Props = {
 export const ProductsTableRow = ({ product, onEdit }: Props) => {
   const { data: imagePath } = useImagePath(product.image)
 
+  const { mutateAsync: deleteProduct } = useDeleteProduct()
+
   return (
     <TableRow>
       <TableCell>
@@ -83,10 +85,17 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">
-              <IconLucideTrash2 className="size-4 mr-2" />
-              Eliminar
-            </DropdownMenuItem>
+            <DeleteProductDialog onDelete={() => deleteProduct(product.id)}>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={e => {
+                  e.preventDefault()
+                }}
+              >
+                <IconLucideTrash2 className="size-4 mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            </DeleteProductDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>

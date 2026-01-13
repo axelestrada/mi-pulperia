@@ -7,6 +7,17 @@
 export {}
 declare global {
   const Activity: typeof import('react').Activity
+  const AlertDialog: typeof import('./renderer/components/ui/alert-dialog').AlertDialog
+  const AlertDialogAction: typeof import('./renderer/components/ui/alert-dialog').AlertDialogAction
+  const AlertDialogCancel: typeof import('./renderer/components/ui/alert-dialog').AlertDialogCancel
+  const AlertDialogContent: typeof import('./renderer/components/ui/alert-dialog').AlertDialogContent
+  const AlertDialogDescription: typeof import('./renderer/components/ui/alert-dialog').AlertDialogDescription
+  const AlertDialogFooter: typeof import('./renderer/components/ui/alert-dialog').AlertDialogFooter
+  const AlertDialogHeader: typeof import('./renderer/components/ui/alert-dialog').AlertDialogHeader
+  const AlertDialogOverlay: typeof import('./renderer/components/ui/alert-dialog').AlertDialogOverlay
+  const AlertDialogPortal: typeof import('./renderer/components/ui/alert-dialog').AlertDialogPortal
+  const AlertDialogTitle: typeof import('./renderer/components/ui/alert-dialog').AlertDialogTitle
+  const AlertDialogTrigger: typeof import('./renderer/components/ui/alert-dialog').AlertDialogTrigger
   const AppSidebar: typeof import('./renderer/components/sidebar/app-sidebar').AppSidebar
   const Avatar: typeof import('./renderer/components/ui/avatar').Avatar
   const AvatarFallback: typeof import('./renderer/components/ui/avatar').AvatarFallback
@@ -62,6 +73,7 @@ declare global {
   const CustomersTable: typeof import('./renderer/features/customers/components/customers-table').CustomersTable
   const DashboardPage: typeof import('./renderer/pages/dashboard-page').DashboardPage
   const Debts: typeof import('./renderer/features/reports/components/debts').Debts
+  const DeleteProductDialog: typeof import('./renderer/features/products/ui/delete-product-dialog').DeleteProductDialog
   const Dialog: typeof import('./renderer/components/ui/dialog').Dialog
   const DialogClose: typeof import('./renderer/components/ui/dialog').DialogClose
   const DialogContent: typeof import('./renderer/components/ui/dialog').DialogContent
@@ -295,8 +307,10 @@ declare global {
   const useCreateProduct: typeof import('./renderer/features/products/hooks/use-create-product').useCreateProduct
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
+  const useDeleteCProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteCProduct
   const useDeleteCategory: typeof import('./renderer/features/categories/hooks/use-delete-category').useDeleteCategory
   const useDeleteImage: typeof import('./renderer/features/images/hooks/use-delete-image').useDeleteImage
+  const useDeleteProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteProduct
   const useEffect: typeof import('react').useEffect
   const useEffectEvent: typeof import('react').useEffectEvent
   const useForm: typeof import('react-hook-form').useForm

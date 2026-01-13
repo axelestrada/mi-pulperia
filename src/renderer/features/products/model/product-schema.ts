@@ -26,8 +26,8 @@ export const productSchema = z.object({
 
   isActive: z.boolean(),
 
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 
   deleted: z.boolean(),
 })

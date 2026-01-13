@@ -30,11 +30,14 @@ export const ProductsRepository = {
   create: async (data: InsertProduct) => db.insert(productsTable).values(data),
 
   update: async (id: SelectProduct['id'], data: Partial<SelectProduct>) =>
-    db.update(productsTable).set(data).where(eq(productsTable.id, id)),
+    db
+      .update(productsTable)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(productsTable.id, id)),
 
   delete: async (id: SelectProduct['id']) =>
     db
       .update(productsTable)
-      .set({ deleted: true })
+      .set({ deleted: true, sku: null, barcode: null, updatedAt: new Date() })
       .where(eq(productsTable.id, id)),
 }
