@@ -42,7 +42,7 @@ export const ProductFormFields = () => {
               <Input
                 value={field.value}
                 onChange={e => {
-                  field.onChange(Number(e.target.value))
+                  field.onChange(e.target.value)
                 }}
                 type="number"
                 min={0}
@@ -62,7 +62,7 @@ export const ProductFormFields = () => {
               <Input
                 value={field.value}
                 onChange={e => {
-                  field.onChange(Number(e.target.value))
+                  field.onChange(e.target.value)
                 }}
                 type="number"
                 min={0}

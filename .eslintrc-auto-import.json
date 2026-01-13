@@ -137,6 +137,7 @@
     "Layout": true,
     "Link": true,
     "LowStock": true,
+    "MeasurementUnitBadge": true,
     "NavLink": true,
     "NavMain": true,
     "NavSecondary": true,

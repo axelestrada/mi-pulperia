@@ -1,11 +1,10 @@
 type Props = {
+  products: Product[]
   onCreate: () => void
   onEdit: (product: Product) => void
 }
 
-export const ProductsTable = ({ onCreate, onEdit }: Props) => {
-  const { data: products = [] } = useProducts()
-
+export const ProductsTable = ({ onCreate, onEdit, products }: Props) => {
   if (products.length === 0) {
     return <ProductsEmptyState onCreate={onCreate} />
   }

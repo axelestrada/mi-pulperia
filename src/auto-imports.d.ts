@@ -147,6 +147,7 @@ declare global {
   const LowStock: typeof import('./renderer/features/reports/components/low-stock').LowStock
   const MainLayout: typeof import('./app/layout/main-layout').MainLayout
   const MainRoutes: typeof import('./@/routes').MainRoutes
+  const MeasurementUnitBadge: typeof import('./renderer/components/badges/measurement-unit-badge').MeasurementUnitBadge
   const NavLink: typeof import('react-router-dom').NavLink
   const NavMain: typeof import('./renderer/components/sidebar/nav-main').NavMain
   const NavSecondary: typeof import('./renderer/components/sidebar/nav-secondary').NavSecondary

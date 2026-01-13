@@ -16,19 +16,23 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="whitespace-normal">
         <p className="font-medium">{product.name}</p>
       </TableCell>
 
-      <TableCell>{product.description}</TableCell>
+      <TableCell className="whitespace-normal">
+        {product.description ?? 'N/A'}
+      </TableCell>
 
-      <TableCell>{product.sku}</TableCell>
+      <TableCell>{product.sku ?? 'N/A'}</TableCell>
 
-      <TableCell>{product.barcode}</TableCell>
+      <TableCell>{product.barcode ?? 'N/A'}</TableCell>
 
       <TableCell>{product.categoryId}</TableCell>
 
-      <TableCell>{product.baseUnit}</TableCell>
+      <TableCell>
+        <MeasurementUnitBadge unit={product.baseUnit} />
+      </TableCell>
 
       <TableCell className="text-right">
         L {(product.salePrice / 100).toFixed(2)}

@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type SafeImageProps = {
@@ -9,12 +7,9 @@ type SafeImageProps = {
   fallbackSrc?: string
 }
 
-export const SafeImage = ({
-  src,
-  alt,
-  className,
-  fallbackSrc = '/images/placeholder.svg',
-}: SafeImageProps) => {
+import placeholder from '@/assets/images/placeholder.svg'
+
+export const SafeImage = ({ src, alt, className }: SafeImageProps) => {
   const [hasError, setHasError] = useState(false)
 
   const showFallback = !src || hasError
@@ -27,17 +22,11 @@ export const SafeImage = ({
       )}
     >
       {showFallback ? (
-        fallbackSrc ? (
-          <img
-            src={fallbackSrc}
-            alt={alt}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <ImageIcon className="h-8 w-8 text-muted-foreground" />
-          </div>
-        )
+        <img
+          src={placeholder}
+          alt={alt}
+          className="h-full w-full object-cover"
+        />
       ) : (
         <img
           src={src}

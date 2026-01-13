@@ -2,6 +2,8 @@ export const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
+  const { data: products = [] } = useProducts()
+
   const handleCreate = () => {
     setSelectedProduct(null)
     setFormOpen(true)
@@ -17,7 +19,11 @@ export const ProductsPage = () => {
       <ProductsHeader onCreate={handleCreate} />
       <ProductsFilters />
 
-      <ProductsTable onCreate={handleCreate} onEdit={handleEdit} />
+      <ProductsTable
+        products={products}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+      />
 
       <ProductFormDialog
         open={formOpen}

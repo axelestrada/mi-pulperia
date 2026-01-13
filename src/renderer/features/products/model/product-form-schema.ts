@@ -24,7 +24,7 @@ export const productFormSchema = z.object({
 
   baseUnit: z.enum(['unit', 'lb', 'liter']),
 
-  salePrice: z
+  salePrice: z.coerce
     .number({
       error: 'Ingrese el precio de venta',
     })
@@ -33,7 +33,12 @@ export const productFormSchema = z.object({
       return Math.round(value * 100)
     }),
 
-  minStock: z.number().int().min(0, 'El stock mínimo no puede ser negativo'),
+  minStock: z.coerce
+    .number({
+      error: 'Ingrese el stock mínimo',
+    })
+    .int()
+    .min(0, 'El stock mínimo no puede ser negativo'),
 
   isActive: z.boolean(),
 })
