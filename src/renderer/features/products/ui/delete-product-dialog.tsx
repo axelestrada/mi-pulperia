@@ -8,7 +8,7 @@ export const DeleteProductDialog = ({ children, onDelete }: Props) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className='sm:max-w-sm'>
         <AlertDialogHeader>
           <AlertDialogTitle>
             ¿Estás seguro que quieres eliminar este producto?

@@ -118,10 +118,10 @@ export const ProductFormFields = () => {
         <Controller
           name="baseUnit"
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field: { onChange, ...field }, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>Unidad</FieldLabel>
-              <Select {...field}>
+              <Select {...field} onValueChange={onChange}>
                 <SelectTrigger>
                   <SelectValue
                     aria-invalid={fieldState.invalid}
