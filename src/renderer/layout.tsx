@@ -60,15 +60,6 @@ export const Layout = () => {
             />
 
             <Button size="icon" variant="ghost">
-              <IconLucideSmartphone />
-            </Button>
-
-            <Separator
-              orientation="vertical"
-              className="data-[orientation=vertical]:h-4"
-            />
-
-            <Button size="icon" variant="ghost">
               <IconLucideMoon />
             </Button>
           </div>
