@@ -80,6 +80,15 @@ export default defineConfig({
               ],
             },
           },
+          resolve: {
+            alias: {
+              '@': path.resolve(__dirname, './src/renderer'),
+              '~': path.resolve(__dirname, './'),
+              shared: path.resolve(__dirname, './src/shared'),
+              main: path.resolve(__dirname, './src/main'),
+              domains: path.resolve(__dirname, './src/main/domains'),
+            },
+          },
         },
       },
       preload: {
@@ -92,7 +101,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src/renderer'),
       '~': path.resolve(__dirname, './'),
-      'shared': path.resolve(__dirname, './src/shared'),
+      shared: path.resolve(__dirname, './src/shared'),
+      main: path.resolve(__dirname, './src/main'),
+      domains: path.resolve(__dirname, './src/main/domains'),
     },
   },
   build: {

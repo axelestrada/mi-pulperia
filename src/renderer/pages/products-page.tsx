@@ -2,7 +2,7 @@ export const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
-  const { data: products = [] } = useProducts()
+  const { data: products = [], error, refetch } = useProducts()
 
   const handleCreate = () => {
     setSelectedProduct(null)
@@ -16,6 +16,7 @@ export const ProductsPage = () => {
 
   return (
     <>
+      <div>{error?.message}</div>
       <ProductsHeader onCreate={handleCreate} />
       <ProductsFilters />
 
@@ -23,6 +24,8 @@ export const ProductsPage = () => {
         products={products}
         onCreate={handleCreate}
         onEdit={handleEdit}
+        error={error}
+        refetch={refetch}
       />
 
       <ProductFormDialog

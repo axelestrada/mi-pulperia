@@ -28,7 +28,9 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
 
       <TableCell>{product.barcode ?? 'N/A'}</TableCell>
 
-      <TableCell>{product.categoryId}</TableCell>
+      <TableCell>
+        <Badge variant="secondary">{product.category.name}</Badge>
+      </TableCell>
 
       <TableCell>
         <MeasurementUnitBadge unit={product.baseUnit} />

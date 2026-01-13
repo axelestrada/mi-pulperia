@@ -125,10 +125,12 @@ declare global {
   const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
+  const IconLucideRefreshCw: typeof import('~icons/lucide/refresh-cw.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
   const IconLucideSmartphone: typeof import('~icons/lucide/smartphone.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
+  const IconLucideTriangleAlert: typeof import('~icons/lucide/triangle-alert.tsx').default
   const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
   const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default

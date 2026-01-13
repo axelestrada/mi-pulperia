@@ -6,7 +6,7 @@ declare global {
   interface Window {
     api: {
       products: {
-        list: () => Promise<Product[]>
+        list: () => Promise<ProductDTO[]>
         create: (product: ProductFormData) => Promise<Product>
         update: (
           id: Product['id'],

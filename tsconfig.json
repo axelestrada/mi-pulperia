@@ -25,7 +25,9 @@
     "paths": {
       "@/*": ["./src/renderer/*"],
       "~/*": ["./*"],
-      "shared/*": ["./src/shared/*"]
+      "shared/*": ["./src/shared/*"],
+      "domains/*": ["./src/main/domains/*"],
+      "main/*": ["./src/main/*"]
     },
 
     "types": ["unplugin-icons/types/react"]

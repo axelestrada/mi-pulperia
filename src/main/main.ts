@@ -3,10 +3,10 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { autoUpdater } from 'electron-updater'
 
-import { registerProductsHandlers } from './ipc/products-ipc'
 import { runMigrations } from './db/migrate'
 import { registerCategoriesHandlers } from './ipc/categories-ipc'
 import { registerImagesHandlers } from './ipc/images-ipc'
+import { registerProductsHandlers } from 'domains/products/products-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

@@ -1,9 +1,11 @@
-import { InsertProduct, SelectProduct } from '../db/schema/products'
-import { ProductsRepository } from '../repositories/products-repository'
+import { InsertProduct, SelectProduct } from 'main/db/schema/products'
+import { ProductsRepository } from './products-repository'
+import { toProductDTO } from './products-mappers'
 
 export const ProductsService = {
   async list() {
-    return ProductsRepository.findAll()
+    const products = await ProductsRepository.findAll()
+    return products.map(toProductDTO)
   },
 
   async create(input: InsertProduct) {

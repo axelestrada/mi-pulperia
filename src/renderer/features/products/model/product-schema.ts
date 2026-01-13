@@ -13,7 +13,10 @@ export const productSchema = z.object({
 
   sku: z.string().nullable(),
 
-  categoryId: z.number().int().positive(),
+  category: z.object({
+    id: z.number().int().positive(),
+    name: z.string(),
+  }),
 
   baseUnit: z.enum(['unit', 'lb', 'liter']),
 

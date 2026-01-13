@@ -5,7 +5,7 @@ export const productToForm = (product: Product): ProductFormInput => ({
   barcode: product.barcode || '',
   sku: product.sku || '',
   description: product.description || '',
-  categoryId: product.categoryId,
+  categoryId: product.category.id,
   baseUnit: product.baseUnit,
   salePrice: product.salePrice / 100,
   minStock: product.minStock,

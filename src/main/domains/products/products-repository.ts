@@ -1,16 +1,17 @@
-import { db } from '../db'
-import { categoriesTable } from '../db/schema/categories'
+import { db } from 'main/db'
+import { categoriesTable } from 'main/db/schema/categories'
+
 import {
   productsTable,
   type InsertProduct,
   type SelectProduct,
-} from '../db/schema/products'
+} from 'main/db/schema/products'
 
 import { eq, getTableColumns } from 'drizzle-orm'
 
 export const ProductsRepository = {
-  findAll: async () =>
-    db
+  findAll: async () => {
+    const rows = await db
       .select({
         ...getTableColumns(productsTable),
 
@@ -21,7 +22,10 @@ export const ProductsRepository = {
         categoriesTable,
         eq(productsTable.categoryId, categoriesTable.id)
       )
-      .where(eq(productsTable.deleted, false)),
+      .where(eq(productsTable.deleted, false))
+
+    return rows
+  },
 
   create: async (data: InsertProduct) => db.insert(productsTable).values(data),
 

@@ -9,5 +9,5 @@ export const MeasurementUnitBadge = ({ unit }: Props) => {
     liter: 'Litro',
   }
 
-  return <Badge variant="secondary">{labelMap[unit]}</Badge>
+  return <Badge variant="outline">{labelMap[unit]}</Badge>
 }
