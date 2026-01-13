@@ -131,11 +131,15 @@ declare global {
   const Fragment: typeof import('react').Fragment
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
   const IconLucideBell: typeof import('~icons/lucide/bell.tsx').default
+  const IconLucideBookUser: typeof import('~icons/lucide/book-user.tsx').default
+  const IconLucideBookUsers: typeof import('~icons/lucide/book-users.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
+  const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
   const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
+  const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucideRefreshCw: typeof import('~icons/lucide/refresh-cw.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
@@ -145,6 +149,7 @@ declare global {
   const IconLucideTriangleAlert: typeof import('~icons/lucide/triangle-alert.tsx').default
   const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
   const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
+  const IconLucideUsers: typeof import('~icons/lucide/users.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
   const Input: typeof import('./renderer/components/ui/input').Input
   const InputGroup: typeof import('./renderer/components/ui/input-group').InputGroup
@@ -153,6 +158,7 @@ declare global {
   const InputGroupInput: typeof import('./renderer/components/ui/input-group').InputGroupInput
   const InputGroupText: typeof import('./renderer/components/ui/input-group').InputGroupText
   const InputGroupTextarea: typeof import('./renderer/components/ui/input-group').InputGroupTextarea
+  const InventoryPage: typeof import('./renderer/pages/inventory-page').InventoryPage
   const Kbd: typeof import('./renderer/components/ui/shadcn-io/kbd/index').Kbd
   const KbdKey: typeof import('./renderer/components/ui/shadcn-io/kbd/index').KbdKey
   const Label: typeof import('./renderer/components/ui/label').Label

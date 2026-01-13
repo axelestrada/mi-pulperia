@@ -44,6 +44,13 @@ export const router = createHashRouter([
         },
       },
       {
+        path: 'inventory',
+        element: <InventoryPage />,
+        handle: {
+          title: 'Inventario',
+        },
+      },
+      {
         path: '*',
         element: <NotFoundPage />,
         handle: { title: 'Página no encontrada' },

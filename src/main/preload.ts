@@ -3,6 +3,12 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { InsertCategory, SelectCategory } from './db/schema/categories'
 import { InsertProduct, SelectProduct } from './db/schema/products'
 
+import {
+  AddStockDTO,
+  AdjustStockDTO,
+  ConsumeProductDTO,
+} from './domains/inventory/inventory-model'
+
 contextBridge.exposeInMainWorld('api', {
   products: {
     list: () => ipcRenderer.invoke('products:list'),
@@ -21,6 +27,16 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('categories:update', id, category),
     remove: (id: SelectCategory['id']) =>
       ipcRenderer.invoke('categories:remove', id),
+  },
+  inventory: {
+    addStock: (data: AddStockDTO) =>
+      ipcRenderer.invoke('inventory:addStock', data),
+    consume: (data: ConsumeProductDTO) =>
+      ipcRenderer.invoke('inventory:consume', data),
+    adjustStock: (data: AdjustStockDTO) =>
+      ipcRenderer.invoke('inventory:adjustStock', data),
+    getAvailableStock: (productId: SelectProduct['id']) =>
+      ipcRenderer.invoke('inventory:getAvailableStock', productId),
   },
 })
 

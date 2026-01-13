@@ -10,7 +10,6 @@ import {
   DollarSign,
   FileChartColumn,
   Coins,
-  UserSearch,
   Settings,
 } from 'lucide-react'
 
@@ -54,8 +53,8 @@ const data = {
           url: 'categories',
         },
         {
-          title: 'Movimientos',
-          url: '#',
+          title: 'Inventario',
+          url: 'inventory',
         },
         {
           title: 'Ordenes de Compra',
@@ -90,11 +89,6 @@ const data = {
       title: 'Caja',
       url: '#',
       icon: Coins,
-    },
-    {
-      title: 'Auditoría',
-      url: '#',
-      icon: UserSearch,
     },
   ],
   navSecondary: [

@@ -15,8 +15,12 @@ export const CustomersPage = () => {
 
       <Tabs defaultValue="customers" className="flex-1">
         <TabsList className="mb-2">
-          <TabsTrigger value="customers">Clientes</TabsTrigger>
-          <TabsTrigger value="credits">Libro de Créditos</TabsTrigger>
+          <TabsTrigger value="customers">
+            <IconLucideUsers /> Clientes
+          </TabsTrigger>
+          <TabsTrigger value="credits">
+            <IconLucideBookUser /> Libro de Créditos
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="customers">

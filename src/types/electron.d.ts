@@ -23,6 +23,14 @@ declare global {
         ) => Promise<Category>
         remove: (id: Category['id']) => Promise<void>
       }
+      inventory: {
+        addStock: (data: AddStockDTO) => Promise<void>
+        consume: (
+          data: ConsumeProductDTO
+        ) => Promise<{ ok: boolean; error?: string }>
+        adjustStock: (data: AdjustStockDTO) => Promise<void>
+        getAvailableStock: (productId: Product['id']) => Promise<number>
+      }
     }
     images: {
       saveProductImage: (file: File) => Promise<{ filename: string }>
