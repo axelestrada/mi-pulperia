@@ -42,7 +42,9 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
         L {(product.salePrice / 100).toFixed(2)}
       </TableCell>
 
-      <TableCell className="text-right">0 / {product.minStock}</TableCell>
+      <TableCell className="text-right">
+        {product.stock} / {product.minStock}
+      </TableCell>
 
       <TableCell>
         <Badge

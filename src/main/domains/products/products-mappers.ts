@@ -10,6 +10,7 @@ export const toProductDTO = (product: EnrichedProduct): ProductDTO => ({
     id: product.categoryId,
     name: product.categoryName || 'Sin categoría',
   },
+  stock: product.stock,
   createdAt: product.createdAt,
   deleted: product.deleted,
   updatedAt: product.updatedAt,

@@ -7,7 +7,7 @@ import {
   type SelectProduct,
 } from 'main/db/schema/products'
 
-import { eq, getTableColumns } from 'drizzle-orm'
+import { eq, getTableColumns, sql } from 'drizzle-orm'
 
 export const ProductsRepository = {
   findAll: async () => {
@@ -16,6 +16,17 @@ export const ProductsRepository = {
         ...getTableColumns(productsTable),
 
         categoryName: categoriesTable.name,
+
+        stock: sql<number>`
+        COALESCE(
+          (
+            SELECT SUM(quantity_available)
+            FROM inventory_batches
+            WHERE inventory_batches.product_id = ${productsTable.id}
+          ),
+          0
+        )
+      `.as('stock'),
       })
       .from(productsTable)
       .leftJoin(

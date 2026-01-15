@@ -18,6 +18,8 @@ export const productSchema = z.object({
     name: z.string(),
   }),
 
+  stock: z.number(),
+
   baseUnit: z.enum(['unit', 'lb', 'liter']),
 
   salePrice: z.number().int().nonnegative(),
