@@ -43,7 +43,12 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
       </TableCell>
 
       <TableCell className="text-right">
-        {product.stock} / {product.minStock}
+        <span
+          className={product.stock <= product.minStock ? 'text-red-500' : ''}
+        >
+          {product.stock}
+        </span>{' '}
+        / {product.minStock}
       </TableCell>
 
       <TableCell>
