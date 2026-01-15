@@ -7,6 +7,7 @@ import { runMigrations } from './db/migrate'
 import { registerCategoriesHandlers } from './ipc/categories-ipc'
 import { registerImagesHandlers } from './ipc/images-ipc'
 import { registerProductsHandlers } from 'domains/products/products-ipc'
+import { registerInventoryIPC } from './domains/inventory/inventory-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -65,6 +66,7 @@ app.on('activate', async () => {
 
     registerImagesHandlers()
     registerProductsHandlers()
+    registerInventoryIPC()
     registerCategoriesHandlers()
 
     createWindow()
@@ -85,6 +87,7 @@ app.whenReady().then(async () => {
 
   registerImagesHandlers()
   registerProductsHandlers()
+  registerInventoryIPC()
   registerCategoriesHandlers()
 
   createWindow()

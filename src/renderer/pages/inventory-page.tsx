@@ -5,9 +5,11 @@ export const InventoryPage = () => {
         title="Inventario"
         description="Control de lotes y movimientos."
         actions={
-          <Button onClick={() => console.log('Nueva entrada')}>
-            <IconLucidePlus /> Nueva Entrada
-          </Button>
+          <NavLink to="/inventory-entry">
+            <Button>
+              <IconLucidePlus /> Nueva Entrada
+            </Button>
+          </NavLink>
         }
       />
 

@@ -34,6 +34,8 @@ declare global {
   const ButtonGroup: typeof import('./renderer/components/ui/button-group').ButtonGroup
   const ButtonGroupSeparator: typeof import('./renderer/components/ui/button-group').ButtonGroupSeparator
   const ButtonGroupText: typeof import('./renderer/components/ui/button-group').ButtonGroupText
+  const Calendar: typeof import('./renderer/components/ui/calendar').Calendar
+  const CalendarDayButton: typeof import('./renderer/components/ui/calendar').CalendarDayButton
   const Card: typeof import('./renderer/components/ui/card').Card
   const CardAction: typeof import('./renderer/components/ui/card').CardAction
   const CardContent: typeof import('./renderer/components/ui/card').CardContent
@@ -68,10 +70,21 @@ declare global {
   const CollapsibleContent: typeof import('./renderer/components/ui/collapsible').CollapsibleContent
   const CollapsibleTrigger: typeof import('./renderer/components/ui/collapsible').CollapsibleTrigger
   const ComingSoon: typeof import('./shared/components/ComingSoon').ComingSoon
+  const Command: typeof import('./renderer/components/ui/command').Command
+  const CommandDialog: typeof import('./renderer/components/ui/command').CommandDialog
+  const CommandEmpty: typeof import('./renderer/components/ui/command').CommandEmpty
+  const CommandGroup: typeof import('./renderer/components/ui/command').CommandGroup
+  const CommandInput: typeof import('./renderer/components/ui/command').CommandInput
+  const CommandItem: typeof import('./renderer/components/ui/command').CommandItem
+  const CommandList: typeof import('./renderer/components/ui/command').CommandList
+  const CommandSeparator: typeof import('./renderer/components/ui/command').CommandSeparator
+  const CommandShortcut: typeof import('./renderer/components/ui/command').CommandShortcut
   const Controller: typeof import('react-hook-form').Controller
+  const CurrencyInput: typeof import('./renderer/components/currency-input').CurrencyInput
   const CustomersPage: typeof import('./renderer/pages/customers-page').CustomersPage
   const CustomersTable: typeof import('./renderer/features/customers/components/customers-table').CustomersTable
   const DashboardPage: typeof import('./renderer/pages/dashboard-page').DashboardPage
+  const DatePickerField: typeof import('./renderer/components/date-picker-field').DatePickerField
   const Debts: typeof import('./renderer/features/reports/components/debts').Debts
   const DeleteProductDialog: typeof import('./renderer/features/products/ui/delete-product-dialog').DeleteProductDialog
   const Dialog: typeof import('./renderer/components/ui/dialog').Dialog
@@ -110,6 +123,7 @@ declare global {
   const DropdownMenuSubTrigger: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuSubTrigger
   const DropdownMenuTrigger: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuTrigger
   const EMPTY_CATEGORY_FORM: typeof import('./renderer/features/categories/model/category-constants').EMPTY_CATEGORY_FORM
+  const EMPTY_INVENTORY_ITEM: typeof import('./renderer/features/inventory/model/inventory-entry-constants').EMPTY_INVENTORY_ITEM
   const EMPTY_PRODUCT_FORM: typeof import('./renderer/features/products/model/product-constants').EMPTY_PRODUCT_FORM
   const Empty: typeof import('./renderer/components/ui/empty').Empty
   const EmptyContent: typeof import('./renderer/components/ui/empty').EmptyContent
@@ -129,16 +143,21 @@ declare global {
   const FieldTitle: typeof import('./renderer/components/ui/field').FieldTitle
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
+  const INVENTORY_ENTRY_DEFAULTS: typeof import('./renderer/features/inventory/model/inventory-entry-constants').INVENTORY_ENTRY_DEFAULTS
   const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
+  const IconLucideArrowLeft: typeof import('~icons/lucide/arrow-left.tsx').default
   const IconLucideBell: typeof import('~icons/lucide/bell.tsx').default
   const IconLucideBookUser: typeof import('~icons/lucide/book-user.tsx').default
   const IconLucideBookUsers: typeof import('~icons/lucide/book-users.tsx').default
+  const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
+  const IconLucideChevronsUpDown: typeof import('~icons/lucide/chevrons-up-down.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
   const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
+  const IconLucideMoveLeft: typeof import('~icons/lucide/move-left.tsx').default
   const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucideRefreshCw: typeof import('~icons/lucide/refresh-cw.tsx').default
@@ -158,6 +177,11 @@ declare global {
   const InputGroupInput: typeof import('./renderer/components/ui/input-group').InputGroupInput
   const InputGroupText: typeof import('./renderer/components/ui/input-group').InputGroupText
   const InputGroupTextarea: typeof import('./renderer/components/ui/input-group').InputGroupTextarea
+  const InventoryEntryForm: typeof import('./renderer/features/inventory/ui/inventory-entry-form').InventoryEntryForm
+  const InventoryEntryFormFields: typeof import('./renderer/features/inventory/ui/inventory-entry-form-fields').InventoryEntryFormFields
+  const InventoryEntryFormHeader: typeof import('./renderer/features/inventory/ui/inventory-entry-form-header').InventoryEntryFormHeader
+  const InventoryEntryFormRow: typeof import('./renderer/features/inventory/ui/inventory-entry-form-row').InventoryEntryFormRow
+  const InventoryEntryPage: typeof import('./renderer/pages/inventory-entry-page').InventoryEntryPage
   const InventoryPage: typeof import('./renderer/pages/inventory-page').InventoryPage
   const Kbd: typeof import('./renderer/components/ui/shadcn-io/kbd/index').Kbd
   const KbdKey: typeof import('./renderer/components/ui/shadcn-io/kbd/index').KbdKey
@@ -178,12 +202,17 @@ declare global {
   const PRODUCT_STATUSES: typeof import('./renderer/features/products/model/product-status').PRODUCT_STATUSES
   const PageHeader: typeof import('./renderer/components/ui/page-header').PageHeader
   const Placeholder: typeof import('./renderer/components/placeholder').Placeholder
+  const Popover: typeof import('./renderer/components/ui/popover').Popover
+  const PopoverAnchor: typeof import('./renderer/components/ui/popover').PopoverAnchor
+  const PopoverContent: typeof import('./renderer/components/ui/popover').PopoverContent
+  const PopoverTrigger: typeof import('./renderer/components/ui/popover').PopoverTrigger
   const PosPage: typeof import('./renderer/pages/pos-page').PosPage
   const ProductForm: typeof import('./renderer/features/products/ui/product-form').ProductForm
   const ProductFormDialog: typeof import('./renderer/features/products/ui/product-form-dialog').ProductFormDialog
   const ProductFormField: typeof import('./features/products/ui/product-form-field').ProductFormField
   const ProductFormFields: typeof import('./renderer/features/products/ui/product-form-fields').ProductFormFields
   const ProductImagePicker: typeof import('./renderer/features/products/ui/product-image-picker').ProductImagePicker
+  const ProductSelect: typeof import('./renderer/features/inventory/ui/product-select').ProductSelect
   const ProductsEmptyState: typeof import('./renderer/features/products/ui/products-empty-state').ProductsEmptyState
   const ProductsFilters: typeof import('./renderer/features/products/ui/products-filters').ProductsFilters
   const ProductsHeader: typeof import('./renderer/features/products/ui/products-header').ProductsHeader
@@ -268,6 +297,7 @@ declare global {
   const TopProducts: typeof import('./renderer/features/reports/components/top-products').TopProducts
   const TypographyH3: typeof import('./renderer/components/ui/typography').TypographyH3
   const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
+  const UseFormReturn: typeof import('react-hook-form').UseFormReturn
   const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
   const buttonGroupVariants: typeof import('./renderer/components/ui/button-group').buttonGroupVariants
   const buttonVariants: typeof import('./renderer/components/ui/button').buttonVariants
@@ -287,11 +317,18 @@ declare global {
   const fetchCategories: typeof import('./features/categories/api/category-service').fetchCategories
   const fetchProducts: typeof import('./features/products/api').fetchProducts
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
+  const formatLempira: typeof import('./shared/utils/formatCurrency').formatLempira
   const forwardRef: typeof import('react').forwardRef
   const imageAdapter: typeof import('./renderer/features/images/api/image-adapter').imageAdapter
   const imageService: typeof import('./renderer/features/images/services/image-service').imageService
+  const inventoryAdapter: typeof import('./renderer/features/inventory/api/inventory-adapter').inventoryAdapter
+  const inventoryEntrySchema: typeof import('./renderer/features/inventory/model/inventory-entry-schema').inventoryEntrySchema
+  const inventoryItemSchema: typeof import('./renderer/features/inventory/model/inventory-entry-schema').inventoryItemSchema
+  const inventoryKeys: typeof import('./renderer/features/inventory/hooks/inventory-keys').inventoryKeys
+  const inventoryService: typeof import('./renderer/features/inventory/services/inventory-service').inventoryService
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
+  const parseCurrency: typeof import('./shared/utils/formatCurrency').parseCurrency
   const parseError: typeof import('./shared/errors/parse-error').parseError
   const productAdapter: typeof import('./renderer/features/products/api/product-adapter').productAdapter
   const productFormSchema: typeof import('./renderer/features/products/model/product-form-schema').productFormSchema
@@ -305,6 +342,7 @@ declare global {
   const toast: typeof import('sonner').toast
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
+  const useAddStock: typeof import('./renderer/features/inventory/hooks/use-add-stock').useAddStock
   const useCallback: typeof import('react').useCallback
   const useCategories: typeof import('./renderer/features/categories/hooks/use-categories').useCategories
   const useCategoryForm: typeof import('./renderer/features/categories/hooks/use-category-form').useCategoryForm
@@ -319,8 +357,10 @@ declare global {
   const useDeleteProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteProduct
   const useEffect: typeof import('react').useEffect
   const useEffectEvent: typeof import('react').useEffectEvent
+  const useFieldArray: typeof import('react-hook-form').useFieldArray
   const useForm: typeof import('react-hook-form').useForm
   const useFormContext: typeof import('react-hook-form').useFormContext
+  const useFormReturn: typeof import('react-hook-form').useFormReturn
   const useHref: typeof import('react-router-dom').useHref
   const useId: typeof import('react').useId
   const useImagePath: typeof import('./renderer/features/images/hooks/use-image-path').useImagePath
@@ -328,6 +368,7 @@ declare global {
   const useImperativeHandle: typeof import('react').useImperativeHandle
   const useInRouterContext: typeof import('react-router-dom').useInRouterContext
   const useInsertionEffect: typeof import('react').useInsertionEffect
+  const useInventoryEntryForm: typeof import('./renderer/features/inventory/hooks/use-inventory-entry-form').useInventoryEntryForm
   const useLayoutEffect: typeof import('react').useLayoutEffect
   const useLinkClickHandler: typeof import('react-router-dom').useLinkClickHandler
   const useLocation: typeof import('react-router-dom').useLocation
@@ -373,6 +414,12 @@ declare global {
   // @ts-ignore
   export type { Category } from './renderer/features/categories/model/category-schema'
   import('./renderer/features/categories/model/category-schema')
+  // @ts-ignore
+  export type { AddStockPayload, ConsumeInventoryPayload, AdjustStockPayload } from './renderer/features/inventory/api/inventory-adapter'
+  import('./renderer/features/inventory/api/inventory-adapter')
+  // @ts-ignore
+  export type { InventoryEntryFormInput, InventoryEntryFormData } from './renderer/features/inventory/model/inventory-entry-schema'
+  import('./renderer/features/inventory/model/inventory-entry-schema')
   // @ts-ignore
   export type { ProductFormInput, ProductFormData } from './renderer/features/products/model/product-form-schema'
   import('./renderer/features/products/model/product-form-schema')

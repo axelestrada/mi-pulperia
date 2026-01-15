@@ -1,6 +1,10 @@
 import { db } from 'main/db'
 
-import { AddStockDTO, AdjustStockDTO, ConsumeProductDTO } from './inventory-model'
+import {
+  AddStockDTO,
+  AdjustStockDTO,
+  ConsumeProductDTO,
+} from './inventory-model'
 import { inventoryBatchesRepository } from './inventory-batches-repository'
 import { inventoryMovementsRepository } from './inventory-movements-repository'
 
@@ -23,25 +27,23 @@ export const inventoryService = {
       throw new Error('El costo no puede ser negativo.')
     }
 
-    await db.transaction(async () => {
-      const [batch] = await inventoryBatchesRepository.createBatch({
-        productId,
-        supplierId,
-        batchCode,
-        expirationDate,
-        quantityInitial: quantity,
-        cost,
-      })
+    const [batch] = await inventoryBatchesRepository.createBatch({
+      productId,
+      supplierId,
+      batchCode,
+      expirationDate,
+      quantityInitial: quantity,
+      cost,
+    })
 
-      await inventoryMovementsRepository.createMovement({
-        productId,
-        batchId: batch.id,
-        type: 'IN',
-        quantity,
-        reason: 'stock_in',
-        referenceType,
-        referenceId,
-      })
+    await inventoryMovementsRepository.createMovement({
+      productId,
+      batchId: batch.id,
+      type: 'IN',
+      quantity,
+      reason: 'stock_in',
+      referenceType,
+      referenceId,
     })
   },
 

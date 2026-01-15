@@ -33,6 +33,7 @@ export default defineConfig({
             'Controller',
             'useFormContext',
             'FormProvider',
+            'useFieldArray',
           ],
         },
         {

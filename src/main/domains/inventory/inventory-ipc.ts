@@ -10,9 +10,6 @@ export const registerInventoryIPC = () => {
   ipcMain.handle('inventory:addStock', async (_, payload: AddStockDTO) => {
     await inventoryService.addStock({
       ...payload,
-      expirationDate: payload.expirationDate
-        ? new Date(payload.expirationDate)
-        : null,
     })
   })
 

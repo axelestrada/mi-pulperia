@@ -48,6 +48,13 @@ export const router = createHashRouter([
         element: <InventoryPage />,
         handle: {
           title: 'Inventario',
+        }
+      },
+      {
+        path: 'inventory-entry',
+        element: <InventoryEntryPage />,
+        handle: {
+          title: 'Entrada de Inventario',
         },
       },
       {
