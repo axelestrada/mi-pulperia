@@ -15,7 +15,7 @@ export const inventoryService = {
     batchCode,
     expirationDate,
     quantity,
-    cost,
+    unitCost,
     referenceType,
     referenceId,
   }: AddStockDTO) => {
@@ -23,7 +23,7 @@ export const inventoryService = {
       throw new Error('La cantidad debe ser mayor que cero.')
     }
 
-    if (cost < 0) {
+    if (unitCost < 0) {
       throw new Error('El costo no puede ser negativo.')
     }
 
@@ -33,7 +33,7 @@ export const inventoryService = {
       batchCode,
       expirationDate,
       quantityInitial: quantity,
-      cost,
+      unitCost,
     })
 
     await inventoryMovementsRepository.createMovement({

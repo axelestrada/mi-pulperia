@@ -1,5 +1,11 @@
 import { Category } from '@/features/categories/model/category-schema'
 
+import { ProductFormData } from '@/features/products/model/product-form-schema'
+import { Product } from '@/features/products/model/product-schema'
+
+import { AddStockDTO, AdjustStockDTO, ConsumeProductDTO } from 'main/domains/inventory/inventory-model'
+import { ProductDTO } from 'main/domains/products/products-model'
+
 export {}
 
 declare global {

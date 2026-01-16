@@ -8,7 +8,7 @@ export type CreateBatchDTO = Pick<
   | 'batchCode'
   | 'expirationDate'
   | 'quantityInitial'
-  | 'cost'
+  | 'unitCost'
 >
 
 export type CreateInventoryMovementDTO = Pick<

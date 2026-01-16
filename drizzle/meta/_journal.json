@@ -57,6 +57,13 @@
       "when": 1768345643393,
       "tag": "0007_funny_morgan_stark",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1768597382904,
+      "tag": "0008_overjoyed_magdalene",
+      "breakpoints": true
     }
   ]
 }

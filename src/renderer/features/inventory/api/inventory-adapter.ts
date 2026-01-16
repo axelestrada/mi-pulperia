@@ -1,10 +1,10 @@
 export type AddStockPayload = {
   productId: number
   supplierId?: number | null
-  batchCode: string
+  batchCode: string | null
   expirationDate?: Date | null
   quantity: number
-  cost: number
+  unitCost: number
   referenceType?: string
   referenceId?: number
 }

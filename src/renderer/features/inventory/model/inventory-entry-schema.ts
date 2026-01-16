@@ -11,9 +11,7 @@ export const inventoryItemSchema = z.object({
     })
     .transform(v => v ?? 0),
   supplierId: z.number().nullable(),
-  batchCode: z.string().min(1, {
-    error: 'Ingrese el numero de lote',
-  }),
+  batchCode: z.string().nullable(),
   expirationDate: z.date().nullable(),
   quantity: z.coerce
     .number({
@@ -24,9 +22,9 @@ export const inventoryItemSchema = z.object({
       message: 'La cantidad debe ser mayor a 0',
     })
     .transform(v => v ?? 0),
-  cost: z.coerce
+  unitCost: z.coerce
     .number({
-      error: 'Ingrese el costo del lote',
+      error: 'Ingrese el costo unitario',
     })
     .nullable()
     .refine(v => v !== null && v > 0, {

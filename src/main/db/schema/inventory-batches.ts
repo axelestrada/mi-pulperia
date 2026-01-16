@@ -7,11 +7,11 @@ export const inventoryBatchesTable = sqliteTable(
     id: int().primaryKey({ autoIncrement: true }),
     productId: int('product_id').notNull(),
     supplierId: int('supplier_id'),
-    batchCode: text('batch_code').notNull(),
+    batchCode: text('batch_code'),
     expirationDate: int('expiration_date', { mode: 'timestamp' }),
     quantityInitial: int('quantity_initial').notNull(),
     quantityAvailable: int('quantity_available').notNull(),
-    cost: int('cost').notNull(),
+    unitCost: int('unit_cost').notNull(),
     receivedAt: int('received_at', { mode: 'timestamp' })
       .default(sql`(unixepoch())`)
       .notNull(),

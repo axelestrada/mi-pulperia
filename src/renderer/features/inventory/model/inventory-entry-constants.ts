@@ -4,7 +4,7 @@ export const EMPTY_INVENTORY_ITEM = {
   batchCode: '',
   expirationDate: null,
   quantity: null,
-  cost: null,
+  unitCost: null,
 }
 
 export const INVENTORY_ENTRY_DEFAULTS = {

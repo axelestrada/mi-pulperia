@@ -22,6 +22,7 @@ export const useInventoryEntryForm = () => {
 
       form.reset()
     } catch (error) {
+      console.error('Error al agregar entrada de inventario:', error)
       toast.error('Error al agregar entrada de inventario')
     }
   }

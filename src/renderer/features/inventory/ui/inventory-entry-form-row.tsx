@@ -45,7 +45,7 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Lote</FieldLabel>
-            <Input {...field} placeholder="L-001" />
+            <Input {...field} value={field.value ?? ''} placeholder="L-001" />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -57,19 +57,29 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Cantidad</FieldLabel>
-            <Input placeholder="0" inputMode="numeric" {...field} />
+            <Input
+              placeholder="0"
+              inputMode="numeric"
+              {...field}
+              value={field.value ?? ''}
+            />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />
 
       <Controller
-        name={`items.${index}.cost`}
+        name={`items.${index}.unitCost`}
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Costo</FieldLabel>
-            <Input placeholder="0.00" inputMode="numeric" {...field} />
+            <Input
+              placeholder="0.00"
+              inputMode="numeric"
+              {...field}
+              value={field.value ?? ''}
+            />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
