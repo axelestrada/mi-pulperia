@@ -3,7 +3,7 @@ import { Category } from '@/features/categories/model/category-schema'
 import { ProductFormData } from '@/features/products/model/product-form-schema'
 import { Product } from '@/features/products/model/product-schema'
 
-import { AddStockDTO, AdjustStockDTO, ConsumeProductDTO } from 'main/domains/inventory/inventory-model'
+import { AddStockDTO, AdjustStockDTO, ConsumeProductDTO, InventoryBatchDTO, InventoryBatchFilters, InventoryMovementDTO, InventoryMovementFilters } from 'main/domains/inventory/inventory-model'
 import { ProductDTO } from 'main/domains/products/products-model'
 
 export {}
@@ -36,6 +36,8 @@ declare global {
         ) => Promise<{ ok: boolean; error?: string }>
         adjustStock: (data: AdjustStockDTO) => Promise<void>
         getAvailableStock: (productId: Product['id']) => Promise<number>
+        listBatches: (filters: InventoryBatchFilters) => Promise<InventoryBatchDTO[]>
+        listMovements: (filters: InventoryMovementFilters) => Promise<InventoryMovementDTO[]>
       }
     }
     images: {

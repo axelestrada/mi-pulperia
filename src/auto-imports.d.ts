@@ -50,16 +50,12 @@ declare global {
   const CategoriesTable: typeof import('./renderer/features/categories/ui/categories-table').CategoriesTable
   const CategoriesTableContent: typeof import('./renderer/features/categories/ui/categories-table-content').CategoriesTableContent
   const CategoriesTableHeader: typeof import('./renderer/features/categories/ui/categories-table-header').CategoriesTableHeader
-  const CategoriesTablePagination: typeof import('./features/categories/ui/categories-table-pagination').CategoriesTablePagination
   const CategoriesTableRow: typeof import('./renderer/features/categories/ui/categories-table-row').CategoriesTableRow
   const CategoryForm: typeof import('./renderer/features/categories/ui/category-form').CategoryForm
   const CategoryFormDialog: typeof import('./renderer/features/categories/ui/category-form-dialog').CategoryFormDialog
-  const CategoryFormField: typeof import('./features/categories/ui/category-form-field').CategoryFormField
-  const CategoryFormFieldProps: typeof import('./features/categories/model/category-types').CategoryFormFieldProps
   const CategoryFormFields: typeof import('./renderer/features/categories/ui/category-form-fields').CategoryFormFields
   const CategorySales: typeof import('./renderer/features/reports/components/category-sales').CategorySales
   const CategorySelect: typeof import('./renderer/features/products/ui/category-select').CategorySelect
-  const CategoryTableRow: typeof import('./features/categories/ui/categories-table-row').CategoryTableRow
   const ChartContainer: typeof import('./renderer/components/ui/chart').ChartContainer
   const ChartLegend: typeof import('./renderer/components/ui/chart').ChartLegend
   const ChartLegendContent: typeof import('./renderer/components/ui/chart').ChartLegendContent
@@ -131,6 +127,7 @@ declare global {
   const EmptyHeader: typeof import('./renderer/components/ui/empty').EmptyHeader
   const EmptyMedia: typeof import('./renderer/components/ui/empty').EmptyMedia
   const EmptyTitle: typeof import('./renderer/components/ui/empty').EmptyTitle
+  const ExpirationStatusCell: typeof import('./renderer/features/inventory/batches/ui/expiration-status-cell').ExpirationStatusCell
   const Field: typeof import('./renderer/components/ui/field').Field
   const FieldContent: typeof import('./renderer/components/ui/field').FieldContent
   const FieldDescription: typeof import('./renderer/components/ui/field').FieldDescription
@@ -144,30 +141,23 @@ declare global {
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
   const INVENTORY_ENTRY_DEFAULTS: typeof import('./renderer/features/inventory/model/inventory-entry-constants').INVENTORY_ENTRY_DEFAULTS
-  const IconCarbonApps: typeof import('~icons/carbon/apps.jsx')['default']
   const IconLucideArrowLeft: typeof import('~icons/lucide/arrow-left.tsx').default
   const IconLucideBell: typeof import('~icons/lucide/bell.tsx').default
   const IconLucideBookUser: typeof import('~icons/lucide/book-user.tsx').default
-  const IconLucideBookUsers: typeof import('~icons/lucide/book-users.tsx').default
   const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideChevronsUpDown: typeof import('~icons/lucide/chevrons-up-down.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
+  const IconLucideEye: typeof import('~icons/lucide/eye.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
   const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
-  const IconLucideMoveLeft: typeof import('~icons/lucide/move-left.tsx').default
   const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
-  const IconLucideRefreshCw: typeof import('~icons/lucide/refresh-cw.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
-  const IconLucideSmartphone: typeof import('~icons/lucide/smartphone.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
-  const IconLucideTriangleAlert: typeof import('~icons/lucide/triangle-alert.tsx').default
-  const IconLucideUserRoundCheck: typeof import('~icons/lucide/user-round-check.tsx').default
-  const IconLucideUserRoundX: typeof import('~icons/lucide/user-round-x.tsx').default
   const IconLucideUsers: typeof import('~icons/lucide/users.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
   const Input: typeof import('./renderer/components/ui/input').Input
@@ -177,6 +167,11 @@ declare global {
   const InputGroupInput: typeof import('./renderer/components/ui/input-group').InputGroupInput
   const InputGroupText: typeof import('./renderer/components/ui/input-group').InputGroupText
   const InputGroupTextarea: typeof import('./renderer/components/ui/input-group').InputGroupTextarea
+  const InventoryBatchesTable: typeof import('./renderer/features/inventory/batches/ui/inventory-batches-table').InventoryBatchesTable
+  const InventoryBatchesTableActions: typeof import('./renderer/features/inventory/batches/ui/inventory-batches-table-actions').InventoryBatchesTableActions
+  const InventoryBatchesTableEmpty: typeof import('./renderer/features/inventory/batches/ui/inventory-batches-table-empty').InventoryBatchesTableEmpty
+  const InventoryBatchesTableHeader: typeof import('./renderer/features/inventory/batches/ui/inventory-batches-table-header').InventoryBatchesTableHeader
+  const InventoryBatchesTableRow: typeof import('./renderer/features/inventory/batches/ui/inventory-batches-table-row').InventoryBatchesTableRow
   const InventoryEntryForm: typeof import('./renderer/features/inventory/ui/inventory-entry-form').InventoryEntryForm
   const InventoryEntryFormFields: typeof import('./renderer/features/inventory/ui/inventory-entry-form-fields').InventoryEntryFormFields
   const InventoryEntryFormHeader: typeof import('./renderer/features/inventory/ui/inventory-entry-form-header').InventoryEntryFormHeader
@@ -189,8 +184,6 @@ declare global {
   const Layout: typeof import('./renderer/layout').Layout
   const Link: typeof import('react-router-dom').Link
   const LowStock: typeof import('./renderer/features/reports/components/low-stock').LowStock
-  const MainLayout: typeof import('./app/layout/main-layout').MainLayout
-  const MainRoutes: typeof import('./@/routes').MainRoutes
   const MeasurementUnitBadge: typeof import('./renderer/components/badges/measurement-unit-badge').MeasurementUnitBadge
   const NavLink: typeof import('react-router-dom').NavLink
   const NavMain: typeof import('./renderer/components/sidebar/nav-main').NavMain
@@ -209,7 +202,6 @@ declare global {
   const PosPage: typeof import('./renderer/pages/pos-page').PosPage
   const ProductForm: typeof import('./renderer/features/products/ui/product-form').ProductForm
   const ProductFormDialog: typeof import('./renderer/features/products/ui/product-form-dialog').ProductFormDialog
-  const ProductFormField: typeof import('./features/products/ui/product-form-field').ProductFormField
   const ProductFormFields: typeof import('./renderer/features/products/ui/product-form-fields').ProductFormFields
   const ProductImagePicker: typeof import('./renderer/features/products/ui/product-image-picker').ProductImagePicker
   const ProductSelect: typeof import('./renderer/features/inventory/ui/product-select').ProductSelect
@@ -225,7 +217,6 @@ declare global {
   const QueryClient: typeof import('@tanstack/react-query').QueryClient
   const QueryClientProvider: typeof import('@tanstack/react-query').QueryClientProvider
   const Route: typeof import('react-router-dom').Route
-  const Router: typeof import('./lib/electron-router-dom').Router
   const Routes: typeof import('react-router-dom').Routes
   const SafeImage: typeof import('./renderer/components/ui/safe-image').SafeImage
   const ScrollArea: typeof import('./renderer/components/ui/scroll-area').ScrollArea
@@ -297,25 +288,20 @@ declare global {
   const TopProducts: typeof import('./renderer/features/reports/components/top-products').TopProducts
   const TypographyH3: typeof import('./renderer/components/ui/typography').TypographyH3
   const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
-  const UseFormReturn: typeof import('react-hook-form').UseFormReturn
   const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
+  const batchSchema: typeof import('./renderer/features/inventory/batches/model/inventory-batch-schema').batchSchema
   const buttonGroupVariants: typeof import('./renderer/components/ui/button-group').buttonGroupVariants
   const buttonVariants: typeof import('./renderer/components/ui/button').buttonVariants
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal
-  const categoriesService: typeof import('./features/categories/services/categories-service')['categoriesService']
   const categoryAdapter: typeof import('./renderer/features/categories/api/category-adapter').categoryAdapter
   const categoryFormSchema: typeof import('./renderer/features/categories/model/category-form-schema').categoryFormSchema
   const categoryKeys: typeof import('./renderer/features/categories/hooks/category-keys').categoryKeys
   const categorySchema: typeof import('./renderer/features/categories/model/category-schema').categorySchema
   const categoryService: typeof import('./renderer/features/categories/services/category-service').categoryService
   const categoryToForm: typeof import('./renderer/features/categories/model/category-mappers').categoryToForm
-  const cn: typeof import('./@/lib/utils').cn
-  const createCategory: typeof import('./features/categories/api/category-service').createCategory
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
-  const fetchCategories: typeof import('./features/categories/api/category-service').fetchCategories
-  const fetchProducts: typeof import('./features/products/api').fetchProducts
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
   const formatLempira: typeof import('./shared/utils/formatCurrency').formatLempira
   const forwardRef: typeof import('react').forwardRef
@@ -328,6 +314,7 @@ declare global {
   const inventoryService: typeof import('./renderer/features/inventory/services/inventory-service').inventoryService
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
+  const movementSchema: typeof import('./renderer/features/inventory/model/inventory-movement-schema').movementSchema
   const parseCurrency: typeof import('./shared/utils/formatCurrency').parseCurrency
   const parseError: typeof import('./shared/errors/parse-error').parseError
   const productAdapter: typeof import('./renderer/features/products/api/product-adapter').productAdapter
@@ -336,7 +323,6 @@ declare global {
   const productSchema: typeof import('./renderer/features/products/model/product-schema').productSchema
   const productService: typeof import('./renderer/features/products/services/product-service').productService
   const productToForm: typeof import('./renderer/features/products/model/product-mappers').productToForm
-  const registerRoute: typeof import('./lib/electron-router-dom').registerRoute
   const router: typeof import('./renderer/routes').router
   const startTransition: typeof import('react').startTransition
   const toast: typeof import('sonner').toast
@@ -351,7 +337,6 @@ declare global {
   const useCreateProduct: typeof import('./renderer/features/products/hooks/use-create-product').useCreateProduct
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
-  const useDeleteCProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteCProduct
   const useDeleteCategory: typeof import('./renderer/features/categories/hooks/use-delete-category').useDeleteCategory
   const useDeleteImage: typeof import('./renderer/features/images/hooks/use-delete-image').useDeleteImage
   const useDeleteProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteProduct
@@ -360,15 +345,15 @@ declare global {
   const useFieldArray: typeof import('react-hook-form').useFieldArray
   const useForm: typeof import('react-hook-form').useForm
   const useFormContext: typeof import('react-hook-form').useFormContext
-  const useFormReturn: typeof import('react-hook-form').useFormReturn
   const useHref: typeof import('react-router-dom').useHref
   const useId: typeof import('react').useId
   const useImagePath: typeof import('./renderer/features/images/hooks/use-image-path').useImagePath
-  const useImageUpload: typeof import('./features/products/hooks/use-image-upload').useImageUpload
   const useImperativeHandle: typeof import('react').useImperativeHandle
   const useInRouterContext: typeof import('react-router-dom').useInRouterContext
   const useInsertionEffect: typeof import('react').useInsertionEffect
+  const useInventoryBatches: typeof import('./renderer/features/inventory/batches/hooks/use-inventory-batches').useInventoryBatches
   const useInventoryEntryForm: typeof import('./renderer/features/inventory/hooks/use-inventory-entry-form').useInventoryEntryForm
+  const useInventoryMovements: typeof import('./renderer/features/inventory/hooks/use-inventory-movements').useInventoryMovements
   const useLayoutEffect: typeof import('react').useLayoutEffect
   const useLinkClickHandler: typeof import('react-router-dom').useLinkClickHandler
   const useLocation: typeof import('react-router-dom').useLocation
@@ -418,8 +403,20 @@ declare global {
   export type { AddStockPayload, ConsumeInventoryPayload, AdjustStockPayload } from './renderer/features/inventory/api/inventory-adapter'
   import('./renderer/features/inventory/api/inventory-adapter')
   // @ts-ignore
+  export type { InventoryBatchFilters } from './renderer/features/inventory/batches/model/inventory-batch-filters'
+  import('./renderer/features/inventory/batches/model/inventory-batch-filters')
+  // @ts-ignore
+  export type { InventoryBatch } from './renderer/features/inventory/batches/model/inventory-batch-schema'
+  import('./renderer/features/inventory/batches/model/inventory-batch-schema')
+  // @ts-ignore
   export type { InventoryEntryFormInput, InventoryEntryFormData } from './renderer/features/inventory/model/inventory-entry-schema'
   import('./renderer/features/inventory/model/inventory-entry-schema')
+  // @ts-ignore
+  export type { InventoryMovementFilters } from './renderer/features/inventory/model/inventory-movement-filters'
+  import('./renderer/features/inventory/model/inventory-movement-filters')
+  // @ts-ignore
+  export type { InventoryMovement } from './renderer/features/inventory/model/inventory-movement-schema'
+  import('./renderer/features/inventory/model/inventory-movement-schema')
   // @ts-ignore
   export type { ProductFormInput, ProductFormData } from './renderer/features/products/model/product-form-schema'
   import('./renderer/features/products/model/product-form-schema')

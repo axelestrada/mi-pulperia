@@ -20,7 +20,7 @@ export const CategoriesTableRow = ({ category, onEdit }: Props) => {
         <p className="font-medium">{category.name}</p>
       </TableCell>
 
-      <TableCell>{category.description}</TableCell>
+      <TableCell>{category.description ?? '—'}</TableCell>
 
       <TableCell>
         <Badge

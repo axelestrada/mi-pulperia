@@ -23,12 +23,12 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
       </TableCell>
 
       <TableCell className="whitespace-normal">
-        {product.description}
+        {product.description ?? '—'}
       </TableCell>
 
-      <TableCell>{product.sku}</TableCell>
+      <TableCell>{product.sku ?? '—'}</TableCell>
 
-      <TableCell>{product.barcode}</TableCell>
+      <TableCell>{product.barcode ?? '—'}</TableCell>
 
       <TableCell>
         <Badge variant="secondary">{product.category.name}</Badge>

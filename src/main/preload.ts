@@ -7,6 +7,8 @@ import {
   AddStockDTO,
   AdjustStockDTO,
   ConsumeProductDTO,
+  InventoryBatchFilters,
+  InventoryMovementFilters,
 } from './domains/inventory/inventory-model'
 
 contextBridge.exposeInMainWorld('api', {
@@ -37,6 +39,10 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('inventory:adjustStock', data),
     getAvailableStock: (productId: SelectProduct['id']) =>
       ipcRenderer.invoke('inventory:getAvailableStock', productId),
+    listBatches: (filters: InventoryBatchFilters) =>
+      ipcRenderer.invoke('inventory:batches:list', filters),
+    listMovements: (filters: InventoryMovementFilters) =>
+      ipcRenderer.invoke('inventory:movements:list', filters),
   },
 })
 

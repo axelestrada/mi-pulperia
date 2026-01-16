@@ -14,6 +14,10 @@ export const ProductSelect = ({ value, onChange }: Props) => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger>
         <Button
+          onClick={e => {
+            e.preventDefault()
+            setOpen(true)
+          }}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -41,12 +45,11 @@ export const ProductSelect = ({ value, onChange }: Props) => {
               {products.map(product => (
                 <CommandItem
                   key={product.id}
-                  value={product.name}
-                  onSelect={value => {
-                    const product = products.find(p => p.name === value)
-
-                    if (!product) return
-
+                  value={[product.name, product.sku, product.barcode]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase()}
+                  onSelect={() => {
                     onChange(product.id)
                     setOpen(false)
                   }}

@@ -4,6 +4,8 @@ import {
   AddStockDTO,
   AdjustStockDTO,
   ConsumeProductDTO,
+  InventoryBatchFilters,
+  InventoryMovementFilters,
 } from './inventory-model'
 
 export const registerInventoryIPC = () => {
@@ -43,5 +45,16 @@ export const registerInventoryIPC = () => {
       const total = await inventoryService.getAvailableStock(productId)
       return { total }
     }
+  )
+
+  ipcMain.handle(
+    'inventory:batches:list',
+    (_, filters: InventoryBatchFilters) => inventoryService.listBatches(filters)
+  )
+
+  ipcMain.handle(
+    'inventory:movements:list',
+    (_, filters: InventoryMovementFilters) =>
+      inventoryService.listMovements(filters)
   )
 }

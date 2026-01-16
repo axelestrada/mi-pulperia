@@ -4,7 +4,10 @@ import {
   AddStockDTO,
   AdjustStockDTO,
   ConsumeProductDTO,
+  InventoryBatchFilters,
+  InventoryMovementFilters,
 } from './inventory-model'
+
 import { inventoryBatchesRepository } from './inventory-batches-repository'
 import { inventoryMovementsRepository } from './inventory-movements-repository'
 
@@ -26,6 +29,8 @@ export const inventoryService = {
     if (unitCost < 0) {
       throw new Error('El costo no puede ser negativo.')
     }
+
+    console.log('batchCode', batchCode)
 
     const [batch] = await inventoryBatchesRepository.createBatch({
       productId,
@@ -86,9 +91,8 @@ export const inventoryService = {
     }
 
     await db.transaction(async () => {
-      const batches = await inventoryBatchesRepository.findAvailableByProduct(
-        productId
-      )
+      const batches =
+        await inventoryBatchesRepository.findAvailableByProduct(productId)
 
       if (batches.length === 0) {
         throw new Error('No hay stock disponible para este producto.')
@@ -124,5 +128,13 @@ export const inventoryService = {
 
   getAvailableStock: async (productId: number) => {
     return inventoryBatchesRepository.getTotalAvailableByProduct(productId)
+  },
+
+  listBatches(filters: InventoryBatchFilters) {
+    return inventoryBatchesRepository.findBatches(filters)
+  },
+
+  listMovements(filters: InventoryMovementFilters) {
+    return inventoryMovementsRepository.findMovements(filters)
   },
 }

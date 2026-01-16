@@ -16,4 +16,14 @@ export const inventoryService = {
     const data = await inventoryAdapter.getAvailableStock(productId)
     return data
   },
+
+  async listBatches(filters: InventoryBatchFilters) {
+    const data = await inventoryAdapter.listBatches(filters)
+    return batchSchema.array().parse(data)
+  },
+
+  async listMovements(filters: InventoryMovementFilters) {
+    const data = await inventoryAdapter.listMovements(filters)
+    return movementSchema.array().parse(data)
+  },
 }

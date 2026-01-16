@@ -7,6 +7,14 @@ export const useAddStock = () => {
       queryClient.invalidateQueries({
         queryKey: inventoryKeys.stock(variables.productId),
       })
+
+      queryClient.invalidateQueries({
+        queryKey: inventoryKeys.batches.all(),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: inventoryKeys.movements.all(),
+      })
     },
   })
 }

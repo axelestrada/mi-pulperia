@@ -24,7 +24,7 @@ export const InventoryPage = () => {
         </TabsList>
 
         <TabsContent value="batches">
-          <ComingSoon />
+          <InventoryBatchesTable filters={{}} />
         </TabsContent>
 
         <TabsContent value="movements">

@@ -7,13 +7,13 @@ export const productFormSchema = z.object({
     message: 'Ingrese el nombre del producto',
   }),
 
-  description: z.string().transform(value => value || null),
+  description: z.string().transform(value => value.trim() || null),
 
-  image: z.string().transform(value => value || null),
+  image: z.string().transform(value => value.trim() || null),
 
-  barcode: z.string().transform(value => value || null),
+  barcode: z.string().transform(value => value.trim() || null),
 
-  sku: z.string().transform(value => value || null),
+  sku: z.string().transform(value => value.trim() || null),
 
   categoryId: z
     .number({

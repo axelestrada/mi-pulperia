@@ -42,4 +42,12 @@ export const inventoryAdapter = {
   getAvailableStock(productId: number) {
     return window.api.inventory.getAvailableStock(productId)
   },
+
+  listBatches(filters: InventoryBatchFilters) {
+    return window.api.inventory.listBatches(filters)
+  },
+
+  listMovements(filters: InventoryMovementFilters) {
+    return window.api.inventory.listBatches(filters)
+  },
 }
