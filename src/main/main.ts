@@ -2,6 +2,7 @@ import { app, BrowserWindow, protocol } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { autoUpdater } from 'electron-updater'
+import log from 'electron-log'
 
 import { runMigrations } from './db/migrate'
 import { registerCategoriesHandlers } from './ipc/categories-ipc'
@@ -23,6 +24,33 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   : RENDERER_DIST
 
 let win: BrowserWindow | null
+
+autoUpdater.logger = log
+
+autoUpdater.on('checking-for-update', () => {
+  log.info('Buscando actualización...')
+})
+
+autoUpdater.on('update-available', info => {
+  log.info('Actualización disponible', info)
+})
+
+autoUpdater.on('update-not-available', info => {
+  log.info('No hay actualización', info)
+})
+
+autoUpdater.on('error', err => {
+  log.error('Error en autoUpdater', err)
+})
+
+autoUpdater.on('download-progress', progress => {
+  log.info(`Descargando: ${Math.round(progress.percent)}%`)
+})
+
+autoUpdater.on('update-downloaded', () => {
+  log.info('Actualización descargada, reiniciando...')
+  autoUpdater.quitAndInstall()
+})
 
 function createWindow() {
   win = new BrowserWindow({
@@ -60,6 +88,12 @@ app.on('window-all-closed', () => {
 
 app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'axelestrada',
+      repo: 'mi-pulperia',
+    })
+
     autoUpdater.checkForUpdatesAndNotify()
 
     runMigrations()
@@ -81,6 +115,12 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.whenReady().then(async () => {
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'axelestrada',
+    repo: 'mi-pulperia',
+  })
+
   autoUpdater.checkForUpdatesAndNotify()
 
   runMigrations()
