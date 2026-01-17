@@ -8,7 +8,7 @@ type Props = {
 export const InventoryBatchesTableRow = ({ batch }: Props) => {
   return (
     <TableRow>
-      <TableCell>{batch.batchCode ?? '#' + batch.id}</TableCell>
+      <TableCell>{'#' + batch.id}</TableCell>
       <TableCell className="whitespace-normal">{batch.productName}</TableCell>
       <TableCell className="whitespace-normal">
         {batch.supplierId ?? '—'}

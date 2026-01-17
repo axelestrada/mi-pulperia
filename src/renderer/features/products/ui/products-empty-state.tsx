@@ -11,7 +11,7 @@ export const ProductsEmptyState = ({ onCreate }: Props) => {
         </EmptyMedia>
         <EmptyTitle>Aún no hay productos</EmptyTitle>
         <EmptyDescription>
-          Crea tu primera producto para comenzar a vender.
+          Crea tu primer producto para comenzar a vender.
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

@@ -1,6 +1,6 @@
 export const InventoryPage = () => {
   return (
-    <div className="flex-1 flex flex-col">
+    <>
       <PageHeader
         title="Inventario"
         description="Control de lotes y movimientos."
@@ -13,7 +13,7 @@ export const InventoryPage = () => {
         }
       />
 
-      <Tabs defaultValue="batches" className="flex-1">
+      <Tabs defaultValue="batches" className="h-full">
         <TabsList className="mb-2">
           <TabsTrigger value="batches">
             <IconLucidePackage /> Lotes
@@ -23,7 +23,7 @@ export const InventoryPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="batches">
+        <TabsContent value="batches" className="h-full">
           <InventoryBatchesTable filters={{}} />
         </TabsContent>
 
@@ -31,6 +31,6 @@ export const InventoryPage = () => {
           <ComingSoon />
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   )
 }
