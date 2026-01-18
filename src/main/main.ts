@@ -1,3 +1,5 @@
+import './logger'
+
 import { app, BrowserWindow, protocol } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -52,6 +54,8 @@ autoUpdater.on('update-downloaded', () => {
   autoUpdater.quitAndInstall()
 })
 
+runMigrations()
+
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(__dirname, '../../build/icons/win/icon.ico'),
@@ -96,8 +100,6 @@ app.on('activate', async () => {
 
     autoUpdater.checkForUpdatesAndNotify()
 
-    runMigrations()
-
     registerImagesHandlers()
     registerProductsHandlers()
     registerInventoryIPC()
@@ -122,8 +124,6 @@ app.whenReady().then(async () => {
   })
 
   autoUpdater.checkForUpdatesAndNotify()
-
-  runMigrations()
 
   registerImagesHandlers()
   registerProductsHandlers()

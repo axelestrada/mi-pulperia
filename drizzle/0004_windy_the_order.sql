@@ -7,8 +7,8 @@ ALTER TABLE `products` ADD `base_unit` text DEFAULT 'unit' NOT NULL;--> statemen
 ALTER TABLE `products` ADD `sale_price` integer NOT NULL;--> statement-breakpoint
 ALTER TABLE `products` ADD `min_stock` integer DEFAULT 5 NOT NULL;--> statement-breakpoint
 ALTER TABLE `products` ADD `is_active` integer DEFAULT true NOT NULL;--> statement-breakpoint
-ALTER TABLE `products` ADD `created_at` text DEFAULT (unixepoch()) NOT NULL;--> statement-breakpoint
-ALTER TABLE `products` ADD `updated_at` text DEFAULT (unixepoch()) NOT NULL;--> statement-breakpoint
+ALTER TABLE `products` ADD `created_at` integer NOT NULL;--> statement-breakpoint
+ALTER TABLE `products` ADD `updated_at` integer NOT NULL;--> statement-breakpoint
 ALTER TABLE `products` ADD `deleted` integer DEFAULT false NOT NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX `products_barcode_unique` ON `products` (`barcode`);--> statement-breakpoint
 CREATE UNIQUE INDEX `products_sku_unique` ON `products` (`sku`);
