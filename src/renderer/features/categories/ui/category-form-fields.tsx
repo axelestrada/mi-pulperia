@@ -23,6 +23,7 @@ export const CategoryFormFields = () => {
             <FieldLabel>Descripción</FieldLabel>
             <Textarea
               {...field}
+              value={field.value ?? ''}
               placeholder="Productos básicos de despensa"
               className="min-h-30 resize-none"
             />

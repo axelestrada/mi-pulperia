@@ -1,7 +1,10 @@
 import { db } from 'main/db'
 import { eq } from 'drizzle-orm'
 
-import { CreateInventoryMovementDTO, InventoryMovementFilters } from './inventory-model'
+import {
+  CreateInventoryMovementDTO,
+  InventoryMovementFilters,
+} from './inventory-model'
 
 import { inventoryMovementsTable } from 'main/db/schema/inventory-movements'
 
@@ -27,6 +30,7 @@ export const inventoryMovementsRepository = {
   },
 
   findMovements(filters: InventoryMovementFilters) {
+    console.log(filters)
     // aquí va drizzle/sqlite
   },
 }
