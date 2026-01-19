@@ -29,31 +29,6 @@ let win: BrowserWindow | null
 
 autoUpdater.logger = log
 
-autoUpdater.on('checking-for-update', () => {
-  log.info('Buscando actualización...')
-})
-
-autoUpdater.on('update-available', info => {
-  log.info('Actualización disponible', info)
-})
-
-autoUpdater.on('update-not-available', info => {
-  log.info('No hay actualización', info)
-})
-
-autoUpdater.on('error', err => {
-  log.error('Error en autoUpdater', err)
-})
-
-autoUpdater.on('download-progress', progress => {
-  log.info(`Descargando: ${Math.round(progress.percent)}%`)
-})
-
-autoUpdater.on('update-downloaded', () => {
-  log.info('Actualización descargada, reiniciando...')
-  autoUpdater.quitAndInstall()
-})
-
 runMigrations()
 
 function createWindow() {

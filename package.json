@@ -3,7 +3,7 @@
   "author": "Axel Estrada <axele1524@gmail.com>",
   "description": "Aplicación de escritorio diseñada para la gestión de inventario, ventas y clientes de una pulpería.",
   "private": true,
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -106,6 +106,12 @@
     "directories": {
       "buildResources": "build"
     },
+    "extraResources": [
+      {
+        "from": "drizzle",
+        "to": "drizzle"
+      }
+    ],
     "win": {
       "icon": "build/icons/win/icon.ico",
       "target": [
