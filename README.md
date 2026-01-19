@@ -1,141 +1,108 @@
 # Mi Pulpería
 
-**Mi Pulpería** es una aplicación de escritorio construida con ```Electron```, ```Vite```, ```TypeScript``` y ```Drizzle ORM```, diseñada para la gestión de inventario, ventas y clientes de una pulpería o negocio pequeño.
+![Vista previa de Mi Pulpería](./preview.png)
 
-La aplicación utiliza ```SQLite``` como base de datos local, sin depender de servicios externos, y expone una API interna (backend) accesible desde el frontend mediante ```preload``` y ```contextBridge```.
+**Mi Pulpería** es una aplicación de escritorio para la gestión de inventario, ventas, clientes y créditos, diseñada específicamente para pequeños comercios (pulperías, tiendas de barrio, minisúper), donde la realidad no siempre encaja con sistemas rígidos.
 
-## Características
+El objetivo principal es **simplificar la operación diaria**, manteniendo **control real del negocio**, incluso cuando se venden productos por unidad, peso o volumen, se manejan créditos informales o se reciben distintos métodos de pago.
 
-- Gestión de productos y categorias
-- Control de inventario
-- Registro de ventas
-- Clientes y Créditos 
-- Base de datos local con ```SQLite```
-- API interna testeable
-- Arquitectura pensada para escalar
-- Tests automatizados con ```Vitest``` (backend + frontend)
+**Descargar la última versión:**
+[⬇️ Ir a la última Release](../../releases/latest)
 
-## Filosofía del Proyecto
 
-- 100% local (sin backend remoto)
+## ¿Qué resuelve Mi Pulpería?
 
-### Separación clara entre:
+* Ventas por **unidad o cantidad decimal** (ej. libras, litros).
+* Productos con **presentaciones flexibles** (ej. chorizo por unidad o por libra, con precios distintos).
+* Control de inventario adaptado a la vida real del negocio.
+* Manejo de clientes con **créditos y abonos parciales o totales**.
+* Registro de ventas con múltiples métodos de pago (efectivo, transferencia, etc.).
+* Aplicación **offline-first**: no depende de internet para funcionar.
 
-- UI
-- Lógica de negocio
-- Acceso a datos
-- Backend testeable
-- Tests primero en lógica crítica
+## Conceptos clave del dominio
 
-## Stack Tecnológico
+### Presentaciones de producto
 
-- **Electron:** App de escritorio
-- **Vite:** Build y DX rápido
-- **TypeScript:** Tipado fuerte
-- **SQLite:** Persistencia local
-- **Drizzle ORM:** ORM ligero y explícito
-- **Vitest:** Testing moderno y rápido
+Un producto puede tener múltiples presentaciones:
 
-## Estructura del Proyecto
+* Chorizo (unidad)
+* Chorizo (libra)
 
-```mi-pulperia/
-├── electron/
-│   ├── db/
-│   │   ├── schema.ts      # Esquema Drizzle
-│   │   └── index.ts       # Configuración
-│   ├── main.ts            # Proceso 
-principal
-│   ├── preload.ts         # Bridge seguro (API)
-│   └── services/          # Backend (products, sales, etc)
-│
-├── src/
-│   │
-│   ├── features/
-│   │   ├── products/
-│   │   │   ├── api.ts     # Cliente frontend
-│   │   │   ├── ui/        # Componentes
-│   │   │   └── tests/     # Tests frontend
-│
-│   └── main.tsx           # Entry frontend
-│
-├── tests/
-│   ├── backend/           # Tests API / servicios
-│   └── setup.ts           # Setup global Vitest
-│
-├── mi-pulperia.db         # Base de datos SQLite
-├── drizzle.config.ts
-├── vite.config.ts
-├── vitest.config.ts
-└── package.json
-```
+Cada presentación tiene:
 
-## Esquema de Base de Datos
+* Su propio precio
+* Su propia unidad base
+* Impacto independiente en inventario
 
-![Diagrama ER](./er-diagram.png)
+Esto evita trucos contables y refleja cómo se vende realmente en una pulpería.
 
-## Testing con Vitest
 
-Vitest se utiliza para probar partes críticas del sistema, tanto en el backend (API) como en el frontend (componentes).
+### Cantidades con precisión
 
-> No se testea Electron.
-Se testea la lógica, que es lo que importa.
+Las cantidades **no se manejan como floats**.
 
-### Backend – Tests de API / Servicios
+* Internamente se almacenan como **enteros escalados** (ej. 1.25 lb → 125)
+* Esto evita errores de precisión y redondeo
+* Aplica a inventario, ventas, mermas y ajustes
 
-**Objetivo:** validar que los servicios devuelvan datos correctos, sin depender del UI ni del preload.
+Este enfoque es crítico cuando se venden fracciones como ¼, ½ o 2½ libras.
 
-```
-~/tests/backend/products.test.ts
 
-import { describe, it, expect } from 'vitest'
-import { listProducts } from '@/electron/services/products.service'
+## Experiencia de usuario
 
-describe('Products API', () => {
-  it('should return a list of products', async () => {
-    const products = await listProducts()
+* Interfaz pensada para uso rápido y repetitivo
+* Flujo optimizado para teclado
+* Sin pasos innecesarios
+* Enfocado en personas no técnicas
 
-    expect(products).toBeInstanceOf(Array)
-    expect(products.length).toBeGreaterThanOrEqual(0)
-  })
-})
-```
+## Arquitectura y stack técnico
 
-- Se prueba la lógica real
-- Sin mocks innecesarios
-- Idealmente usando una DB SQLite de test
+> Esta sección está pensada para reclutadores y desarrolladores.
 
-### Frontend – Tests de Componentes
+### Tecnologías principales
 
-**Objetivo:** asegurar que los componentes rendericen y reaccionen correctamente.
+* **Electron** – aplicación de escritorio multiplataforma
+* **Tailwind CSS** – estilos rápidos y consistentes
+* **Vite** – bundler rápido para desarrollo
+* **TypeScript** – tipado estricto
+* **SQLite** – base de datos local
+* **Drizzle ORM** – acceso a datos tipado y migraciones
 
-```
-~/src/features/products/tests/products-table.test.tsx
 
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { ProductsTable } from '../ui/products-table'
+### Base de datos
 
-describe('ProductsTable', () => {
-  it('renders products table', () => {
-    render(<ProductsTable />)
-    expect(screen.getByText(/productos/i)).toBeInTheDocument()
-  })
-})
-```
+* SQLite embebida
+* Migraciones versionadas
+* Ejecución de migraciones automática al iniciar la app
+* Pensada para datos locales y consistencia
 
-- Se testea comportamiento, no implementación
-- Nada de snapshots
-- Nada de probar CSS
+### Manejo de estado y lógica
 
-```
-npm run test
-npm run test:watch
-npm run test:coverage
-```
+* Separación clara entre:
+  * Dominio
+  * Persistencia
+  * UI
+* Lógica de negocio fuera del render
+* Enfoque declarativo
 
-## Como contribuir
+## Actualizaciones
 
-1. Haz un **Fork** del proyecto
-2. Crea una **Feature branch**
-3. Asegurate de utilizar **TDD**
-4. Crea una **Pull Request**
+* Sistema de auto-actualización
+* Descarga silenciosa
+* Instalación al cerrar la app
+* Compatibilidad con datos existentes
+
+
+## Estado del proyecto
+
+Mi Pulpería es un proyecto **activo**, utilizado en un entorno real.
+
+Las decisiones técnicas priorizan:
+
+* Robustez
+* Claridad
+* Mantenibilidad
+* Simplicidad antes que complejidad innecesaria
+
+## Soporte
+* Correo: [axele1524@gmail.com](mailto:axele1524@gmail.com)
