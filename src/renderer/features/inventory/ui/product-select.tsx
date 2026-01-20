@@ -6,7 +6,7 @@ type Props = {
 }
 
 export const ProductSelect = ({ value, onChange }: Props) => {
-  const { data: products = [] } = useProducts()
+  const { data: products } = useProducts()
 
   const [open, setOpen] = useState(false)
 
@@ -25,7 +25,7 @@ export const ProductSelect = ({ value, onChange }: Props) => {
         >
           <span className="flex-1 truncate text-left">
             {value ? (
-              products.find(product => product.id === Number(value))?.name
+              products?.data.find(product => product.id === Number(value))?.name
             ) : (
               <span className="text-muted-foreground">
                 Seleccionar producto...
@@ -42,7 +42,7 @@ export const ProductSelect = ({ value, onChange }: Props) => {
           <CommandList>
             <CommandEmpty>No product found.</CommandEmpty>
             <CommandGroup>
-              {products.map(product => (
+              {products?.data.map(product => (
                 <CommandItem
                   key={product.id}
                   value={[product.name, product.sku, product.barcode]

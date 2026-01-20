@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const productSchema = z.object({
-  id: z.number().int().positive(),
+  id: z.number(),
 
   name: z.string(),
 
@@ -14,7 +14,7 @@ export const productSchema = z.object({
   sku: z.string().nullable(),
 
   category: z.object({
-    id: z.number().int().positive(),
+    id: z.number(),
     name: z.string(),
   }),
 
@@ -22,16 +22,15 @@ export const productSchema = z.object({
 
   baseUnit: z.enum(['unit', 'lb', 'liter']),
 
-  salePrice: z.number().int().nonnegative(),
+  salePrice: z.number(),
 
-  minStock: z.number().int().nonnegative(),
+  minStock: z.number(),
 
   isActive: z.boolean(),
 
   createdAt: z.date(),
-  updatedAt: z.date(),
 
-  deleted: z.boolean(),
+  presentationsCount: z.number(),
 })
 
 export type Product = z.output<typeof productSchema>

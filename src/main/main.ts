@@ -11,6 +11,7 @@ import { registerCategoriesHandlers } from './ipc/categories-ipc'
 import { registerImagesHandlers } from './ipc/images-ipc'
 import { registerProductsHandlers } from 'domains/products/products-ipc'
 import { registerInventoryIPC } from './domains/inventory/inventory-ipc'
+import { registerPresentationsHandlers } from './domains/presentations/presentations-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -77,6 +78,7 @@ app.on('activate', async () => {
 
     registerImagesHandlers()
     registerProductsHandlers()
+    registerPresentationsHandlers()
     registerInventoryIPC()
     registerCategoriesHandlers()
 
@@ -102,6 +104,7 @@ app.whenReady().then(async () => {
 
   registerImagesHandlers()
   registerProductsHandlers()
+  registerPresentationsHandlers()
   registerInventoryIPC()
   registerCategoriesHandlers()
 

@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 import { InsertCategory, SelectCategory } from './db/schema/categories'
-import { InsertProduct, SelectProduct } from './db/schema/products'
+import { SelectProduct } from './db/schema/products'
 
 import {
   AddStockDTO,
@@ -11,15 +11,33 @@ import {
   InventoryMovementFilters,
 } from './domains/inventory/inventory-model'
 
+import { NewProductDTO, ProductDTO } from './domains/products/products-model'
+import { NewPresentationDTO } from './domains/presentations/presentations-model'
+import { PaginatedResult } from '../shared/types/pagination'
+import { PresentationsListFilters } from '../shared/types/presentations'
+
 contextBridge.exposeInMainWorld('api', {
   products: {
-    list: () => ipcRenderer.invoke('products:list'),
-    create: (product: InsertProduct) =>
+    list: (): Promise<PaginatedResult<ProductDTO>> =>
+      ipcRenderer.invoke('products:list'),
+    create: (product: NewProductDTO) =>
       ipcRenderer.invoke('products:create', product),
     update: (id: SelectProduct['id'], product: Partial<SelectProduct>) =>
       ipcRenderer.invoke('products:update', id, product),
     remove: (id: SelectProduct['id']) =>
       ipcRenderer.invoke('products:remove', id),
+  },
+  presentations: {
+    list: (filters: PresentationsListFilters) =>
+      ipcRenderer.invoke('presentations:list', filters),
+    listByProduct: (productId: number) =>
+      ipcRenderer.invoke('presentations:listByProduct', productId),
+    create: (data: NewPresentationDTO) =>
+      ipcRenderer.invoke('presentations:create', data),
+    update: (id: number, data: Partial<NewPresentationDTO>) =>
+      ipcRenderer.invoke('presentations:update', id, data),
+    toggle: (id: number, isActive: boolean) =>
+      ipcRenderer.invoke('presentations:toggle', id, isActive),
   },
   categories: {
     list: () => ipcRenderer.invoke('categories:list'),

@@ -1,19 +1,73 @@
-import { InsertProduct, SelectProduct } from 'main/db/schema/products'
+import { SelectProduct } from 'main/db/schema/products'
 import { ProductsRepository } from './products-repository'
 import { toProductDTO } from './products-mappers'
+import { NewProductDTO, ProductDTO } from './products-model'
+import { PresentationsRepository } from '../presentations/presentations-repository'
+import { UNIT_CONFIG } from './products-units'
+import { ProductsListFilters } from './products-list-filters'
+import { PaginatedResult } from 'shared/types/pagination'
 
 export const ProductsService = {
-  async list() {
-    const products = await ProductsRepository.findAll()
-    return products.map(toProductDTO)
+  async list(
+    filters: ProductsListFilters = {}
+  ): Promise<PaginatedResult<ProductDTO>> {
+    const { page = 1, pageSize = 20 } = filters
+
+    const rows = await ProductsRepository.findAll({
+      ...filters,
+      page,
+      pageSize,
+    })
+
+    const total = rows[0]?.total ?? 0
+
+    return {
+      data: rows.map(toProductDTO),
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    }
   },
 
-  async create(input: InsertProduct) {
+  async create(input: NewProductDTO) {
     if (!input.name.trim()) {
       throw new Error('El nombre del producto es obligatorio')
     }
 
-    return ProductsRepository.create(input)
+    if (!input.salePrice || input.salePrice <= 0) {
+      throw new Error('El precio de venta es obligatorio')
+    }
+
+    const unitConfig = UNIT_CONFIG[input.baseUnit]
+
+    if (!unitConfig) {
+      throw new Error('Unidad base inválida')
+    }
+
+    const [product] = await ProductsRepository.create({
+      name: input.name,
+      description: input.description,
+      categoryId: input.categoryId,
+      baseUnit: input.baseUnit,
+      unitPrecision: unitConfig.unitPrecision,
+      minStock: input.minStock,
+    })
+
+    await PresentationsRepository.create({
+      productId: product.id,
+      isBase: true,
+      name: unitConfig.label,
+      description: product.description,
+      image: input.image,
+      sku: input.sku,
+      barcode: input.barcode,
+      unit: product.baseUnit,
+      unitPrecision: product.unitPrecision,
+      factorType: 'fixed',
+      factor: 1,
+      salePrice: input.salePrice,
+    })
   },
 
   async update(id: SelectProduct['id'], input: Partial<SelectProduct>) {

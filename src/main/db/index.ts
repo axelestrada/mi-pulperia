@@ -11,3 +11,5 @@ const databasePath = app.getPath('userData') + '/mi-pulperia.db'
 const sqlite = new Database(databasePath)
 
 export const db = drizzle(sqlite)
+
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0]

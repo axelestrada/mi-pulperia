@@ -2,7 +2,7 @@ export const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
-  const { data: products = []} = useProducts()
+  const { data: products, error } = useProducts()
 
   const handleCreate = () => {
     setSelectedProduct(null)
@@ -19,11 +19,15 @@ export const ProductsPage = () => {
       <ProductsHeader onCreate={handleCreate} />
       <ProductsFilters />
 
-      <ProductsTable
-        products={products}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-      />
+      {error ? (
+        <div className="text-red-500">{error.message}</div>
+      ) : (
+        <ProductsTable
+          products={products?.data ?? []}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+        />
+      )}
 
       <ProductFormDialog
         open={formOpen}

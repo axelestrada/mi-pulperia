@@ -76,6 +76,7 @@ declare global {
   const CommandSeparator: typeof import('./renderer/components/ui/command').CommandSeparator
   const CommandShortcut: typeof import('./renderer/components/ui/command').CommandShortcut
   const Controller: typeof import('react-hook-form').Controller
+  const CreatePresentationButton: typeof import('./renderer/features/presentations/ui/create-presentation-button').CreatePresentationButton
   const CurrencyInput: typeof import('./renderer/components/currency-input').CurrencyInput
   const CustomersPage: typeof import('./renderer/pages/customers-page').CustomersPage
   const CustomersTable: typeof import('./renderer/features/customers/components/customers-table').CustomersTable
@@ -120,6 +121,7 @@ declare global {
   const DropdownMenuTrigger: typeof import('./renderer/components/ui/dropdown-menu').DropdownMenuTrigger
   const EMPTY_CATEGORY_FORM: typeof import('./renderer/features/categories/model/category-constants').EMPTY_CATEGORY_FORM
   const EMPTY_INVENTORY_ITEM: typeof import('./renderer/features/inventory/model/inventory-entry-constants').EMPTY_INVENTORY_ITEM
+  const EMPTY_PRESENTATION_FORM: typeof import('./renderer/features/presentations/model/presentation-constants').EMPTY_PRESENTATION_FORM
   const EMPTY_PRODUCT_FORM: typeof import('./renderer/features/products/model/product-constants').EMPTY_PRODUCT_FORM
   const Empty: typeof import('./renderer/components/ui/empty').Empty
   const EmptyContent: typeof import('./renderer/components/ui/empty').EmptyContent
@@ -200,16 +202,24 @@ declare global {
   const PopoverContent: typeof import('./renderer/components/ui/popover').PopoverContent
   const PopoverTrigger: typeof import('./renderer/components/ui/popover').PopoverTrigger
   const PosPage: typeof import('./renderer/pages/pos-page').PosPage
+  const PresentationForm: typeof import('./renderer/features/presentations/ui/presentation-form').PresentationForm
+  const PresentationFormDialog: typeof import('./renderer/features/presentations/ui/presentation-form-dialog').PresentationFormDialog
+  const PresentationFormFields: typeof import('./renderer/features/presentations/ui/presentation-form-fields').PresentationFormFields
+  const PresentationsTable: typeof import('./renderer/features/presentations/ui/presentations-table').PresentationsTable
+  const PresentationsTableActions: typeof import('./renderer/features/presentations/ui/presentations-table-actions').PresentationsTableActions
+  const PresentationsTableRow: typeof import('./renderer/features/presentations/ui/presentations-table-row').PresentationsTableRow
   const ProductForm: typeof import('./renderer/features/products/ui/product-form').ProductForm
   const ProductFormDialog: typeof import('./renderer/features/products/ui/product-form-dialog').ProductFormDialog
   const ProductFormFields: typeof import('./renderer/features/products/ui/product-form-fields').ProductFormFields
   const ProductImagePicker: typeof import('./renderer/features/products/ui/product-image-picker').ProductImagePicker
+  const ProductPresentationsDialog: typeof import('./renderer/features/products/ui/product-presentations-dialog').ProductPresentationsDialog
   const ProductSelect: typeof import('./renderer/features/inventory/ui/product-select').ProductSelect
   const ProductsEmptyState: typeof import('./renderer/features/products/ui/products-empty-state').ProductsEmptyState
   const ProductsFilters: typeof import('./renderer/features/products/ui/products-filters').ProductsFilters
   const ProductsHeader: typeof import('./renderer/features/products/ui/products-header').ProductsHeader
   const ProductsPage: typeof import('./renderer/pages/products-page').ProductsPage
   const ProductsTable: typeof import('./renderer/features/products/ui/products-table').ProductsTable
+  const ProductsTableActions: typeof import('./renderer/features/products/ui/products-table-actions').ProductsTableActions
   const ProductsTableContent: typeof import('./renderer/features/products/ui/products-table-content').ProductsTableContent
   const ProductsTableHeader: typeof import('./renderer/features/products/ui/products-table-header').ProductsTableHeader
   const ProductsTableRow: typeof import('./renderer/features/products/ui/products-table-row').ProductsTableRow
@@ -265,6 +275,7 @@ declare global {
   const SidebarTrigger: typeof import('./renderer/components/ui/sidebar').SidebarTrigger
   const Skeleton: typeof import('./renderer/components/ui/skeleton').Skeleton
   const Spinner: typeof import('./renderer/components/ui/spinner').Spinner
+  const StatusBadge: typeof import('./renderer/components/badges/status-badge').StatusBadge
   const Suspense: typeof import('react').Suspense
   const Switch: typeof import('./renderer/components/ui/switch').Switch
   const Table: typeof import('./renderer/components/ui/table').Table
@@ -288,6 +299,7 @@ declare global {
   const TopProducts: typeof import('./renderer/features/reports/components/top-products').TopProducts
   const TypographyH3: typeof import('./renderer/components/ui/typography').TypographyH3
   const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
+  const UNIT_CONFIG: typeof import('./renderer/features/products/ui/product-units').UNIT_CONFIG
   const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
   const batchSchema: typeof import('./renderer/features/inventory/batches/model/inventory-batch-schema').batchSchema
   const buttonGroupVariants: typeof import('./renderer/components/ui/button-group').buttonGroupVariants
@@ -317,6 +329,12 @@ declare global {
   const movementSchema: typeof import('./renderer/features/inventory/model/inventory-movement-schema').movementSchema
   const parseCurrency: typeof import('./shared/utils/formatCurrency').parseCurrency
   const parseError: typeof import('./shared/errors/parse-error').parseError
+  const presentationFormSchema: typeof import('./renderer/features/presentations/model/presentation-form-schema').presentationFormSchema
+  const presentationKeys: typeof import('./renderer/features/presentations/hooks/presentation-keys').presentationKeys
+  const presentationSchema: typeof import('./renderer/features/presentations/model/presentation-schema').presentationSchema
+  const presentationToForm: typeof import('./renderer/features/presentations/model/presentation-mappers').presentationToForm
+  const presentationsAdapter: typeof import('./renderer/features/presentations/api/presentations-adapter').presentationsAdapter
+  const presentationsService: typeof import('./renderer/features/presentations/services/presentations-service').presentationsService
   const productAdapter: typeof import('./renderer/features/products/api/product-adapter').productAdapter
   const productFormSchema: typeof import('./renderer/features/products/model/product-form-schema').productFormSchema
   const productKeys: typeof import('./renderer/features/products/hooks/product-keys').productKeys
@@ -334,6 +352,7 @@ declare global {
   const useCategoryForm: typeof import('./renderer/features/categories/hooks/use-category-form').useCategoryForm
   const useContext: typeof import('react').useContext
   const useCreateCategory: typeof import('./renderer/features/categories/hooks/use-create-category').useCreateCategory
+  const useCreatePresentation: typeof import('./renderer/features/presentations/hooks/use-create-presentation').useCreatePresentation
   const useCreateProduct: typeof import('./renderer/features/products/hooks/use-create-product').useCreateProduct
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
@@ -365,6 +384,9 @@ declare global {
   const useOutlet: typeof import('react-router-dom').useOutlet
   const useOutletContext: typeof import('react-router-dom').useOutletContext
   const useParams: typeof import('react-router-dom').useParams
+  const usePosPresentations: typeof import('./renderer/features/presentations/hooks/use-pos-presentations').usePosPresentations
+  const usePresentationForm: typeof import('./renderer/features/presentations/hooks/use-presentation.form').usePresentationForm
+  const usePresentationsByProduct: typeof import('./renderer/features/presentations/hooks/use-presentations-by-product').usePresentationsByProduct
   const useProductForm: typeof import('./renderer/features/products/hooks/use-product-form').useProductForm
   const useProducts: typeof import('./renderer/features/products/hooks/use-products').useProducts
   const useProductsFilters: typeof import('./renderer/features/products/hooks/use-products-filters').useProductsFilters
@@ -379,8 +401,10 @@ declare global {
   const useState: typeof import('react').useState
   const useSyncExternalStore: typeof import('react').useSyncExternalStore
   const useToggleCategoryStatus: typeof import('./renderer/features/categories/hooks/use-toggle-category-status').useToggleCategoryStatus
+  const useTogglePresentation: typeof import('./renderer/features/presentations/hooks/use-toggle-presentation').useTogglePresentation
   const useTransition: typeof import('react').useTransition
   const useUpdateCategory: typeof import('./renderer/features/categories/hooks/use-update-category').useUpdateCategory
+  const useUpdatePresentation: typeof import('./renderer/features/presentations/hooks/use-update-presentation').useUpdatePresentation
   const useUpdateProduct: typeof import('./renderer/features/products/hooks/use-update-product').useUpdateProduct
   const useUploadImage: typeof import('./renderer/features/images/hooks/use-upload-image').useUploadImage
   const zodResolver: typeof import('@hookform/resolvers/zod').zodResolver
@@ -418,6 +442,12 @@ declare global {
   export type { InventoryMovement } from './renderer/features/inventory/model/inventory-movement-schema'
   import('./renderer/features/inventory/model/inventory-movement-schema')
   // @ts-ignore
+  export type { PresentationFormInput, PresentationFormData, PresentationFormMode } from './renderer/features/presentations/model/presentation-form-schema'
+  import('./renderer/features/presentations/model/presentation-form-schema')
+  // @ts-ignore
+  export type { Presentation } from './renderer/features/presentations/model/presentation-schema'
+  import('./renderer/features/presentations/model/presentation-schema')
+  // @ts-ignore
   export type { ProductFormInput, ProductFormData } from './renderer/features/products/model/product-form-schema'
   import('./renderer/features/products/model/product-form-schema')
   // @ts-ignore
@@ -426,4 +456,7 @@ declare global {
   // @ts-ignore
   export type { ProductStatus } from './renderer/features/products/model/product-status'
   import('./renderer/features/products/model/product-status')
+  // @ts-ignore
+  export type { UnitType } from './renderer/features/products/ui/product-units'
+  import('./renderer/features/products/ui/product-units')
 }

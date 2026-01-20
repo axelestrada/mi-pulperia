@@ -1,12 +1,27 @@
 export const productService = {
   async list() {
-    const data = await productAdapter.list()
+    const result = await productAdapter.list()
 
-    return productSchema.array().parse(data)
+    const { data, error } = productSchema.array().safeParse(result.data)
+
+    if (error) {
+      console.error('Error al obtener los productos', error)
+      throw new Error('Error al obtener los productos')
+    }
+
+    return {
+      data,
+      pagination: {
+        totalItems: result.total,
+        currentPage: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
+      },
+    }
   },
 
   async create(payload: ProductFormData) {
-   await productAdapter.create(payload)
+    await productAdapter.create(payload)
   },
 
   async update(id: Product['id'], payload: Partial<ProductFormData>) {

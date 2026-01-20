@@ -52,59 +52,15 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
       </TableCell>
 
       <TableCell>
-        <Badge
-          variant={product.isActive ? 'default' : 'destructive'}
-          className={product.isActive ? 'bg-green-600' : ''}
-        >
-          {product.isActive ? 'Activo' : 'Inactivo'}
-        </Badge>
+        <StatusBadge active={product.isActive} />
       </TableCell>
 
       <TableCell className="text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon-sm">
-              <IconLucideMoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                onEdit(product)
-              }}
-            >
-              <IconLucideEdit className="size-4 mr-2" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              {product.isActive ? (
-                <>
-                  <IconLucideX className="mr-2 size-4" />
-                  Desactivar
-                </>
-              ) : (
-                <>
-                  <IconLucideCheck className="mr-2 size-4" />
-                  Activar
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DeleteProductDialog onDelete={() => deleteProduct(product.id)}>
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={e => {
-                  e.preventDefault()
-                }}
-              >
-                <IconLucideTrash2 className="size-4 mr-2" />
-                Eliminar
-              </DropdownMenuItem>
-            </DeleteProductDialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ProductsTableActions
+          onDelete={deleteProduct}
+          onEdit={onEdit}
+          product={product}
+        />
       </TableCell>
     </TableRow>
   )

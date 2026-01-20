@@ -8,10 +8,6 @@ export const productsTable = sqliteTable('products', {
 
   name: text().notNull(),
   description: text(),
-  image: text(),
-
-  barcode: text().unique(),
-  sku: text().unique(),
 
   categoryId: int('category_id')
     .notNull()
@@ -22,7 +18,7 @@ export const productsTable = sqliteTable('products', {
     .notNull()
     .default('unit'),
 
-  salePrice: int('sale_price').notNull(),
+  unitPrecision: int('unit_precision').notNull().default(1),
 
   minStock: int('min_stock').notNull().default(5),
 

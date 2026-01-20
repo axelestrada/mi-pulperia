@@ -1,7 +1,7 @@
-export const ProductFormFields = () => {
-  const { control, watch } = useFormContext<ProductFormData>()
+export const PresentationFormFields = () => {
+  const { control, watch } = useFormContext<PresentationFormData>()
 
-  const baseUnit = watch('baseUnit')
+  const factorType = watch('factorType')
 
   return (
     <>
@@ -13,7 +13,7 @@ export const ProductFormFields = () => {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Nombre</FieldLabel>
-            <Input {...field} placeholder="Arroz Diana 1kg" />
+            <Input {...field} placeholder="Docena" />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -28,7 +28,7 @@ export const ProductFormFields = () => {
             <Textarea
               {...field}
               value={value ?? ''}
-              placeholder="Arroz blanco de grano largo"
+              placeholder="Docena de huevos de gallina"
               className="min-h-20 resize-none"
             />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -60,29 +60,75 @@ export const ProductFormFields = () => {
         />
 
         <Controller
-          name="minStock"
+          name="unit"
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field: { onChange, ...field }, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Stock mínimo</FieldLabel>
+              <FieldLabel>Unidad</FieldLabel>
+              <Select {...field} onValueChange={onChange}>
+                <SelectTrigger>
+                  <SelectValue
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Seleccione una unidad"
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unit">Unidad</SelectItem>
+                  <SelectItem value="lb">Libra</SelectItem>
+                  <SelectItem value="liter">Litro</SelectItem>
+                </SelectContent>
+              </Select>
+              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Controller
+          name="factorType"
+          control={control}
+          render={({ field: { onChange, ...field }, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Tipo de factor</FieldLabel>
+              <Select {...field} onValueChange={onChange}>
+                <SelectTrigger>
+                  <SelectValue
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Seleccione un tipo"
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fixed">Fijo</SelectItem>
+                  <SelectItem value="variable">Variable</SelectItem>
+                </SelectContent>
+              </Select>
+              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="factor"
+          control={control}
+          render={({ field: { value, ...field }, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Factor</FieldLabel>
               <InputGroup>
+                <InputGroupAddon>x</InputGroupAddon>
                 <InputGroupInput
                   {...field}
-                  value={field.value}
-                  onChange={e => {
-                    field.onChange(e.target.value)
-                  }}
-                  placeholder="5"
+                  value={value ?? ''}
+                  placeholder="12"
+                  disabled={factorType === 'variable'}
                 />
-                <InputGroupAddon align="inline-end">
-                  {UNIT_CONFIG[baseUnit].label}
-                </InputGroupAddon>
               </InputGroup>
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         <Controller
           name="sku"
@@ -114,43 +160,6 @@ export const ProductFormFields = () => {
                 value={value ?? ''}
                 placeholder="7421234567890"
               />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Controller
-          name="categoryId"
-          control={control}
-          render={({ field, fieldState }) => (
-            <CategorySelect
-              value={field.value}
-              onChange={field.onChange}
-              error={fieldState.error}
-            />
-          )}
-        />
-
-        <Controller
-          name="baseUnit"
-          control={control}
-          render={({ field: { onChange, ...field }, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Unidad base</FieldLabel>
-              <Select {...field} onValueChange={onChange}>
-                <SelectTrigger>
-                  <SelectValue
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Seleccione una unidad"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unit">Unidad</SelectItem>
-                  <SelectItem value="lb">Libra</SelectItem>
-                  <SelectItem value="liter">Litro</SelectItem>
-                </SelectContent>
-              </Select>
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}

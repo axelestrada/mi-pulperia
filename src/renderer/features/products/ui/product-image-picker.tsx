@@ -1,7 +1,7 @@
-import { useFormContext } from 'react-hook-form'
-
 export const ProductImagePicker = () => {
-  const { setValue, watch } = useFormContext<ProductFormData>()
+  const { setValue, watch } = useFormContext<
+    ProductFormData | PresentationFormData
+  >()
 
   const { mutate: deleteImage } = useDeleteImage()
   const { mutate: updateProduct } = useUpdateProduct()
@@ -10,7 +10,7 @@ export const ProductImagePicker = () => {
   const [preview, setPreview] = useState<string | null>(null)
 
   const imageValue = watch('image')
-  const productId = watch('id')
+  const id = watch('id')
 
   const { data: imagePath } = useImagePath(imageValue)
 
@@ -44,10 +44,10 @@ export const ProductImagePicker = () => {
         setValue('image', '', { shouldDirty: true, shouldTouch: true })
         setPreview(null)
 
-        if (!productId) return
+        if (!id) return
 
         updateProduct({
-          id: productId,
+          id,
           data: {
             image: '',
           },

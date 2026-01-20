@@ -1,13 +1,14 @@
 import { ipcMain } from 'electron'
 import { ProductsService } from './products-service'
-import { InsertProduct, SelectProduct } from 'main/db/schema/products'
+import { SelectProduct } from 'main/db/schema/products'
+import { NewProductDTO } from './products-model'
 
 export const registerProductsHandlers = () => {
   ipcMain.handle('products:list', async () => {
     return ProductsService.list()
   })
 
-  ipcMain.handle('products:create', async (_, product: InsertProduct) => {
+  ipcMain.handle('products:create', async (_, product: NewProductDTO) => {
     return ProductsService.create(product)
   })
 

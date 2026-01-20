@@ -1,22 +1,26 @@
-import { EnrichedProduct, ProductDTO } from './products-model'
+import { ProductRow, ProductDTO } from './products-model'
 
-export const toProductDTO = (product: EnrichedProduct): ProductDTO => ({
-  id: product.id,
-  name: product.name,
-  barcode: product.barcode,
-  salePrice: product.salePrice,
-  baseUnit: product.baseUnit,
-  category: {
-    id: product.categoryId,
-    name: product.categoryName || 'Sin categoría',
-  },
-  stock: product.stock,
-  createdAt: product.createdAt,
-  deleted: product.deleted,
-  updatedAt: product.updatedAt,
-  description: product.description,
-  image: product.image,
-  isActive: product.isActive,
-  minStock: product.minStock,
-  sku: product.sku,
-})
+export function toProductDTO(row: ProductRow): ProductDTO {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    baseUnit: row.baseUnit,
+    minStock: row.minStock,
+    isActive: !!row.isActive,
+    createdAt: row.createdAt,
+
+    category: {
+      id: row.categoryId,
+      name: row.categoryName,
+    },
+
+    salePrice: row.salePrice,
+    sku: row.sku,
+    barcode: row.barcode,
+    image: row.image,
+
+    stock: row.stock,
+    presentationsCount: row.presentationsCount,
+  }
+}
