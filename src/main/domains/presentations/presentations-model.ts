@@ -49,6 +49,6 @@ export type PresentationDTO = {
   createdAt: Date
 }
 
-export type NewPresentationDTO = InsertPresentation
+export type NewPresentationDTO = Omit<InsertPresentation, 'unitPrecision'>
 
 export type UpdatePresentationDTO = Partial<NewPresentationDTO>
