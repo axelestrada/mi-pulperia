@@ -21,6 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.3.4] - 2026-01-22
+
+### Changed
+
+- Marcado como próximamente las funcionalidades que aun no están implementadas.
+
+### Fixed
+
+- Corrección de error en el formulario de creación de presentaciones.
 
 ## [0.3.3] - 2026-01-20
 

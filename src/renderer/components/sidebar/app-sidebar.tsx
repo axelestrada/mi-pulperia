@@ -58,48 +58,48 @@ const data = {
         },
         {
           title: 'Ordenes de Compra',
-          url: '#',
+          url: 'purchase-orders',
         },
         {
           title: 'Ajustes y Merma',
-          url: '#',
+          url: 'adjustments',
         },
         {
           title: 'Proveedores',
-          url: '#',
+          url: 'suppliers',
         },
       ],
     },
     {
       title: 'Créditos',
-      url: '#',
+      url: 'credits',
       icon: CreditCard,
     },
     {
       title: 'Gastos',
-      url: '#',
+      url: 'expenses',
       icon: DollarSign,
     },
     {
       title: 'Reportes',
-      url: '#',
+      url: 'reports',
       icon: FileChartColumn,
     },
     {
       title: 'Caja',
-      url: '#',
+      url: 'cash',
       icon: Coins,
     },
   ],
   navSecondary: [
     {
       title: 'Ayuda',
-      url: '#',
+      url: 'help',
       icon: LifeBuoy,
     },
     {
       title: 'Configuración',
-      url: '#',
+      url: 'settings',
       icon: Settings,
     },
   ],
