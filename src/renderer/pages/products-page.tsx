@@ -1,8 +1,10 @@
+import { ProductsListFilters } from 'domains/products/products-list-filters'
+
 export const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
-  const { data: products, error } = useProducts()
+  const { data: products } = useProducts()
 
   const handleCreate = () => {
     setSelectedProduct(null)
@@ -14,20 +16,25 @@ export const ProductsPage = () => {
     setFormOpen(true)
   }
 
+  const handleFiltersChange = useCallback((filters: ProductsListFilters) => {
+    console.log(filters)
+  }, [])
+
   return (
     <>
-      <ProductsHeader onCreate={handleCreate} />
-      <ProductsFilters />
+      <ProductsHeader />
+      <ProductsFilters
+        onCreate={handleCreate}
+        onFiltersChange={handleFiltersChange}
+      />
 
-      {error ? (
-        <div className="text-red-500">{error.message}</div>
-      ) : (
-        <ProductsTable
-          products={products?.data ?? []}
-          onCreate={handleCreate}
-          onEdit={handleEdit}
-        />
-      )}
+      <ProductsTable
+        products={products?.data ?? []}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+      />
+
+      <TablePagination />
 
       <ProductFormDialog
         open={formOpen}

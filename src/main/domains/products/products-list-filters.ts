@@ -1,6 +1,7 @@
 export type ProductsListFilters = {
-  categoryId?: number
-  isActive?: boolean
+  search?: string
+  categories?: number[]
+  status?: string[]
   lowStock?: boolean
   page?: number
   pageSize?: number

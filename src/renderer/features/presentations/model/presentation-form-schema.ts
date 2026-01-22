@@ -1,57 +1,44 @@
 import { z } from 'zod'
 
-export const presentationFormSchema = z
-  .object({
-    id: z.number().optional(),
-    productId: z.number(),
+const baseSchema = {
+  id: z.number().optional(),
+  productId: z.number(),
 
-    name: z.string().refine(value => value.trim() !== '', {
-      message: 'Ingrese el nombre de la presentación',
+  name: z.string().refine(v => v.trim() !== '', {
+    message: 'Ingrese el nombre de la presentación',
+  }),
+
+  description: z.string().transform(v => v.trim() || null),
+  image: z.string().transform(v => v.trim() || null),
+  barcode: z.string().transform(v => v.trim() || null),
+  sku: z.string().transform(v => v.trim() || null),
+
+  unit: z.enum(['unit', 'lb', 'liter']),
+
+  salePrice: z.coerce
+    .number({ error: 'Ingrese el precio de venta' })
+    .positive('El precio de venta debe ser mayor a 0')
+    .transform(v => Math.round(v * 100)),
+
+  isActive: z.boolean(),
+} as const
+
+export const presentationFormSchema = z
+  .discriminatedUnion('factorType', [
+    z.object({
+      ...baseSchema,
+      factorType: z.literal('fixed'),
+      factor: z.coerce
+        .number({ error: 'Ingrese el factor' })
+        .min(1, 'El factor debe ser mayor o igual a 1'),
     }),
 
-    description: z.string().transform(value => value.trim() || null),
-
-    image: z.string().transform(value => value.trim() || null),
-
-    barcode: z.string().transform(value => value.trim() || null),
-
-    sku: z.string().transform(value => value.trim() || null),
-
-    unit: z.enum(['unit', 'lb', 'liter']),
-    unitPrecision: z.number(),
-
-    factorType: z.enum(['fixed', 'variable']),
-    factor: z.coerce
-      .number({
-        error: 'Ingrese el factor',
-      })
-      .positive({
-        error: 'El factor debe ser un número mayor a 0',
-      })
-      .nullable(),
-
-    salePrice: z.coerce
-      .number({
-        error: 'Ingrese el precio de venta',
-      })
-      .positive('El precio de venta debe ser mayor a 0')
-      .transform(value => {
-        return Math.round(value * 100)
-      }),
-
-    isActive: z.boolean(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.factorType === 'fixed') {
-      if (data.factor === null || data.factor < 1) {
-        ctx.addIssue({
-          path: ['factor'],
-          message: 'El factor fijo debe ser un número mayor o igual a 1',
-          code: 'custom',
-        })
-      }
-    }
-  })
+    z.object({
+      ...baseSchema,
+      factorType: z.literal('variable'),
+      factor: z.string().transform(() => null),
+    }),
+  ])
   .transform(data => ({
     ...data,
     factor: data.factorType === 'variable' ? null : data.factor,

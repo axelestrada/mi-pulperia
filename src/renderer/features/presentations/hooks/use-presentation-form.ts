@@ -2,12 +2,14 @@ type Params = {
   product: Product
   presentation?: Presentation
   onSuccess: () => void
+  mode: PresentationFormMode
 }
 
 export function usePresentationForm({
   product,
   presentation,
   onSuccess,
+  mode,
 }: Params) {
   const isEdit = Boolean(presentation)
 
@@ -15,7 +17,7 @@ export function usePresentationForm({
     resolver: zodResolver(presentationFormSchema),
     defaultValues: presentation
       ? presentationToForm(presentation)
-      : EMPTY_PRESENTATION_FORM,
+      : { ...EMPTY_PRESENTATION_FORM, productId: product.id },
   })
 
   const { mutateAsync: createPresentation, isPending: isCreating } =
@@ -24,7 +26,7 @@ export function usePresentationForm({
     useUpdatePresentation(product.id)
 
   const onSubmit = form.handleSubmit(values => {
-    if (isEdit && presentation) {
+    if (mode === 'edit' && presentation) {
       updatePresentation(
         {
           data: values,

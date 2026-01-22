@@ -15,13 +15,14 @@ export function PresentationForm({
     product,
     presentation,
     onSuccess: onClose,
+    mode,
   })
 
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
         <FieldGroup>
-          <PresentationFormFields />
+          <PresentationFormFields product={product} mode={mode} />
 
           <Field orientation="horizontal" className="justify-end">
             <Button type="button" variant="outline" onClick={onClose}>

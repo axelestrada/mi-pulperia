@@ -62,6 +62,7 @@ declare global {
   const ChartStyle: typeof import('./renderer/components/ui/chart').ChartStyle
   const ChartTooltip: typeof import('./renderer/components/ui/chart').ChartTooltip
   const ChartTooltipContent: typeof import('./renderer/components/ui/chart').ChartTooltipContent
+  const Checkbox: typeof import('./renderer/components/ui/checkbox').Checkbox
   const Collapsible: typeof import('./renderer/components/ui/collapsible').Collapsible
   const CollapsibleContent: typeof import('./renderer/components/ui/collapsible').CollapsibleContent
   const CollapsibleTrigger: typeof import('./renderer/components/ui/collapsible').CollapsibleTrigger
@@ -148,6 +149,10 @@ declare global {
   const IconLucideBookUser: typeof import('~icons/lucide/book-user.tsx').default
   const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
+  const IconLucideChevronLeft: typeof import('~icons/lucide/chevron-left.tsx').default
+  const IconLucideChevronRight: typeof import('~icons/lucide/chevron-right.tsx').default
+  const IconLucideChevronsLeft: typeof import('~icons/lucide/chevrons-left.tsx').default
+  const IconLucideChevronsRight: typeof import('~icons/lucide/chevrons-right.tsx').default
   const IconLucideChevronsUpDown: typeof import('~icons/lucide/chevrons-up-down.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
   const IconLucideEye: typeof import('~icons/lucide/eye.tsx').default
@@ -157,6 +162,7 @@ declare global {
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
+  const IconLucidePlusCircle: typeof import('~icons/lucide/plus-circle.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
@@ -282,9 +288,11 @@ declare global {
   const TableBody: typeof import('./renderer/components/ui/table').TableBody
   const TableCaption: typeof import('./renderer/components/ui/table').TableCaption
   const TableCell: typeof import('./renderer/components/ui/table').TableCell
+  const TableFacetedFilter: typeof import('./renderer/components/table/table-faceted-filter').TableFacetedFilter
   const TableFooter: typeof import('./renderer/components/ui/table').TableFooter
   const TableHead: typeof import('./renderer/components/ui/table').TableHead
   const TableHeader: typeof import('./renderer/components/ui/table').TableHeader
+  const TablePagination: typeof import('./renderer/components/pagination/table-pagination').TablePagination
   const TableRow: typeof import('./renderer/components/ui/table').TableRow
   const Tabs: typeof import('./renderer/components/ui/tabs').Tabs
   const TabsContent: typeof import('./renderer/components/ui/tabs').TabsContent
@@ -385,7 +393,7 @@ declare global {
   const useOutletContext: typeof import('react-router-dom').useOutletContext
   const useParams: typeof import('react-router-dom').useParams
   const usePosPresentations: typeof import('./renderer/features/presentations/hooks/use-pos-presentations').usePosPresentations
-  const usePresentationForm: typeof import('./renderer/features/presentations/hooks/use-presentation.form').usePresentationForm
+  const usePresentationForm: typeof import('./renderer/features/presentations/hooks/use-presentation-form').usePresentationForm
   const usePresentationsByProduct: typeof import('./renderer/features/presentations/hooks/use-presentations-by-product').usePresentationsByProduct
   const useProductForm: typeof import('./renderer/features/products/hooks/use-product-form').useProductForm
   const useProducts: typeof import('./renderer/features/products/hooks/use-products').useProducts

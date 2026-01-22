@@ -1,5 +1,11 @@
-export const PresentationFormFields = () => {
-  const { control, watch } = useFormContext<PresentationFormData>()
+type Props = {
+  product: Product
+  mode: PresentationFormMode
+}
+
+export const PresentationFormFields = ({ product, mode }: Props) => {
+  const { control, watch, setValue, clearErrors } =
+    useFormContext<PresentationFormInput>()
 
   const factorType = watch('factorType')
 
@@ -47,7 +53,7 @@ export const PresentationFormFields = () => {
                 <InputGroupAddon>L</InputGroupAddon>
                 <InputGroupInput
                   {...field}
-                  value={field.value}
+                  value={(field.value as string) ?? ''}
                   onChange={e => {
                     field.onChange(e.target.value)
                   }}
@@ -65,7 +71,11 @@ export const PresentationFormFields = () => {
           render={({ field: { onChange, ...field }, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>Unidad</FieldLabel>
-              <Select {...field} onValueChange={onChange}>
+              <Select
+                {...field}
+                onValueChange={onChange}
+                disabled={mode === 'edit'}
+              >
                 <SelectTrigger>
                   <SelectValue
                     aria-invalid={fieldState.invalid}
@@ -91,11 +101,25 @@ export const PresentationFormFields = () => {
           render={({ field: { onChange, ...field }, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>Tipo de factor</FieldLabel>
-              <Select {...field} onValueChange={onChange}>
+              <Select
+                {...field}
+                onValueChange={value => {
+                  if (value === 'fixed') {
+                    setValue('factor', '', {
+                      shouldValidate: true,
+                    })
+                  } else {
+                    setValue('factor', 'n')
+                    clearErrors('factor')
+                  }
+
+                  onChange(value)
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue
                     aria-invalid={fieldState.invalid}
-                    placeholder="Seleccione un tipo"
+                    placeholder="Seleccione un factor"
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,10 +142,13 @@ export const PresentationFormFields = () => {
                 <InputGroupAddon>x</InputGroupAddon>
                 <InputGroupInput
                   {...field}
-                  value={value ?? ''}
+                  value={(value as string) ?? ''}
                   placeholder="12"
                   disabled={factorType === 'variable'}
                 />
+                <InputGroupAddon align="inline-end">
+                  {UNIT_CONFIG[product.baseUnit].label}
+                </InputGroupAddon>
               </InputGroup>
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>

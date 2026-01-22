@@ -29,7 +29,7 @@ export function PresentationsTable({
             <TableHead>Factor</TableHead>
             <TableHead>Precio</TableHead>
             <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead></TableHead>
           </TableRow>
         </TableHeader>
 
