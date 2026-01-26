@@ -1,4 +1,3 @@
-import { db } from 'main/db'
 
 import {
   AddStockDTO,
@@ -63,19 +62,16 @@ export const inventoryService = {
     if (quantityDelta === 0) {
       throw new Error('La cantidad no puede ser cero.')
     }
+    await inventoryBatchesRepository.adjustAvailable(batchId, quantityDelta)
 
-    await db.transaction(async () => {
-      await inventoryBatchesRepository.adjustAvailable(batchId, quantityDelta)
-
-      await inventoryMovementsRepository.createMovement({
-        productId,
-        batchId,
-        type: 'ADJUSTMENT',
-        quantity: Math.abs(quantityDelta),
-        reason,
-        referenceType,
-        referenceId,
-      })
+    await inventoryMovementsRepository.createMovement({
+      productId,
+      batchId,
+      type: 'ADJUSTMENT',
+      quantity: Math.abs(quantityDelta),
+      reason,
+      referenceType,
+      referenceId,
     })
   },
 
@@ -89,41 +85,38 @@ export const inventoryService = {
     if (quantity <= 0) {
       throw new Error('La cantidad a consumir debe ser mayor que cero.')
     }
+    const batches =
+      await inventoryBatchesRepository.findAvailableByProduct(productId)
 
-    await db.transaction(async () => {
-      const batches =
-        await inventoryBatchesRepository.findAvailableByProduct(productId)
+    if (batches.length === 0) {
+      throw new Error('No hay stock disponible para este producto.')
+    }
 
-      if (batches.length === 0) {
-        throw new Error('No hay stock disponible para este producto.')
-      }
+    let remaining = quantity
 
-      let remaining = quantity
+    for (const batch of batches) {
+      if (remaining <= 0) break
 
-      for (const batch of batches) {
-        if (remaining <= 0) break
+      const consumable = Math.min(batch.quantityAvailable, remaining)
 
-        const consumable = Math.min(batch.quantityAvailable, remaining)
+      await inventoryBatchesRepository.decreaseAvailable(batch.id, consumable)
 
-        await inventoryBatchesRepository.decreaseAvailable(batch.id, consumable)
+      await inventoryMovementsRepository.createMovement({
+        productId,
+        batchId: batch.id,
+        type: 'OUT',
+        quantity: consumable,
+        reason,
+        referenceType,
+        referenceId,
+      })
 
-        await inventoryMovementsRepository.createMovement({
-          productId,
-          batchId: batch.id,
-          type: 'OUT',
-          quantity: consumable,
-          reason,
-          referenceType,
-          referenceId,
-        })
+      remaining -= consumable
+    }
 
-        remaining -= consumable
-      }
-
-      if (remaining > 0) {
-        throw new Error('No hay suficiente stock para este producto.')
-      }
-    })
+    if (remaining > 0) {
+      throw new Error('No hay suficiente stock para este producto.')
+    }
   },
 
   getAvailableStock: async (productId: number) => {

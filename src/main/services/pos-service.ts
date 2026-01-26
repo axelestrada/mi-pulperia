@@ -1,0 +1,401 @@
+import { POSRepository } from '../repositories/pos-repository'
+import { SalesRepository, CreateSaleData } from '../repositories/sales-repository'
+import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
+import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
+import { CashSessionsService } from './cash-sessions-service'
+import { CustomersService } from './customers-service'
+import { InsertInventoryMovement } from '../db/schema/inventory-movements'
+
+export interface POSSaleItem {
+  presentationId: number
+  quantity: number
+  unitPrice: number
+  discount?: number
+  discountType?: 'fixed' | 'percentage'
+  notes?: string
+}
+
+export interface POSPayment {
+  method: 'cash' | 'credit' | 'debit' | 'transfer' | 'check'
+  amount: number
+  receivedAmount?: number
+  changeAmount?: number
+  referenceNumber?: string
+  authorizationCode?: string
+  details?: string
+  notes?: string
+}
+
+export interface CreatePOSSaleInput {
+  customerId?: number
+  items: POSSaleItem[]
+  payments: POSPayment[]
+  subtotal: number
+  taxAmount?: number
+  discountAmount?: number
+  total: number
+  notes?: string
+}
+
+export const POSService = {
+  async getAvailablePresentations(filters = {}) {
+    return POSRepository.getAvailablePresentations(filters)
+  },
+
+  async getPresentationWithBatches(presentationId: number) {
+    if (!Number.isInteger(presentationId)) {
+      throw new Error('Invalid presentation id')
+    }
+
+    const presentation = await POSRepository.getPresentationWithBatches(presentationId)
+    if (!presentation) {
+      throw new Error('Presentation not found or not available')
+    }
+
+    return presentation
+  },
+
+  async searchByCode(code: string) {
+    if (!code?.trim()) {
+      throw new Error('Search code is required')
+    }
+
+    return POSRepository.searchByCode(code.trim())
+  },
+
+  async getCategories() {
+    return POSRepository.getCategories()
+  },
+
+  async validateSaleItems(items: POSSaleItem[]) {
+    if (!items || items.length === 0) {
+      throw new Error('Sale must have at least one item')
+    }
+
+    const validationResults = []
+
+    for (const item of items) {
+      if (!Number.isInteger(item.presentationId)) {
+        throw new Error('Invalid presentation id')
+      }
+
+      if (item.quantity <= 0) {
+        throw new Error('Item quantity must be positive')
+      }
+
+      if (item.unitPrice < 0) {
+        throw new Error('Item price cannot be negative')
+      }
+
+      // Get presentation with batches to validate availability
+      const presentation = await POSRepository.getPresentationWithBatches(item.presentationId)
+      if (!presentation) {
+        throw new Error(`Presentation with id ${item.presentationId} not found or not available`)
+      }
+
+      // Check if we have enough stock using FEFO
+      const allocation = await POSRepository.getFEFOAllocation(presentation.productId, item.quantity)
+      if (!allocation.isFullyAllocated) {
+        throw new Error(
+          `Insufficient stock for ${presentation.name}. Available: ${allocation.totalAllocated}, Requested: ${item.quantity}`
+        )
+      }
+
+      validationResults.push({
+        item,
+        presentation,
+        allocation,
+      })
+    }
+
+    return validationResults
+  },
+
+  async validatePayments(payments: POSPayment[], total: number) {
+    if (!payments || payments.length === 0) {
+      throw new Error('Sale must have at least one payment method')
+    }
+
+    let totalPaymentAmount = 0
+    let totalCashReceived = 0
+    let totalChangeGiven = 0
+
+    for (const payment of payments) {
+      if (payment.amount <= 0) {
+        throw new Error('Payment amount must be positive')
+      }
+
+      if (!['cash', 'credit', 'debit', 'transfer', 'check'].includes(payment.method)) {
+        throw new Error('Invalid payment method')
+      }
+
+      totalPaymentAmount += payment.amount
+
+      // Validate cash payments
+      if (payment.method === 'cash') {
+        if (!payment.receivedAmount || payment.receivedAmount < payment.amount) {
+          throw new Error('Received cash amount must be at least the payment amount')
+        }
+
+        const expectedChange = payment.receivedAmount - payment.amount
+        if (payment.changeAmount !== expectedChange) {
+          throw new Error('Change amount calculation is incorrect')
+        }
+
+        totalCashReceived += payment.receivedAmount
+        totalChangeGiven += payment.changeAmount || 0
+      }
+
+      // Validate card/transfer payments
+      if (['credit', 'debit', 'transfer'].includes(payment.method)) {
+        if (!payment.referenceNumber?.trim()) {
+          throw new Error(`Reference number is required for ${payment.method} payments`)
+        }
+      }
+    }
+
+    if (Math.abs(totalPaymentAmount - total) > 0.01) {
+      throw new Error('Total payment amount must equal sale total')
+    }
+
+    return {
+      totalPaymentAmount,
+      totalCashReceived,
+      totalChangeGiven,
+      isValid: true,
+    }
+  },
+
+  async createSale(input: CreatePOSSaleInput) {
+    // Validate that a cash session is open
+    const openSession = await CashSessionsService.validateCanMakeSale()
+
+    // Validate customer if provided
+    if (input.customerId) {
+      await CustomersService.getById(input.customerId)
+    }
+
+    // Validate sale totals
+    if (input.subtotal < 0) {
+      throw new Error('Subtotal cannot be negative')
+    }
+
+    if (input.total <= 0) {
+      throw new Error('Total must be positive')
+    }
+
+    if (input.taxAmount && input.taxAmount < 0) {
+      throw new Error('Tax amount cannot be negative')
+    }
+
+    if (input.discountAmount && input.discountAmount < 0) {
+      throw new Error('Discount amount cannot be negative')
+    }
+
+    // Validate items and get FEFO allocation
+    const itemValidations = await this.validateSaleItems(input.items)
+
+    // Validate payments
+    await this.validatePayments(input.payments, input.total)
+
+    // Generate sale number
+    const saleNumber = await SalesRepository.generateSaleNumber()
+
+    // Prepare sale data
+    const saleData: CreateSaleData = {
+      sale: {
+        saleNumber,
+        customerId: input.customerId,
+        cashSessionId: openSession.id,
+        subtotal: input.subtotal,
+        taxAmount: input.taxAmount || 0,
+        discountAmount: input.discountAmount || 0,
+        total: input.total,
+        status: 'completed',
+        notes: input.notes?.trim() || undefined,
+      },
+      items: [],
+      payments: input.payments,
+    }
+
+    // Process items with FEFO allocation
+    for (const validation of itemValidations) {
+      const { item, allocation } = validation
+
+      // For each batch in the allocation, create a sale item
+      for (const batchAllocation of allocation.allocation) {
+        const itemTotalPrice = Math.round((item.unitPrice * batchAllocation.quantity) * 100) / 100
+
+        saleData.items.push({
+          presentationId: item.presentationId,
+          batchId: batchAllocation.batchId,
+          quantity: batchAllocation.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: itemTotalPrice,
+          discount: item.discount || 0,
+          discountType: item.discountType,
+          notes: item.notes,
+        })
+      }
+    }
+
+    // Create the sale and associated records in a transaction
+    const sale = await SalesRepository.create(saleData)
+
+    // Create inventory movements for each item
+    for (const validation of itemValidations) {
+      const { presentation, allocation } = validation
+
+      for (const batchAllocation of allocation.allocation) {
+        // Create inventory movement
+        const movementData: InsertInventoryMovement = {
+          productId: presentation.productId,
+          batchId: batchAllocation.batchId,
+          type: 'OUT',
+          quantity: -batchAllocation.quantity, // Negative for outgoing
+          reason: 'Sale',
+          referenceType: 'sale',
+          referenceId: sale.id,
+        }
+
+        await InventoryMovementsRepository.create(movementData)
+
+        // Update batch quantity
+        await InventoryBatchesRepository.updateQuantity(
+          batchAllocation.batchId,
+          -batchAllocation.quantity
+        )
+      }
+    }
+
+    return {
+      sale,
+      saleDetails: await SalesRepository.findById(sale.id),
+    }
+  },
+
+  async calculateTotals(items: POSSaleItem[], taxRate: number = 0) {
+    if (!items || items.length === 0) {
+      return {
+        subtotal: 0,
+        taxAmount: 0,
+        total: 0,
+        totalItems: 0,
+      }
+    }
+
+    let subtotal = 0
+    let totalItems = 0
+
+    for (const item of items) {
+      let itemTotal = item.quantity * item.unitPrice
+
+      // Apply discount if present
+      if (item.discount && item.discount > 0) {
+        if (item.discountType === 'percentage') {
+          itemTotal = itemTotal * (1 - item.discount / 100)
+        } else {
+          itemTotal = Math.max(0, itemTotal - item.discount)
+        }
+      }
+
+      subtotal += itemTotal
+      totalItems += item.quantity
+    }
+
+    const taxAmount = subtotal * (taxRate / 100)
+    const total = subtotal + taxAmount
+
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      taxAmount: Math.round(taxAmount * 100) / 100,
+      total: Math.round(total * 100) / 100,
+      totalItems,
+    }
+  },
+
+  async calculateChange(payments: POSPayment[]) {
+    const cashPayments = payments.filter(p => p.method === 'cash')
+
+    const totalCashReceived = cashPayments.reduce((sum, p) => sum + (p.receivedAmount || 0), 0)
+    const totalCashAmount = cashPayments.reduce((sum, p) => sum + p.amount, 0)
+
+    return Math.max(0, totalCashReceived - totalCashAmount)
+  },
+
+  async getRecentSales(limit: number = 10) {
+    return SalesRepository.findAll({
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      limit,
+    })
+  },
+
+  // Get low stock presentations
+  async getLowStockPresentations(threshold: number = 5) {
+    const presentations = await POSRepository.getAvailablePresentations({ limit: 1000 })
+
+    return presentations.data.filter(presentation =>
+      presentation.availableQuantity <= threshold
+    )
+  },
+
+  // Get presentations expiring soon
+  async getExpiringPresentations(daysFromNow: number = 7) {
+    const presentations = await POSRepository.getAvailablePresentations({ limit: 1000 })
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() + daysFromNow)
+
+    const expiring = []
+
+    for (const presentation of presentations.data) {
+      const expiringBatches = presentation.batches.filter(batch =>
+        batch.expirationDate && batch.expirationDate <= cutoffDate
+      )
+
+      if (expiringBatches.length > 0) {
+        expiring.push({
+          ...presentation,
+          expiringBatches,
+          totalExpiringQuantity: expiringBatches.reduce((sum, batch) => sum + batch.availableQuantity, 0),
+        })
+      }
+    }
+
+    return expiring
+  },
+
+  // Validate barcode format (basic validation)
+  validateBarcode(barcode: string): boolean {
+    if (!barcode || typeof barcode !== 'string') {
+      return false
+    }
+
+    const trimmed = barcode.trim()
+
+    // Basic validation: should be numeric and have reasonable length
+    return /^\d{6,18}$/.test(trimmed)
+  },
+
+  // Quick search for presentations (for autocomplete)
+  async quickSearch(query: string, limit: number = 10) {
+    if (!query?.trim() || query.trim().length < 2) {
+      return []
+    }
+
+    const presentations = await POSRepository.getAvailablePresentations({
+      search: query.trim(),
+      limit,
+    })
+
+    return presentations.data.map(p => ({
+      id: p.id,
+      name: p.name,
+      productName: p.productName,
+      barcode: p.barcode,
+      sku: p.sku,
+      salePrice: p.salePrice,
+      availableQuantity: p.availableQuantity,
+    }))
+  },
+}

@@ -12,6 +12,17 @@ import { registerImagesHandlers } from './ipc/images-ipc'
 import { registerProductsHandlers } from 'domains/products/products-ipc'
 import { registerInventoryIPC } from './domains/inventory/inventory-ipc'
 import { registerPresentationsHandlers } from './domains/presentations/presentations-ipc'
+import { registerCustomersHandlers } from './ipc/customers-ipc'
+import { registerCashRegistersHandlers } from './ipc/cash-registers-ipc'
+import { registerCashSessionsHandlers } from './ipc/cash-sessions-ipc'
+import { registerPOSHandlers } from './ipc/pos-ipc'
+import { registerSalesHandlers } from './ipc/sales-ipc'
+import { registerSuppliersIpc } from './ipc/suppliers-ipc'
+import { registerPurchaseOrdersIpc } from './ipc/purchase-orders-ipc'
+import { registerInventoryAdjustmentsIpc } from './ipc/inventory-adjustments-ipc'
+import { registerCreditsIpc } from './ipc/credits-ipc'
+import { registerExpensesIpc } from './ipc/expenses-ipc'
+import { registerReportsIpc } from './ipc/reports-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -81,6 +92,17 @@ app.on('activate', async () => {
     registerPresentationsHandlers()
     registerInventoryIPC()
     registerCategoriesHandlers()
+    registerCustomersHandlers()
+    registerCashRegistersHandlers()
+    registerCashSessionsHandlers()
+    registerPOSHandlers()
+    registerSalesHandlers()
+    registerSuppliersIpc()
+    registerPurchaseOrdersIpc()
+    registerInventoryAdjustmentsIpc()
+    registerCreditsIpc()
+    registerExpensesIpc()
+    registerReportsIpc()
 
     createWindow()
   }
@@ -107,6 +129,17 @@ app.whenReady().then(async () => {
   registerPresentationsHandlers()
   registerInventoryIPC()
   registerCategoriesHandlers()
+  registerCustomersHandlers()
+  registerCashRegistersHandlers()
+  registerCashSessionsHandlers()
+  registerPOSHandlers()
+  registerSalesHandlers()
+  registerSuppliersIpc()
+  registerPurchaseOrdersIpc()
+  registerInventoryAdjustmentsIpc()
+  registerCreditsIpc()
+  registerExpensesIpc()
+  registerReportsIpc()
 
   createWindow()
 })

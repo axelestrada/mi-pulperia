@@ -6,7 +6,16 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const Accordion: typeof import('./renderer/components/ui/accordion').Accordion
+  const AccordionContent: typeof import('./renderer/components/ui/accordion').AccordionContent
+  const AccordionItem: typeof import('./renderer/components/ui/accordion').AccordionItem
+  const AccordionTrigger: typeof import('./renderer/components/ui/accordion').AccordionTrigger
   const Activity: typeof import('react').Activity
+  const AdjustmentFormDialog: typeof import('./renderer/features/inventory-adjustments/ui/adjustment-form-dialog').AdjustmentFormDialog
+  const AdjustmentsPage: typeof import('./renderer/pages/adjustments-page').AdjustmentsPage
+  const AdjustmentsTable: typeof import('./renderer/features/inventory-adjustments/ui/adjustments-table').AdjustmentsTable
+  const Alert: typeof import('./renderer/components/ui/alert').Alert
+  const AlertDescription: typeof import('./renderer/components/ui/alert').AlertDescription
   const AlertDialog: typeof import('./renderer/components/ui/alert-dialog').AlertDialog
   const AlertDialogAction: typeof import('./renderer/components/ui/alert-dialog').AlertDialogAction
   const AlertDialogCancel: typeof import('./renderer/components/ui/alert-dialog').AlertDialogCancel
@@ -18,6 +27,7 @@ declare global {
   const AlertDialogPortal: typeof import('./renderer/components/ui/alert-dialog').AlertDialogPortal
   const AlertDialogTitle: typeof import('./renderer/components/ui/alert-dialog').AlertDialogTitle
   const AlertDialogTrigger: typeof import('./renderer/components/ui/alert-dialog').AlertDialogTrigger
+  const AlertTitle: typeof import('./renderer/components/ui/alert').AlertTitle
   const AppSidebar: typeof import('./renderer/components/sidebar/app-sidebar').AppSidebar
   const Avatar: typeof import('./renderer/components/ui/avatar').Avatar
   const AvatarFallback: typeof import('./renderer/components/ui/avatar').AvatarFallback
@@ -43,6 +53,12 @@ declare global {
   const CardFooter: typeof import('./renderer/components/ui/card').CardFooter
   const CardHeader: typeof import('./renderer/components/ui/card').CardHeader
   const CardTitle: typeof import('./renderer/components/ui/card').CardTitle
+  const CashPage: typeof import('./renderer/pages/cash-page').CashPage
+  const CashRegisterForm: typeof import('./renderer/features/cash-sessions/components/cash-register-form').CashRegisterForm
+  const CashRegistersList: typeof import('./renderer/features/cash-sessions/components/cash-registers-list').CashRegistersList
+  const CashRegistersPage: typeof import('./renderer/pages/cash-registers-page').CashRegistersPage
+  const CashSessionManager: typeof import('./renderer/features/cash-sessions/components/cash-session-manager').CashSessionManager
+  const CashSessionsPage: typeof import('./renderer/pages/cash-sessions-page').CashSessionsPage
   const CategoriesEmptyState: typeof import('./renderer/features/categories/ui/categories-empty-state').CategoriesEmptyState
   const CategoriesFilters: typeof import('./renderer/features/categories/ui/catgories-filters').CategoriesFilters
   const CategoriesHeader: typeof import('./renderer/features/categories/ui/categories-header').CategoriesHeader
@@ -78,9 +94,11 @@ declare global {
   const CommandShortcut: typeof import('./renderer/components/ui/command').CommandShortcut
   const Controller: typeof import('react-hook-form').Controller
   const CreatePresentationButton: typeof import('./renderer/features/presentations/ui/create-presentation-button').CreatePresentationButton
+  const CreditsPage: typeof import('./renderer/pages/credits-page').CreditsPage
   const CurrencyInput: typeof import('./renderer/components/currency-input').CurrencyInput
+  const CustomerFormDialog: typeof import('./renderer/features/customers/ui/customer-form-dialog').CustomerFormDialog
   const CustomersPage: typeof import('./renderer/pages/customers-page').CustomersPage
-  const CustomersTable: typeof import('./renderer/features/customers/components/customers-table').CustomersTable
+  const CustomersTable: typeof import('./renderer/features/customers/ui/customers-table').CustomersTable
   const DashboardPage: typeof import('./renderer/pages/dashboard-page').DashboardPage
   const DatePickerField: typeof import('./renderer/components/date-picker-field').DatePickerField
   const Debts: typeof import('./renderer/features/reports/components/debts').Debts
@@ -130,6 +148,7 @@ declare global {
   const EmptyHeader: typeof import('./renderer/components/ui/empty').EmptyHeader
   const EmptyMedia: typeof import('./renderer/components/ui/empty').EmptyMedia
   const EmptyTitle: typeof import('./renderer/components/ui/empty').EmptyTitle
+  const ExpensesPage: typeof import('./renderer/pages/expenses-page').ExpensesPage
   const ExpirationStatusCell: typeof import('./renderer/features/inventory/batches/ui/expiration-status-cell').ExpirationStatusCell
   const Field: typeof import('./renderer/components/ui/field').Field
   const FieldContent: typeof import('./renderer/components/ui/field').FieldContent
@@ -141,8 +160,16 @@ declare global {
   const FieldSeparator: typeof import('./renderer/components/ui/field').FieldSeparator
   const FieldSet: typeof import('./renderer/components/ui/field').FieldSet
   const FieldTitle: typeof import('./renderer/components/ui/field').FieldTitle
+  const Form: typeof import('./renderer/components/ui/form').Form
+  const FormControl: typeof import('./renderer/components/ui/form').FormControl
+  const FormDescription: typeof import('./renderer/components/ui/form').FormDescription
+  const FormField: typeof import('./renderer/components/ui/form').FormField
+  const FormItem: typeof import('./renderer/components/ui/form').FormItem
+  const FormLabel: typeof import('./renderer/components/ui/form').FormLabel
+  const FormMessage: typeof import('./renderer/components/ui/form').FormMessage
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
+  const HelpPage: typeof import('./renderer/pages/help-page').HelpPage
   const INVENTORY_ENTRY_DEFAULTS: typeof import('./renderer/features/inventory/model/inventory-entry-constants').INVENTORY_ENTRY_DEFAULTS
   const IconLucideArrowLeft: typeof import('~icons/lucide/arrow-left.tsx').default
   const IconLucideBell: typeof import('~icons/lucide/bell.tsx').default
@@ -154,16 +181,25 @@ declare global {
   const IconLucideChevronsLeft: typeof import('~icons/lucide/chevrons-left.tsx').default
   const IconLucideChevronsRight: typeof import('~icons/lucide/chevrons-right.tsx').default
   const IconLucideChevronsUpDown: typeof import('~icons/lucide/chevrons-up-down.tsx').default
+  const IconLucideClock: typeof import('~icons/lucide/clock.tsx').default
+  const IconLucideCreditCard: typeof import('~icons/lucide/credit-card.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
   const IconLucideEye: typeof import('~icons/lucide/eye.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
   const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
+  const IconLucideMousePointerClick: typeof import('~icons/lucide/mouse-pointer-click.tsx').default
   const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
+  const IconLucidePause: typeof import('~icons/lucide/pause.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucidePlusCircle: typeof import('~icons/lucide/plus-circle.tsx').default
+  const IconLucidePlusIcon: typeof import('~icons/lucide/plus-icon.tsx').default
+  const IconLucideScan: typeof import('~icons/lucide/scan.tsx').default
+  const IconLucideScanIcon: typeof import('~icons/lucide/scan-icon.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
+  const IconLucideSearchIcon: typeof import('~icons/lucide/search-icon.tsx').default
+  const IconLucideShoppingCart: typeof import('~icons/lucide/shopping-cart.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideUsers: typeof import('~icons/lucide/users.tsx').default
@@ -200,6 +236,7 @@ declare global {
   const Navigate: typeof import('react-router-dom').Navigate
   const NotFoundPage: typeof import('./renderer/pages/not-found-page').NotFoundPage
   const Outlet: typeof import('react-router-dom').Outlet
+  const POSInterface: typeof import('./renderer/features/pos/components/pos-interface').POSInterface
   const PRODUCT_STATUSES: typeof import('./renderer/features/products/model/product-status').PRODUCT_STATUSES
   const PageHeader: typeof import('./renderer/components/ui/page-header').PageHeader
   const Placeholder: typeof import('./renderer/components/placeholder').Placeholder
@@ -207,6 +244,7 @@ declare global {
   const PopoverAnchor: typeof import('./renderer/components/ui/popover').PopoverAnchor
   const PopoverContent: typeof import('./renderer/components/ui/popover').PopoverContent
   const PopoverTrigger: typeof import('./renderer/components/ui/popover').PopoverTrigger
+  const PosItem: typeof import('./renderer/features/pos/components/pos-item').PosItem
   const PosPage: typeof import('./renderer/pages/pos-page').PosPage
   const PresentationForm: typeof import('./renderer/features/presentations/ui/presentation-form').PresentationForm
   const PresentationFormDialog: typeof import('./renderer/features/presentations/ui/presentation-form-dialog').PresentationFormDialog
@@ -230,11 +268,16 @@ declare global {
   const ProductsTableHeader: typeof import('./renderer/features/products/ui/products-table-header').ProductsTableHeader
   const ProductsTableRow: typeof import('./renderer/features/products/ui/products-table-row').ProductsTableRow
   const Progress: typeof import('./renderer/components/ui/progress').Progress
+  const PurchaseOrderFormDialog: typeof import('./renderer/features/purchase-orders/ui/purchase-order-form-dialog').PurchaseOrderFormDialog
+  const PurchaseOrdersPage: typeof import('./renderer/pages/purchase-orders-page').PurchaseOrdersPage
+  const PurchaseOrdersTable: typeof import('./renderer/features/purchase-orders/ui/purchase-orders-table').PurchaseOrdersTable
   const QueryClient: typeof import('@tanstack/react-query').QueryClient
   const QueryClientProvider: typeof import('@tanstack/react-query').QueryClientProvider
+  const ReportsPage: typeof import('./renderer/pages/reports-page').ReportsPage
   const Route: typeof import('react-router-dom').Route
   const Routes: typeof import('react-router-dom').Routes
   const SafeImage: typeof import('./renderer/components/ui/safe-image').SafeImage
+  const SalesPage: typeof import('./renderer/pages/sales-page').SalesPage
   const ScrollArea: typeof import('./renderer/components/ui/scroll-area').ScrollArea
   const ScrollBar: typeof import('./renderer/components/ui/scroll-area').ScrollBar
   const Select: typeof import('./renderer/components/ui/select').Select
@@ -248,6 +291,7 @@ declare global {
   const SelectTrigger: typeof import('./renderer/components/ui/select').SelectTrigger
   const SelectValue: typeof import('./renderer/components/ui/select').SelectValue
   const Separator: typeof import('./renderer/components/ui/separator').Separator
+  const SettingsPage: typeof import('./renderer/pages/settings-page').SettingsPage
   const Sheet: typeof import('./renderer/components/ui/sheet').Sheet
   const SheetClose: typeof import('./renderer/components/ui/sheet').SheetClose
   const SheetContent: typeof import('./renderer/components/ui/sheet').SheetContent
@@ -282,6 +326,10 @@ declare global {
   const Skeleton: typeof import('./renderer/components/ui/skeleton').Skeleton
   const Spinner: typeof import('./renderer/components/ui/spinner').Spinner
   const StatusBadge: typeof import('./renderer/components/badges/status-badge').StatusBadge
+  const SupplierFormDialog: typeof import('./renderer/features/suppliers/ui/supplier-form-dialog').SupplierFormDialog
+  const SupplierSelect: typeof import('./renderer/features/inventory/ui/supplier-select').SupplierSelect
+  const SuppliersPage: typeof import('./renderer/pages/suppliers-page').SuppliersPage
+  const SuppliersTable: typeof import('./renderer/features/suppliers/ui/suppliers-table').SuppliersTable
   const Suspense: typeof import('react').Suspense
   const Switch: typeof import('./renderer/components/ui/switch').Switch
   const Table: typeof import('./renderer/components/ui/table').Table
@@ -308,12 +356,14 @@ declare global {
   const TypographyH3: typeof import('./renderer/components/ui/typography').TypographyH3
   const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
   const UNIT_CONFIG: typeof import('./renderer/features/products/ui/product-units').UNIT_CONFIG
+  const adjustmentAdapter: typeof import('./renderer/features/inventory-adjustments/api/adjustment-adapter').adjustmentAdapter
   const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
   const batchSchema: typeof import('./renderer/features/inventory/batches/model/inventory-batch-schema').batchSchema
   const buttonGroupVariants: typeof import('./renderer/components/ui/button-group').buttonGroupVariants
   const buttonVariants: typeof import('./renderer/components/ui/button').buttonVariants
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal
+  const cashSessionManager: typeof import('./renderer/features/cash-sessions/components/cash-session-manager').default
   const categoryAdapter: typeof import('./renderer/features/categories/api/category-adapter').categoryAdapter
   const categoryFormSchema: typeof import('./renderer/features/categories/model/category-form-schema').categoryFormSchema
   const categoryKeys: typeof import('./renderer/features/categories/hooks/category-keys').categoryKeys
@@ -337,6 +387,7 @@ declare global {
   const movementSchema: typeof import('./renderer/features/inventory/model/inventory-movement-schema').movementSchema
   const parseCurrency: typeof import('./shared/utils/formatCurrency').parseCurrency
   const parseError: typeof import('./shared/errors/parse-error').parseError
+  const posInterface: typeof import('./renderer/features/pos/components/pos-interface').default
   const presentationFormSchema: typeof import('./renderer/features/presentations/model/presentation-form-schema').presentationFormSchema
   const presentationKeys: typeof import('./renderer/features/presentations/hooks/presentation-keys').presentationKeys
   const presentationSchema: typeof import('./renderer/features/presentations/model/presentation-schema').presentationSchema
@@ -349,41 +400,82 @@ declare global {
   const productSchema: typeof import('./renderer/features/products/model/product-schema').productSchema
   const productService: typeof import('./renderer/features/products/services/product-service').productService
   const productToForm: typeof import('./renderer/features/products/model/product-mappers').productToForm
+  const purchaseOrderAdapter: typeof import('./renderer/features/purchase-orders/api/purchase-order-adapter').purchaseOrderAdapter
   const router: typeof import('./renderer/routes').router
   const startTransition: typeof import('react').startTransition
+  const supplierAdapter: typeof import('./renderer/features/suppliers/api/supplier-adapter').supplierAdapter
   const toast: typeof import('sonner').toast
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
+  const useActiveCredits: typeof import('./renderer/features/credits/hooks/use-credits').useActiveCredits
+  const useActiveCustomers: typeof import('./renderer/features/customers/hooks/use-customers').useActiveCustomers
+  const useActiveSuppliers: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useActiveSuppliers
+  const useAddCreditPayment: typeof import('./renderer/features/credits/hooks/use-credits').useAddCreditPayment
   const useAddStock: typeof import('./renderer/features/inventory/hooks/use-add-stock').useAddStock
+  const useAddToCustomerBalance: typeof import('./renderer/features/customers/hooks/use-customers').useAddToCustomerBalance
+  const useApproveAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useApproveAdjustment
+  const useAvailableBatches: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useAvailableBatches
+  const useBatchInfo: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useBatchInfo
+  const useCalculateLateFees: typeof import('./renderer/features/credits/hooks/use-credits').useCalculateLateFees
   const useCallback: typeof import('react').useCallback
+  const useCanExtendCredit: typeof import('./renderer/features/customers/hooks/use-customers').useCanExtendCredit
+  const useCancelAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useCancelAdjustment
+  const useCancelCredit: typeof import('./renderer/features/credits/hooks/use-credits').useCancelCredit
+  const useCancelOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useCancelOrder
   const useCategories: typeof import('./renderer/features/categories/hooks/use-categories').useCategories
   const useCategoryForm: typeof import('./renderer/features/categories/hooks/use-category-form').useCategoryForm
   const useContext: typeof import('react').useContext
   const useCreateCategory: typeof import('./renderer/features/categories/hooks/use-create-category').useCreateCategory
+  const useCreateCredit: typeof import('./renderer/features/credits/hooks/use-credits').useCreateCredit
+  const useCreateCustomer: typeof import('./renderer/features/customers/hooks/use-customers').useCreateCustomer
+  const useCreateInventoryAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useCreateInventoryAdjustment
   const useCreatePresentation: typeof import('./renderer/features/presentations/hooks/use-create-presentation').useCreatePresentation
   const useCreateProduct: typeof import('./renderer/features/products/hooks/use-create-product').useCreateProduct
+  const useCreatePurchaseOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useCreatePurchaseOrder
+  const useCreateSupplier: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useCreateSupplier
+  const useCredit: typeof import('./renderer/features/credits/hooks/use-credits').useCredit
+  const useCredits: typeof import('./renderer/features/credits/hooks/use-credits').useCredits
+  const useCreditsStats: typeof import('./renderer/features/credits/hooks/use-credits').useCreditsStats
+  const useCustomer: typeof import('./renderer/features/customers/hooks/use-customers').useCustomer
+  const useCustomerByDocument: typeof import('./renderer/features/customers/hooks/use-customers').useCustomerByDocument
+  const useCustomerCredits: typeof import('./renderer/features/credits/hooks/use-credits').useCustomerCredits
+  const useCustomers: typeof import('./renderer/features/customers/hooks/use-customers').useCustomers
+  const useCustomersWithBalance: typeof import('./renderer/features/customers/hooks/use-customers').useCustomersWithBalance
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
   const useDeleteCategory: typeof import('./renderer/features/categories/hooks/use-delete-category').useDeleteCategory
+  const useDeleteCredit: typeof import('./renderer/features/credits/hooks/use-credits').useDeleteCredit
+  const useDeleteCustomer: typeof import('./renderer/features/customers/hooks/use-customers').useDeleteCustomer
   const useDeleteImage: typeof import('./renderer/features/images/hooks/use-delete-image').useDeleteImage
+  const useDeleteInventoryAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useDeleteInventoryAdjustment
   const useDeleteProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteProduct
+  const useDeletePurchaseOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useDeletePurchaseOrder
+  const useDeleteSupplier: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useDeleteSupplier
   const useEffect: typeof import('react').useEffect
   const useEffectEvent: typeof import('react').useEffectEvent
   const useFieldArray: typeof import('react-hook-form').useFieldArray
   const useForm: typeof import('react-hook-form').useForm
   const useFormContext: typeof import('react-hook-form').useFormContext
+  const useFormField: typeof import('./renderer/components/ui/form').useFormField
+  const useGenerateAdjustmentNumber: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useGenerateAdjustmentNumber
+  const useGenerateCreditNumber: typeof import('./renderer/features/credits/hooks/use-credits').useGenerateCreditNumber
+  const useGenerateOrderNumber: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useGenerateOrderNumber
+  const useGeneratePaymentNumber: typeof import('./renderer/features/credits/hooks/use-credits').useGeneratePaymentNumber
   const useHref: typeof import('react-router-dom').useHref
   const useId: typeof import('react').useId
   const useImagePath: typeof import('./renderer/features/images/hooks/use-image-path').useImagePath
   const useImperativeHandle: typeof import('react').useImperativeHandle
   const useInRouterContext: typeof import('react-router-dom').useInRouterContext
   const useInsertionEffect: typeof import('react').useInsertionEffect
+  const useInventoryAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useInventoryAdjustment
+  const useInventoryAdjustments: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useInventoryAdjustments
   const useInventoryBatches: typeof import('./renderer/features/inventory/batches/hooks/use-inventory-batches').useInventoryBatches
   const useInventoryEntryForm: typeof import('./renderer/features/inventory/hooks/use-inventory-entry-form').useInventoryEntryForm
   const useInventoryMovements: typeof import('./renderer/features/inventory/hooks/use-inventory-movements').useInventoryMovements
   const useLayoutEffect: typeof import('react').useLayoutEffect
   const useLinkClickHandler: typeof import('react-router-dom').useLinkClickHandler
   const useLocation: typeof import('react-router-dom').useLocation
+  const useMarkOrderAsCompleted: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useMarkOrderAsCompleted
   const useMemo: typeof import('react').useMemo
   const useMutation: typeof import('@tanstack/react-query').useMutation
   const useNavigate: typeof import('react-router-dom').useNavigate
@@ -391,13 +483,18 @@ declare global {
   const useOptimistic: typeof import('react').useOptimistic
   const useOutlet: typeof import('react-router-dom').useOutlet
   const useOutletContext: typeof import('react-router-dom').useOutletContext
+  const useOverdueCredits: typeof import('./renderer/features/credits/hooks/use-credits').useOverdueCredits
   const useParams: typeof import('react-router-dom').useParams
+  const usePartialCredits: typeof import('./renderer/features/credits/hooks/use-credits').usePartialCredits
   const usePosPresentations: typeof import('./renderer/features/presentations/hooks/use-pos-presentations').usePosPresentations
   const usePresentationForm: typeof import('./renderer/features/presentations/hooks/use-presentation-form').usePresentationForm
   const usePresentationsByProduct: typeof import('./renderer/features/presentations/hooks/use-presentations-by-product').usePresentationsByProduct
   const useProductForm: typeof import('./renderer/features/products/hooks/use-product-form').useProductForm
   const useProducts: typeof import('./renderer/features/products/hooks/use-products').useProducts
   const useProductsFilters: typeof import('./renderer/features/products/hooks/use-products-filters').useProductsFilters
+  const usePurchaseOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').usePurchaseOrder
+  const usePurchaseOrders: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').usePurchaseOrders
+  const usePurchaseOrdersBySupplier: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').usePurchaseOrdersBySupplier
   const useQuery: typeof import('@tanstack/react-query').useQuery
   const useQueryClient: typeof import('@tanstack/react-query').useQueryClient
   const useReducer: typeof import('react').useReducer
@@ -405,15 +502,26 @@ declare global {
   const useResolvedPath: typeof import('react-router-dom').useResolvedPath
   const useRoutes: typeof import('react-router-dom').useRoutes
   const useSearchParams: typeof import('react-router-dom').useSearchParams
+  const useSendOrderToSupplier: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useSendOrderToSupplier
   const useSidebar: typeof import('./renderer/components/ui/sidebar').useSidebar
   const useState: typeof import('react').useState
+  const useSubtractFromCustomerBalance: typeof import('./renderer/features/customers/hooks/use-customers').useSubtractFromCustomerBalance
+  const useSupplier: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useSupplier
+  const useSuppliers: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useSuppliers
   const useSyncExternalStore: typeof import('react').useSyncExternalStore
   const useToggleCategoryStatus: typeof import('./renderer/features/categories/hooks/use-toggle-category-status').useToggleCategoryStatus
   const useTogglePresentation: typeof import('./renderer/features/presentations/hooks/use-toggle-presentation').useTogglePresentation
   const useTransition: typeof import('react').useTransition
   const useUpdateCategory: typeof import('./renderer/features/categories/hooks/use-update-category').useUpdateCategory
+  const useUpdateCredit: typeof import('./renderer/features/credits/hooks/use-credits').useUpdateCredit
+  const useUpdateCustomer: typeof import('./renderer/features/customers/hooks/use-customers').useUpdateCustomer
+  const useUpdateCustomerBalance: typeof import('./renderer/features/customers/hooks/use-customers').useUpdateCustomerBalance
+  const useUpdateInventoryAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useUpdateInventoryAdjustment
+  const useUpdateOrderStatus: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useUpdateOrderStatus
   const useUpdatePresentation: typeof import('./renderer/features/presentations/hooks/use-update-presentation').useUpdatePresentation
   const useUpdateProduct: typeof import('./renderer/features/products/hooks/use-update-product').useUpdateProduct
+  const useUpdatePurchaseOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useUpdatePurchaseOrder
+  const useUpdateSupplier: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useUpdateSupplier
   const useUploadImage: typeof import('./renderer/features/images/hooks/use-upload-image').useUploadImage
   const zodResolver: typeof import('@hookform/resolvers/zod').zodResolver
 }

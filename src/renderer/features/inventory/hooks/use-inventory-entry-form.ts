@@ -17,7 +17,13 @@ export const useInventoryEntryForm = () => {
 
   const onSubmit = async (data: InventoryEntryFormData) => {
     try {
-      await Promise.all(data.items.map(item => addStock(item)))
+      // Apply supplier to all items if selected
+      const itemsWithSupplier = data.items.map(item => ({
+        ...item,
+        supplierId: data.supplierId || item.supplierId,
+      }))
+
+      await Promise.all(itemsWithSupplier.map(item => addStock(item)))
       toast.success('Entrada de inventario agregada correctamente')
 
       form.reset()

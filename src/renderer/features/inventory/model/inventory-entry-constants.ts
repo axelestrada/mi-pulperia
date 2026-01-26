@@ -8,5 +8,6 @@ export const EMPTY_INVENTORY_ITEM = {
 }
 
 export const INVENTORY_ENTRY_DEFAULTS = {
+  supplierId: null,
   items: [EMPTY_INVENTORY_ITEM],
 }

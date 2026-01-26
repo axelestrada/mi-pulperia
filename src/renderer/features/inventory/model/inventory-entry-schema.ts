@@ -11,7 +11,10 @@ export const inventoryItemSchema = z.object({
     })
     .transform(v => v ?? 0),
   supplierId: z.number().nullable(),
-  batchCode: z.string().nullable().transform(v => v?.trim() || null),
+  batchCode: z
+    .string()
+    .nullable()
+    .transform(v => v?.trim() || null),
   expirationDate: z.date().nullable(),
   quantity: z.coerce
     .number({
@@ -38,6 +41,7 @@ export const inventoryItemSchema = z.object({
 })
 
 export const inventoryEntrySchema = z.object({
+  supplierId: z.number().nullable().optional(),
   items: z.array(inventoryItemSchema).min(1, {
     error: 'Debe agregar al menos un lote',
   }),

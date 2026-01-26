@@ -26,14 +26,13 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
       <Controller
         name={`items.${index}.supplierId`}
         control={control}
-        render={({ fieldState }) => (
+        render={({ fieldState, field }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Proveedor</FieldLabel>
-            {/* <SupplierSelect
-              value={field.value}
+            <SupplierSelect
+              value={field.value ?? undefined}
               onChange={field.onChange}
-              error={fieldState.error}
-            /> */}
+            />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -57,12 +56,14 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Cantidad</FieldLabel>
-            <Input
-              placeholder="0"
-              inputMode="numeric"
-              {...field}
-              value={field.value ?? ''}
-            />
+            <InputGroup>
+              <Input
+                placeholder="0"
+                inputMode="numeric"
+                {...field}
+                value={field.value ?? ''}
+              />
+            </InputGroup>
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -73,13 +74,16 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel>Costo</FieldLabel>
-            <Input
+            <FieldLabel>Costo Unitario</FieldLabel>
+           <InputGroup>
+           <InputGroupAddon>L</InputGroupAddon>
+            <InputGroupInput
               placeholder="0.00"
               inputMode="numeric"
               {...field}
               value={field.value ?? ''}
             />
+           </InputGroup>
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}

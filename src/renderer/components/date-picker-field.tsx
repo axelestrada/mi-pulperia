@@ -58,7 +58,7 @@ export const DatePickerField = ({ onChange }: Props) => {
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent>
+        <PopoverContent align="end" sideOffset={16}>
           <Calendar
             mode="single"
             selected={date}
