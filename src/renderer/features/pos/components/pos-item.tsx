@@ -1,4 +1,7 @@
+import { CardBody, Card, Image, CardFooter, Chip } from '@heroui/react'
 import { POSPresentation } from 'main/repositories/pos-repository'
+
+import placeholder from '@/assets/images/placeholder.svg'
 
 type Props = {
   presentation: POSPresentation
@@ -8,35 +11,31 @@ type Props = {
 export const PosItem = ({ presentation, onClick }: Props) => {
   const { data: image } = useImagePath(presentation.image)
 
+  const title = presentation.isBase
+    ? presentation.productName
+    : `${presentation.productName} (${presentation.name})`
+
   return (
-    <div
-      className="border rounded-lg cursor-pointer flex flex-col"
-      onClick={() => onClick(presentation)}
-      key={'pos-presentation-' + presentation.id}
-    >
-      <SafeImage
-        className="aspect-square w-full object-cover rounded-none rounded-t-lg"
-        src={image}
-        alt={presentation.productName}
-      />
-
-      <div className="space-y-1 p-2 flex-1 flex flex-col justify-between">
-        <div>
-          <p className="font-medium text-sm leading-tight line-clamp-2">
-            {presentation.productName} ({presentation.name})
+    <Card isPressable shadow="sm" onPress={() => onClick(presentation)}>
+      <CardBody className="overflow-visible p-0">
+        <Image
+          alt={title}
+          className="w-full object-cover aspect-4/3"
+          radius="lg"
+          shadow="sm"
+          src={image ?? placeholder}
+          width="100%"
+        />
+      </CardBody>
+      <CardFooter className="text-small text-left flex-col gap-1 items-start h-full justify-between">
+        <b>{title}</b>
+        <div className="flex justify-between items-center w-full">
+          <p className="text-default-500">
+            {formatLempira(fromCents(presentation.salePrice))}
           </p>
-          <p className="text-xs text-muted-foreground">{presentation.sku}</p>
+          <Chip size="sm">{presentation.availableQuantity ?? 0}</Chip>
         </div>
-
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-lg font-bold text-primary">
-            {formatLempira(presentation.salePrice / 100)}
-          </span>
-          <Badge variant="secondary" className="text-xs">
-            {presentation.availableQuantity ?? 0}
-          </Badge>
-        </div>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }

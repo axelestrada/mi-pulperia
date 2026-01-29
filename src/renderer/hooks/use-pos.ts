@@ -8,6 +8,7 @@ export interface POSPresentation {
   barcode: string | null
   sku: string | null
   salePrice: number
+  isBase: boolean
   unit: string
   unitPrecision: number
   factorType: 'fixed' | 'variable'

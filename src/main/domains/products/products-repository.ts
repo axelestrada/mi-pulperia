@@ -7,7 +7,7 @@ import {
   type SelectProduct,
 } from 'main/db/schema/products'
 
-import { and, eq, getTableColumns, ilike, or, sql } from 'drizzle-orm'
+import { and, eq, getTableColumns, like, or, sql } from 'drizzle-orm'
 
 import { presentationsTable } from '../../db/schema/presentations'
 
@@ -71,7 +71,7 @@ export const ProductsRepository = {
 
     if (search) {
       const searchCondition = or(
-        ilike(productsTable.name, search),
+        like(productsTable.name, search),
         sql<boolean>`
           EXISTS (
             SELECT 1

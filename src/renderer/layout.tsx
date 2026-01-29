@@ -1,5 +1,6 @@
-import { useMatches } from "react-router-dom"
-import { getRouteTitle } from "shared/router/getRouteTitle"
+import { Divider, Button, Badge, Input } from '@heroui/react'
+import { useMatches } from 'react-router-dom'
+import { getRouteTitle } from 'shared/router/getRouteTitle'
 
 export const Layout = () => {
   const title = getRouteTitle(useMatches()) ?? 'Mi Pulpería'
@@ -13,59 +14,41 @@ export const Layout = () => {
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
 
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
+            <Divider orientation="vertical" className='h-5' />
 
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{title}</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    <p className="text-default-500">{title}</p>
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
 
           <div className="flex items-center gap-2 px-4">
-            <div className="relative w-72">
-              <IconLucideSearch className="size-4 text-foreground/50 absolute left-3 top-1/2 -translate-y-1/2" />
-
-              <Input
-                className="w-full pl-10 pr-15"
-                placeholder="Buscar productos, clientes..."
-              />
-
-              <Kbd className="absolute right-2 top-1/2 -translate-y-1/2">
-                <KbdKey>⌘</KbdKey>
-                <KbdKey>K</KbdKey>
-              </Kbd>
-            </div>
-
-            <Separator
-              orientation="vertical"
-              className="ml-2 data-[orientation=vertical]:h-4"
+            <Input
+              className="sm:max-w-56"
+              radius="full"
+              startContent={<IconSolarMagniferOutline className="size-5" />}
+              placeholder="Buscar..."
             />
-
-            <Button size="icon" variant="ghost" className="relative">
-              <IconLucideBell />
-              <Badge className="h-4 min-w-4 w-max text-[11px] tabular-nums rounded-full px-1 absolute top-0 right-1">
-                8
-              </Badge>
+            <Button isIconOnly variant="light" radius="full">
+              <IconSolarSunOutline className="size-6" />
             </Button>
-
-            <Separator
-              orientation="vertical"
-              className="data-[orientation=vertical]:h-4"
-            />
-
-            <Button size="icon" variant="ghost">
-              <IconLucideMoon />
+            <Button isIconOnly variant="light" radius="full">
+              <IconSolarSettingsOutline className="size-6" />
             </Button>
+            <Badge content="9" color="danger" shape="circle">
+              <Button isIconOnly variant="light" radius="full">
+                <IconSolarBellOutline className="size-6" />
+              </Button>
+            </Badge>
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-1">
           <Outlet />
         </div>
       </SidebarInset>

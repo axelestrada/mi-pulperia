@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, sql } from 'drizzle-orm'
+import { and, eq, like, or, sql } from 'drizzle-orm'
 import { db } from 'main/db'
 import {
   InsertPresentation,
@@ -34,10 +34,10 @@ export const PresentationsRepository = {
 
     if (search) {
       const searchConditions = or(
-        ilike(presentationsTable.name, search),
-        ilike(presentationsTable.sku, search),
-        ilike(presentationsTable.barcode, search),
-        ilike(productsTable.name, search)
+        like(presentationsTable.name, `%${search}%`),
+        like(presentationsTable.sku, `%${search}%`),
+        like(presentationsTable.barcode, `%${search}%`),
+        like(productsTable.name, `%${search}%`)
       )
 
       if (searchConditions) {

@@ -12,7 +12,7 @@ import {
   gt,
   sum,
   isNull,
-  ilike,
+  like,
   getTableColumns,
 } from 'drizzle-orm'
 
@@ -62,8 +62,8 @@ export const InventoryBatchesRepository = {
 
     if (search) {
       const searchConditions = or(
-        ilike(inventoryBatchesTable.batchCode, search),
-        ilike(productsTable.name, search)
+        like(inventoryBatchesTable.batchCode, search),
+        like(productsTable.name, search)
       )
 
       if (searchConditions) {

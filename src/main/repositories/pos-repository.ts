@@ -10,7 +10,7 @@ import {
   gt,
   isNull,
   sql,
-  ilike,
+  like,
 } from 'drizzle-orm'
 
 import { presentationsTable } from '../db/schema/presentations'
@@ -36,6 +36,7 @@ export interface POSPresentation {
   barcode: string | null
   sku: string | null
   salePrice: number
+  isBase: boolean
   unit: string
   unitPrecision: number
   factorType: 'fixed' | 'variable'
@@ -79,12 +80,12 @@ export const POSRepository = {
 
     if (search) {
       const searchConditions = or(
-        ilike(presentationsTable.name, search),
-        ilike(presentationsTable.description, search),
-        ilike(presentationsTable.barcode, search),
-        ilike(presentationsTable.sku, search),
-        ilike(productsTable.name, search),
-        ilike(productsTable.description, search)
+        like(presentationsTable.name, `%${search}%`),
+        like(presentationsTable.description, `%${search}%`),
+        like(presentationsTable.barcode, `%${search}%`),
+        like(presentationsTable.sku, `%${search}%`),
+        like(productsTable.name, `%${search}%`),
+        like(productsTable.description, `%${search}%`)
       )
 
       if (searchConditions) whereConditions.push(searchConditions)
@@ -120,6 +121,7 @@ export const POSRepository = {
         sku: presentationsTable.sku,
         salePrice: presentationsTable.salePrice,
         unit: presentationsTable.unit,
+        isBase: presentationsTable.isBase,
         unitPrecision: presentationsTable.unitPrecision,
         factorType: presentationsTable.factorType,
         factor: presentationsTable.factor,
@@ -151,6 +153,7 @@ export const POSRepository = {
         presentationsTable.name,
         presentationsTable.description,
         presentationsTable.image,
+        presentationsTable.isBase,
         presentationsTable.barcode,
         presentationsTable.sku,
         presentationsTable.salePrice,
@@ -218,6 +221,12 @@ export const POSRepository = {
 
         return {
           ...presentation,
+          availableQuantity: Math.floor(
+            Math.max(
+              0,
+              (presentation.availableQuantity || 0) / (presentation.factor || 1)
+            )
+          ),
           batches: batches.map(batch => ({
             ...batch,
             expirationDate: batch.expirationDate

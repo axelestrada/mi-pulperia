@@ -4,13 +4,11 @@ export const ProductImagePicker = () => {
   >()
 
   const { mutate: deleteImage } = useDeleteImage()
-  const { mutate: updateProduct } = useUpdateProduct()
   const { mutate: uploadImage, isPending } = useUploadImage()
 
   const [preview, setPreview] = useState<string | null>(null)
 
   const imageValue = watch('image')
-  const id = watch('id')
 
   const { data: imagePath } = useImagePath(imageValue)
 
@@ -22,10 +20,7 @@ export const ProductImagePicker = () => {
 
     uploadImage(file, {
       onSuccess: ({ filename }) => {
-        setValue('image', filename, {
-          shouldDirty: true,
-          shouldTouch: true,
-        })
+        setValue('image', filename)
       },
       onError: err => {
         console.error(err)
@@ -41,17 +36,8 @@ export const ProductImagePicker = () => {
 
     deleteImage(filename, {
       onSuccess: () => {
-        setValue('image', '', { shouldDirty: true, shouldTouch: true })
+        setValue('image', null)
         setPreview(null)
-
-        if (!id) return
-
-        updateProduct({
-          id,
-          data: {
-            image: '',
-          },
-        })
       },
       onError: err => {
         console.error(err)
@@ -86,7 +72,7 @@ export const ProductImagePicker = () => {
     >
       {preview || imagePath ? (
         <SafeImage
-          className="w-32 h-32 object-cover mx-auto rounded"
+          className="w-32 aspect-4/3 object-cover mx-auto rounded"
           src={preview ?? imagePath}
           alt="Imagen del producto"
         />

@@ -187,6 +187,7 @@ declare global {
   const IconLucideEye: typeof import('~icons/lucide/eye.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
+  const IconLucideMinus: typeof import('~icons/lucide/minus.tsx').default
   const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucideMousePointerClick: typeof import('~icons/lucide/mouse-pointer-click.tsx').default
@@ -204,6 +205,26 @@ declare global {
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideUsers: typeof import('~icons/lucide/users.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
+  const IconSolarAddCircle: typeof import('~icons/solar/add-circle.tsx').default
+  const IconSolarAddCircleBroken: typeof import('~icons/solar/add-circle-broken.tsx').default
+  const IconSolarAddCircleLineDuotone: typeof import('~icons/solar/add-circle-line-duotone.tsx').default
+  const IconSolarBellOutline: typeof import('~icons/solar/bell-outline.tsx').default
+  const IconSolarCartCrossLineDuotone: typeof import('~icons/solar/cart-cross-line-duotone.tsx').default
+  const IconSolarCartLarge2LineDuotone: typeof import('~icons/solar/cart-large2-line-duotone.tsx').default
+  const IconSolarMagniferOutline: typeof import('~icons/solar/magnifer-outline.tsx').default
+  const IconSolarMinimalisticMagniferLineDuotone: typeof import('~icons/solar/minimalistic-magnifer-line-duotone.tsx').default
+  const IconSolarPauseCircleLineDuotone: typeof import('~icons/solar/pause-circle-line-duotone.tsx').default
+  const IconSolarPauseLineDuotone: typeof import('~icons/solar/pause-line-duotone.tsx').default
+  const IconSolarPlus: typeof import('~icons/solar/plus.tsx').default
+  const IconSolarSearch: typeof import('~icons/solar/search.tsx').default
+  const IconSolarSettingsLineDuotone: typeof import('~icons/solar/settings-line-duotone.tsx').default
+  const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
+  const IconSolarSidebarLineDuotone: typeof import('~icons/solar/sidebar-line-duotone.tsx').default
+  const IconSolarSiderbarLineDuotone: typeof import('~icons/solar/siderbar-line-duotone.tsx').default
+  const IconSolarSunLineDuotone: typeof import('~icons/solar/sun-line-duotone.tsx').default
+  const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
+  const IconSolarTrashBinMinimalisticBoldDuotone: typeof import('~icons/solar/trash-bin-minimalistic-bold-duotone.tsx').default
+  const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
   const Input: typeof import('./renderer/components/ui/input').Input
   const InputGroup: typeof import('./renderer/components/ui/input-group').InputGroup
   const InputGroupAddon: typeof import('./renderer/components/ui/input-group').InputGroupAddon
@@ -244,6 +265,8 @@ declare global {
   const PopoverAnchor: typeof import('./renderer/components/ui/popover').PopoverAnchor
   const PopoverContent: typeof import('./renderer/components/ui/popover').PopoverContent
   const PopoverTrigger: typeof import('./renderer/components/ui/popover').PopoverTrigger
+  const PosCartItem: typeof import('./renderer/features/pos/components/pos-cart-item').PosCartItem
+  const PosChargeModal: typeof import('./renderer/features/pos/components/pos-charge-modal').PosChargeModal
   const PosItem: typeof import('./renderer/features/pos/components/pos-item').PosItem
   const PosPage: typeof import('./renderer/pages/pos-page').PosPage
   const PresentationForm: typeof import('./renderer/features/presentations/ui/presentation-form').PresentationForm
@@ -375,6 +398,8 @@ declare global {
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
   const formatLempira: typeof import('./shared/utils/formatCurrency').formatLempira
   const forwardRef: typeof import('react').forwardRef
+  const fromCents: typeof import('./shared/utils/currency').fromCents
+  const hero: typeof import('./renderer/hero').default
   const imageAdapter: typeof import('./renderer/features/images/api/image-adapter').imageAdapter
   const imageService: typeof import('./renderer/features/images/services/image-service').imageService
   const inventoryAdapter: typeof import('./renderer/features/inventory/api/inventory-adapter').inventoryAdapter
@@ -404,6 +429,7 @@ declare global {
   const router: typeof import('./renderer/routes').router
   const startTransition: typeof import('react').startTransition
   const supplierAdapter: typeof import('./renderer/features/suppliers/api/supplier-adapter').supplierAdapter
+  const toCents: typeof import('./shared/utils/currency').toCents
   const toast: typeof import('sonner').toast
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
@@ -557,6 +583,9 @@ declare global {
   // @ts-ignore
   export type { InventoryMovement } from './renderer/features/inventory/model/inventory-movement-schema'
   import('./renderer/features/inventory/model/inventory-movement-schema')
+  // @ts-ignore
+  export type { POSFormData } from './renderer/features/pos/components/pos-interface'
+  import('./renderer/features/pos/components/pos-interface')
   // @ts-ignore
   export type { PresentationFormInput, PresentationFormData, PresentationFormMode } from './renderer/features/presentations/model/presentation-form-schema'
   import('./renderer/features/presentations/model/presentation-form-schema')

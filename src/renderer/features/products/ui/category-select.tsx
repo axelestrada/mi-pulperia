@@ -1,39 +1,35 @@
-import { type FieldError as FieldErrorType } from 'react-hook-form'
+import { Autocomplete, AutocompleteItem } from '@heroui/react'
 
 type Props = {
   value?: number
-  onChange: (value: number) => void
-  error?: FieldErrorType
+  onChange: (value: number | undefined) => void
 }
 
-export const CategorySelect = ({ value, onChange, error }: Props) => {
-  const { data: categories = [], isLoading } = useCategories()
+export const CategorySelect = ({ value, onChange }: Props) => {
+  const { data: categories = [] } = useCategories()
+
+  const items = categories.map(category => ({
+    key: category.id,
+    label: category.name,
+  }))
 
   return (
-    <Field data-invalid={!!error}>
-      <FieldLabel>Categoría</FieldLabel>
-
-      <Select
-        value={value?.toString() ?? ''}
-        onValueChange={value => onChange(Number(value))}
-        disabled={isLoading}
-      >
-        <SelectTrigger>
-          <SelectValue
-            aria-invalid={!!error}
-            placeholder="Seleccione una categoría"
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map(category => (
-            <SelectItem key={category.id} value={category.id.toString()}>
-              {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {error && <FieldError errors={[error]} />}
-    </Field>
+    <Autocomplete
+      className="sm:max-w-64"
+      defaultSelectedKey={value}
+      defaultItems={items}
+      placeholder="Seleccione una categoría"
+      onClear={() => onChange(undefined)}
+      onSelectionChange={val => {
+        console.log(val)
+        onChange(Number(val) ?? undefined)
+      }}
+    >
+      {item => (
+        <AutocompleteItem key={item.key} onClick={() => onChange(item.key)}>
+          {item.label}
+        </AutocompleteItem>
+      )}
+    </Autocomplete>
   )
 }
