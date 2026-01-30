@@ -22,7 +22,7 @@ export const PosItem = ({ presentation, onClick }: Props) => {
           alt={title}
           className="w-full object-cover aspect-4/3"
           radius="lg"
-          shadow="sm"
+          isBlurred
           src={image ?? placeholder}
           width="100%"
         />

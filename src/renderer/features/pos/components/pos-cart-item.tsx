@@ -1,8 +1,8 @@
-import { Button, NumberInput } from '@heroui/react'
+import { Button, NumberInput, Image } from '@heroui/react'
 
 type Props = {
   title: string
-  image: string
+  image?: string | null
   quantity: number
   itemTotal: number
   unitPrice: number
@@ -23,9 +23,10 @@ export const PosCartItem = ({
   return (
     <div>
       <div className="flex gap-3 items-center">
-        <SafeImage
+        <Image
+          isBlurred
           className="aspect-4/3 w-14 object-cover"
-          src={imagePath}
+          src={imagePath ?? undefined}
           alt={title}
         />
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,11 +8,9 @@ import { Card, CardContent } from '../../../components/ui/card'
 import { Alert, AlertDescription } from '../../../components/ui/alert'
 
 import {
-  useAvailablePresentations,
-  useSearchByCode,
-  useCreatePOSSale,
+  useAvailablePresentations, useCreatePOSSale,
   POSPresentation,
-  CreatePOSSaleInput,
+  CreatePOSSaleInput
 } from '../../../hooks/use-pos'
 import { useCurrentOpenSession } from '../../../hooks/use-cash-sessions'
 import { formatCurrency } from '../../../../shared/utils/formatCurrency'
@@ -23,6 +21,8 @@ import { PosChargeModal } from './pos-charge-modal'
 const saleItemSchema = z.object({
   presentationId: z.number().min(1, 'Required'),
   quantity: z.number().min(0.01, 'Must be at least 0.01'),
+  image: z.string().optional().nullable(),
+  title: z.string().min(1, 'Required'),
   unitPrice: z.number().min(0, 'Cannot be negative'),
   discount: z.number().min(0, 'Cannot be negative').optional(),
   discountType: z.enum(['fixed', 'percentage']).optional(),
@@ -60,7 +60,6 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
-  const [barcodeInput, setBarcodeInput] = useState('')
 
   // Queries
   const { data: openSession } = useCurrentOpenSession()
@@ -71,9 +70,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     limit: 50,
   })
 
-  const { data: searchResult } = useSearchByCode(barcodeInput)
 
-  // Mutations
+
   const createSale = useCreatePOSSale()
 
   // Form
@@ -167,10 +165,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
         quantity: existingItem.quantity + quantity,
       })
     } else {
-      // Add new item
+      const title = presentation.isBase ? presentation.productName : `${presentation.productName} (${presentation.name})`
+
       appendItem({
         presentationId: presentation.id,
         quantity,
+        title,
+        image: presentation.image, 
         unitPrice: presentation.salePrice,
         discount: 0,
         discountType: 'fixed',
@@ -178,14 +179,6 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       })
     }
   }
-
-  // Handle barcode search
-  useEffect(() => {
-    if (searchResult) {
-      addToCart(searchResult)
-      setBarcodeInput('')
-    }
-  }, [searchResult])
 
   // Submit sale
   const onSubmit = async (data: POSFormData, callback?: () => void) => {
@@ -255,6 +248,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
             startContent={<IconSolarMinimalisticMagniferLineDuotone />}
             value={searchTerm}
             onValueChange={setSearchTerm}
+            fullWidth
           />
 
           <CategorySelect
@@ -278,7 +272,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <IconSolarCartLarge2LineDuotone className="size-7" />
-            <span className="font-semibold">Carrito de compras</span>
+            <span className="font-semibold">Carrito</span>
           </div>
 
           <div className="flex gap-2">
@@ -304,7 +298,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
             >
               <div className="flex-1 flex flex-col mb-4">
                 {itemFields.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8 flex-1 flex items-center justify-center flex-col">
+                  <div className="text-center py-8 flex-1 flex items-center justify-center flex-col">
                     <IconSolarCartCrossLineDuotone className="size-12 mb-2" />
                     <b className="text-small">Carrito vacío</b>
                     <p className="text-xs text-default-500">
@@ -314,23 +308,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
                 ) : (
                   <div className="space-y-2">
                     {itemFields.map((field, index) => {
-                      const presentation = presentationsData?.data?.find(
-                        p => p.id === field.presentationId
-                      )
-                      if (!presentation) return null
-
                       const itemTotal =
                         field.quantity * field.unitPrice - (field.discount || 0)
-
-                      const title = presentation.isBase
-                        ? presentation.productName
-                        : `${presentation.productName} (${presentation.name})`
 
                       return (
                         <PosCartItem
                           key={field.id}
-                          title={title}
-                          image={presentation.image}
+                          title={field.title}
+                          image={field.image}
                           quantity={field.quantity}
                           unitPrice={field.unitPrice}
                           itemTotal={itemTotal}
