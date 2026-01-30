@@ -32,7 +32,7 @@ export default heroui({
           foreground: "#ffffff"
 
         },
-        foreground: "#1A2138"
+        foreground: "#172428"
       }
     }
   }

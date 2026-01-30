@@ -14,7 +14,7 @@ export const Layout = () => {
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
 
-            <Divider orientation="vertical" className='h-5' />
+            <Divider orientation="vertical" className="h-5" />
 
             <Breadcrumb>
               <BreadcrumbList>
@@ -34,6 +34,7 @@ export const Layout = () => {
               startContent={<IconSolarMagniferOutline className="size-5" />}
               placeholder="Buscar..."
             />
+
             <Button isIconOnly variant="light" radius="full">
               <IconSolarSunOutline className="size-6" />
             </Button>

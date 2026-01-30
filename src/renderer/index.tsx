@@ -12,7 +12,7 @@ const queryClient = new QueryClient()
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <HeroUIProvider>
     <QueryClientProvider client={queryClient}>
-      <main className="new-blue text-foreground bg-background">
+      <main className="text-foreground bg-background">
         <RouterProvider router={router} />
         <Toaster position="bottom-right" />
       </main>
