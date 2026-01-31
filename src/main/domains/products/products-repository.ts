@@ -29,6 +29,9 @@ export const ProductsRepository = {
     search,
     pageSize,
   }: FindAllParams) => {
+    const dayStart = sql`strftime('%s', 'now', 'start of day', 'localtime')`
+    const dayStartPlus30 = sql`strftime('%s', 'now', 'start of day', 'localtime', '+30 days')`
+
     const stockSubquery = sql<number>`
       COALESCE(
         (
@@ -51,6 +54,48 @@ export const ProductsRepository = {
 
     const lowStockSubquery = sql<boolean>`
       ${stockSubquery} <= ${productsTable.minStock}
+    `
+
+    const expiredBatchesSubquery = sql<number>`
+      (
+        SELECT COUNT(*)
+        FROM inventory_batches ib
+        WHERE ib.product_id = ${productsTable.id}
+          AND ib.expiration_date IS NOT NULL
+          AND ib.expiration_date < ${dayStart}
+      )
+    `
+
+    const expiringBatchesSubquery = sql<number>`
+      (
+        SELECT COUNT(*)
+        FROM inventory_batches ib
+        WHERE ib.product_id = ${productsTable.id}
+          AND ib.expiration_date IS NOT NULL
+          AND ib.expiration_date >= ${dayStart}
+          AND ib.expiration_date < ${dayStartPlus30}
+      )
+    `
+
+    const hasExpiredBatchesSubquery = sql<number>`
+      EXISTS (
+        SELECT 1
+        FROM inventory_batches ib
+        WHERE ib.product_id = ${productsTable.id}
+          AND ib.expiration_date IS NOT NULL
+          AND ib.expiration_date < ${dayStart}
+      )
+    `
+
+    const hasExpiringBatchesSubquery = sql<number>`
+      EXISTS (
+        SELECT 1
+        FROM inventory_batches ib
+        WHERE ib.product_id = ${productsTable.id}
+          AND ib.expiration_date IS NOT NULL
+          AND ib.expiration_date >= ${dayStart}
+          AND ib.expiration_date < ${dayStartPlus30}
+      )
     `
 
     const totalSubquery = sql<number>`COUNT(*) OVER()`.as('total')
@@ -108,6 +153,13 @@ export const ProductsRepository = {
         presentationsCount: presentationsCountSubquery.as('presentationsCount'),
 
         stock: stockSubquery.as('stock'),
+
+        expiredBatchesCount: expiredBatchesSubquery.as('expiredBatchesCount'),
+        expiringBatchesCount: expiringBatchesSubquery.as(
+          'expiringBatchesCount'
+        ),
+        hasExpiredBatches: hasExpiredBatchesSubquery.as('hasExpiredBatches'),
+        hasExpiringBatches: hasExpiringBatchesSubquery.as('hasExpiringBatches'),
 
         total: totalSubquery,
       })

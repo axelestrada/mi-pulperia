@@ -1,3 +1,5 @@
+import { Chip } from '@heroui/react'
+
 type Props = {
   unit: Product['baseUnit']
 }
@@ -9,5 +11,9 @@ export const MeasurementUnitBadge = ({ unit }: Props) => {
     liter: 'Litro',
   }
 
-  return <Badge variant="outline">{labelMap[unit]}</Badge>
+  return (
+    <Chip className="capitalize" size="sm" variant="flat">
+      {labelMap[unit]}
+    </Chip>
+  )
 }

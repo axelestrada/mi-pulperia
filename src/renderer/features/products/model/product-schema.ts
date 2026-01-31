@@ -26,7 +26,15 @@ export const productSchema = z.object({
 
   minStock: z.number(),
 
-  isActive: z.boolean(),
+  lowStock: z.boolean(),
+  outOfStock: z.boolean(),
+
+  hasExpiredBatches: z.boolean(),
+  hasExpiringBatches: z.boolean(),
+  expiredBatchesCount: z.number(),
+  expiringBatchesCount: z.number(),
+
+  status: z.enum(['active', 'inactive']),
 
   createdAt: z.date(),
 

@@ -14,6 +14,10 @@ export type ProductRow = {
   image: string | null
   stock: number
   presentationsCount: number
+  hasExpiredBatches: number
+  hasExpiringBatches: number
+  expiredBatchesCount: number
+  expiringBatchesCount: number
 }
 
 export type ProductDTO = {
@@ -30,10 +34,17 @@ export type ProductDTO = {
   createdAt: Date
   description: string | null
   image: string | null
-  isActive: boolean
+  status: 'active' | 'inactive'
   minStock: number
+  lowStock: boolean
+  outOfStock: boolean
   sku: string | null
   presentationsCount: number
+
+  hasExpiredBatches: boolean
+  hasExpiringBatches: boolean
+  expiredBatchesCount: number
+  expiringBatchesCount: number
 }
 
 export type NewProductDTO = {

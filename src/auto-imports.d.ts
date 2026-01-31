@@ -176,6 +176,7 @@ declare global {
   const IconLucideBookUser: typeof import('~icons/lucide/book-user.tsx').default
   const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
+  const IconLucideChevronDown: typeof import('~icons/lucide/chevron-down.tsx').default
   const IconLucideChevronLeft: typeof import('~icons/lucide/chevron-left.tsx').default
   const IconLucideChevronRight: typeof import('~icons/lucide/chevron-right.tsx').default
   const IconLucideChevronsLeft: typeof import('~icons/lucide/chevrons-left.tsx').default
@@ -205,6 +206,7 @@ declare global {
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideTruck: typeof import('~icons/lucide/truck.tsx').default
   const IconLucideUsers: typeof import('~icons/lucide/users.tsx').default
+  const IconLucideVerticalDots: typeof import('~icons/lucide/vertical-dots.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
   const IconSolarAddCircle: typeof import('~icons/solar/add-circle.tsx').default
   const IconSolarAddCircleBroken: typeof import('~icons/solar/add-circle-broken.tsx').default
@@ -218,16 +220,23 @@ declare global {
   const IconSolarBoxMinimalisticLinear: typeof import('~icons/solar/box-minimalistic-linear.tsx').default
   const IconSolarCartCrossLineDuotone: typeof import('~icons/solar/cart-cross-line-duotone.tsx').default
   const IconSolarCartLarge2LineDuotone: typeof import('~icons/solar/cart-large2-line-duotone.tsx').default
+  const IconSolarCheckCircleBoldDuotone: typeof import('~icons/solar/check-circle-bold-duotone.tsx').default
   const IconSolarChecklistMinimalisticLinear: typeof import('~icons/solar/checklist-minimalistic-linear.tsx').default
   const IconSolarClipboardCheckLinear: typeof import('~icons/solar/clipboard-check-linear.tsx').default
+  const IconSolarCloseCircleBoldDuotone: typeof import('~icons/solar/close-circle-bold-duotone.tsx').default
+  const IconSolarCopyLinear: typeof import('~icons/solar/copy-linear.tsx').default
   const IconSolarDocumentAddLinear: typeof import('~icons/solar/document-add-linear.tsx').default
   const IconSolarHome2Linear: typeof import('~icons/solar/home2-linear.tsx').default
   const IconSolarLaptopMinimalisticLinear: typeof import('~icons/solar/laptop-minimalistic-linear.tsx').default
   const IconSolarMagniferOutline: typeof import('~icons/solar/magnifer-outline.tsx').default
+  const IconSolarMenuDotsLineDuotone: typeof import('~icons/solar/menu-dots-line-duotone.tsx').default
+  const IconSolarMenuDotsLinear: typeof import('~icons/solar/menu-dots-linear.tsx').default
   const IconSolarMinimalisticMagniferLineDuotone: typeof import('~icons/solar/minimalistic-magnifer-line-duotone.tsx').default
   const IconSolarMinusCircleLineDuotone: typeof import('~icons/solar/minus-circle-line-duotone.tsx').default
   const IconSolarPauseCircleLineDuotone: typeof import('~icons/solar/pause-circle-line-duotone.tsx').default
   const IconSolarPauseLineDuotone: typeof import('~icons/solar/pause-line-duotone.tsx').default
+  const IconSolarPenNewSquareBoldDuotone: typeof import('~icons/solar/pen-new-square-bold-duotone.tsx').default
+  const IconSolarPenNewSquareLineDuotone: typeof import('~icons/solar/pen-new-square-line-duotone.tsx').default
   const IconSolarPlus: typeof import('~icons/solar/plus.tsx').default
   const IconSolarPresentationGraphLinear: typeof import('~icons/solar/presentation-graph-linear.tsx').default
   const IconSolarSafe2Linear: typeof import('~icons/solar/safe2-linear.tsx').default
@@ -239,12 +248,15 @@ declare global {
   const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
   const IconSolarSidebarLineDuotone: typeof import('~icons/solar/sidebar-line-duotone.tsx').default
   const IconSolarSiderbarLineDuotone: typeof import('~icons/solar/siderbar-line-duotone.tsx').default
+  const IconSolarSirenLineDuotone: typeof import('~icons/solar/siren-line-duotone.tsx').default
+  const IconSolarSirenRoundedLineDuotone: typeof import('~icons/solar/siren-rounded-line-duotone.tsx').default
   const IconSolarSortVerticalLinear: typeof import('~icons/solar/sort-vertical-linear.tsx').default
   const IconSolarSunLineDuotone: typeof import('~icons/solar/sun-line-duotone.tsx').default
   const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
   const IconSolarTrashBinMinimalisticBoldDuotone: typeof import('~icons/solar/trash-bin-minimalistic-bold-duotone.tsx').default
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
   const IconSolarUsersGroupTwoRoundedLinear: typeof import('~icons/solar/users-group-two-rounded-linear.tsx').default
+  const IconSolarWidget2BoldDuotone: typeof import('~icons/solar/widget2-bold-duotone.tsx').default
   const IconSolarWidget2Outline: typeof import('~icons/solar/widget2-outline.tsx').default
   const Input: typeof import('./renderer/components/ui/input').Input
   const InputGroup: typeof import('./renderer/components/ui/input-group').InputGroup
@@ -301,6 +313,7 @@ declare global {
   const ProductForm: typeof import('./renderer/features/products/ui/product-form').ProductForm
   const ProductFormDialog: typeof import('./renderer/features/products/ui/product-form-dialog').ProductFormDialog
   const ProductFormFields: typeof import('./renderer/features/products/ui/product-form-fields').ProductFormFields
+  const ProductImage: typeof import('./renderer/features/products/ui/product-image').ProductImage
   const ProductImagePicker: typeof import('./renderer/features/products/ui/product-image-picker').ProductImagePicker
   const ProductPresentationsDialog: typeof import('./renderer/features/products/ui/product-presentations-dialog').ProductPresentationsDialog
   const ProductSelect: typeof import('./renderer/features/inventory/ui/product-select').ProductSelect
@@ -409,6 +422,7 @@ declare global {
   const buttonVariants: typeof import('./renderer/components/ui/button').buttonVariants
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal
+  const capitalize: typeof import('./shared/utils/string').capitalize
   const cashSessionManager: typeof import('./renderer/features/cash-sessions/components/cash-session-manager').default
   const categoryAdapter: typeof import('./renderer/features/categories/api/category-adapter').categoryAdapter
   const categoryFormSchema: typeof import('./renderer/features/categories/model/category-form-schema').categoryFormSchema
@@ -416,6 +430,7 @@ declare global {
   const categorySchema: typeof import('./renderer/features/categories/model/category-schema').categorySchema
   const categoryService: typeof import('./renderer/features/categories/services/category-service').categoryService
   const categoryToForm: typeof import('./renderer/features/categories/model/category-mappers').categoryToForm
+  const columns: typeof import('./renderer/features/products/ui/products-table-content').columns
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency

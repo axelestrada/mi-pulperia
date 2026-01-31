@@ -1,3 +1,4 @@
+import { endOfDay } from 'date-fns'
 import { z } from 'zod'
 
 export const inventoryItemSchema = z.object({
@@ -15,7 +16,10 @@ export const inventoryItemSchema = z.object({
     .string()
     .nullable()
     .transform(v => v?.trim() || null),
-  expirationDate: z.date().nullable(),
+  expirationDate: z
+    .date()
+    .nullable()
+    .transform(val => (val ? endOfDay(val) : null)),
   quantity: z.coerce
     .number({
       error: 'Ingrese la cantidad',

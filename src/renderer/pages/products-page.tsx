@@ -1,5 +1,3 @@
-import { ProductsListFilters } from 'domains/products/products-list-filters'
-
 export const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -16,17 +14,9 @@ export const ProductsPage = () => {
     setFormOpen(true)
   }
 
-  const handleFiltersChange = useCallback((filters: ProductsListFilters) => {
-    console.log(filters)
-  }, [])
-
   return (
-    <>
+    <div>
       <ProductsHeader />
-      <ProductsFilters
-        onCreate={handleCreate}
-        onFiltersChange={handleFiltersChange}
-      />
 
       <ProductsTable
         products={products?.data ?? []}
@@ -34,13 +24,11 @@ export const ProductsPage = () => {
         onEdit={handleEdit}
       />
 
-      <TablePagination />
-
       <ProductFormDialog
         open={formOpen}
         setOpen={setFormOpen}
         product={selectedProduct}
       />
-    </>
+    </div>
   )
 }
