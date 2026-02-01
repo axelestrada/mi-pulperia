@@ -1,17 +1,5 @@
 import { db } from '../db'
-import {
-  eq,
-  and,
-  like,
-  or,
-  desc,
-  asc,
-  count,
-  gt,
-  isNull,
-  sql,
-  like,
-} from 'drizzle-orm'
+import { eq, and, or, desc, asc, gt, sql, like } from 'drizzle-orm'
 
 import { presentationsTable } from '../db/schema/presentations'
 import { productsTable } from '../db/schema/products'
@@ -75,7 +63,7 @@ export const POSRepository = {
       eq(presentationsTable.deleted, false),
       eq(presentationsTable.isActive, isActive),
       eq(productsTable.deleted, false),
-      eq(productsTable.isActive, true),
+      eq(productsTable.status, 'active'),
     ]
 
     if (search) {
@@ -271,6 +259,7 @@ export const POSRepository = {
         factorType: presentationsTable.factorType,
         factor: presentationsTable.factor,
         productId: productsTable.id,
+        isBase: presentationsTable.isBase,
         productName: productsTable.name,
         categoryId: categoriesTable.id,
         categoryName: categoriesTable.name,
@@ -290,7 +279,7 @@ export const POSRepository = {
           eq(presentationsTable.deleted, false),
           eq(presentationsTable.isActive, true),
           eq(productsTable.deleted, false),
-          eq(productsTable.isActive, true)
+          eq(productsTable.status, 'active')
         )
       )
       .get()
@@ -332,7 +321,7 @@ export const POSRepository = {
         ...batch,
         expirationDate: batch.expirationDate
           ? new Date(batch.expirationDate)
-          : undefined,
+          : null,
       })),
     }
   },
@@ -444,14 +433,14 @@ export const POSRepository = {
           eq(presentationsTable.deleted, false),
           eq(presentationsTable.isActive, true),
           eq(productsTable.deleted, false),
-          eq(productsTable.isActive, true)
+          eq(productsTable.status, 'active')
         )
       )
       .get()
 
     if (!presentation) return undefined
 
-    return this.getPresentationWithBatches(presentation.id)
+    return POSRepository.getPresentationWithBatches(presentation.id)
   },
 
   // Get categories for filtering

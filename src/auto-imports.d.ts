@@ -56,9 +56,7 @@ declare global {
   const CashPage: typeof import('./renderer/pages/cash-page').CashPage
   const CashRegisterForm: typeof import('./renderer/features/cash-sessions/components/cash-register-form').CashRegisterForm
   const CashRegistersList: typeof import('./renderer/features/cash-sessions/components/cash-registers-list').CashRegistersList
-  const CashRegistersPage: typeof import('./renderer/pages/cash-registers-page').CashRegistersPage
   const CashSessionManager: typeof import('./renderer/features/cash-sessions/components/cash-session-manager').CashSessionManager
-  const CashSessionsPage: typeof import('./renderer/pages/cash-sessions-page').CashSessionsPage
   const CategoriesEmptyState: typeof import('./renderer/features/categories/ui/categories-empty-state').CategoriesEmptyState
   const CategoriesFilters: typeof import('./renderer/features/categories/ui/catgories-filters').CategoriesFilters
   const CategoriesHeader: typeof import('./renderer/features/categories/ui/categories-header').CategoriesHeader
@@ -171,48 +169,21 @@ declare global {
   const Fragment: typeof import('react').Fragment
   const HelpPage: typeof import('./renderer/pages/help-page').HelpPage
   const INVENTORY_ENTRY_DEFAULTS: typeof import('./renderer/features/inventory/model/inventory-entry-constants').INVENTORY_ENTRY_DEFAULTS
-  const IconLucideArrowLeft: typeof import('~icons/lucide/arrow-left.tsx').default
-  const IconLucideBell: typeof import('~icons/lucide/bell.tsx').default
-  const IconLucideBookUser: typeof import('~icons/lucide/book-user.tsx').default
   const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideChevronDown: typeof import('~icons/lucide/chevron-down.tsx').default
-  const IconLucideChevronLeft: typeof import('~icons/lucide/chevron-left.tsx').default
-  const IconLucideChevronRight: typeof import('~icons/lucide/chevron-right.tsx').default
-  const IconLucideChevronsLeft: typeof import('~icons/lucide/chevrons-left.tsx').default
-  const IconLucideChevronsRight: typeof import('~icons/lucide/chevrons-right.tsx').default
   const IconLucideChevronsUpDown: typeof import('~icons/lucide/chevrons-up-down.tsx').default
-  const IconLucideClock: typeof import('~icons/lucide/clock.tsx').default
-  const IconLucideCreditCard: typeof import('~icons/lucide/credit-card.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
-  const IconLucideEye: typeof import('~icons/lucide/eye.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
-  const IconLucideMinus: typeof import('~icons/lucide/minus.tsx').default
-  const IconLucideMoon: typeof import('~icons/lucide/moon.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
-  const IconLucideMousePointerClick: typeof import('~icons/lucide/mouse-pointer-click.tsx').default
   const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
-  const IconLucidePause: typeof import('~icons/lucide/pause.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
-  const IconLucidePlusCircle: typeof import('~icons/lucide/plus-circle.tsx').default
-  const IconLucidePlusIcon: typeof import('~icons/lucide/plus-icon.tsx').default
-  const IconLucideScan: typeof import('~icons/lucide/scan.tsx').default
-  const IconLucideScanIcon: typeof import('~icons/lucide/scan-icon.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
-  const IconLucideSearchIcon: typeof import('~icons/lucide/search-icon.tsx').default
-  const IconLucideShoppingCart: typeof import('~icons/lucide/shopping-cart.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
-  const IconLucideTruck: typeof import('~icons/lucide/truck.tsx').default
-  const IconLucideUsers: typeof import('~icons/lucide/users.tsx').default
-  const IconLucideVerticalDots: typeof import('~icons/lucide/vertical-dots.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
-  const IconSolarAddCircle: typeof import('~icons/solar/add-circle.tsx').default
-  const IconSolarAddCircleBroken: typeof import('~icons/solar/add-circle-broken.tsx').default
   const IconSolarAddCircleLineDuotone: typeof import('~icons/solar/add-circle-line-duotone.tsx').default
-  const IconSolarBagHeartLinear: typeof import('~icons/solar/bag-heart-linear.tsx').default
-  const IconSolarBankNote2Linear: typeof import('~icons/solar/bank-note2-linear.tsx').default
   const IconSolarBanknote2Linear: typeof import('~icons/solar/banknote2-linear.tsx').default
   const IconSolarBellOutline: typeof import('~icons/solar/bell-outline.tsx').default
   const IconSolarBillListLinear: typeof import('~icons/solar/bill-list-linear.tsx').default
@@ -222,36 +193,25 @@ declare global {
   const IconSolarCartLarge2LineDuotone: typeof import('~icons/solar/cart-large2-line-duotone.tsx').default
   const IconSolarCheckCircleBoldDuotone: typeof import('~icons/solar/check-circle-bold-duotone.tsx').default
   const IconSolarChecklistMinimalisticLinear: typeof import('~icons/solar/checklist-minimalistic-linear.tsx').default
-  const IconSolarClipboardCheckLinear: typeof import('~icons/solar/clipboard-check-linear.tsx').default
   const IconSolarCloseCircleBoldDuotone: typeof import('~icons/solar/close-circle-bold-duotone.tsx').default
   const IconSolarCopyLinear: typeof import('~icons/solar/copy-linear.tsx').default
   const IconSolarDocumentAddLinear: typeof import('~icons/solar/document-add-linear.tsx').default
   const IconSolarHome2Linear: typeof import('~icons/solar/home2-linear.tsx').default
   const IconSolarLaptopMinimalisticLinear: typeof import('~icons/solar/laptop-minimalistic-linear.tsx').default
   const IconSolarMagniferOutline: typeof import('~icons/solar/magnifer-outline.tsx').default
-  const IconSolarMenuDotsLineDuotone: typeof import('~icons/solar/menu-dots-line-duotone.tsx').default
   const IconSolarMenuDotsLinear: typeof import('~icons/solar/menu-dots-linear.tsx').default
   const IconSolarMinimalisticMagniferLineDuotone: typeof import('~icons/solar/minimalistic-magnifer-line-duotone.tsx').default
   const IconSolarMinusCircleLineDuotone: typeof import('~icons/solar/minus-circle-line-duotone.tsx').default
   const IconSolarPauseCircleLineDuotone: typeof import('~icons/solar/pause-circle-line-duotone.tsx').default
   const IconSolarPauseLineDuotone: typeof import('~icons/solar/pause-line-duotone.tsx').default
   const IconSolarPenNewSquareBoldDuotone: typeof import('~icons/solar/pen-new-square-bold-duotone.tsx').default
-  const IconSolarPenNewSquareLineDuotone: typeof import('~icons/solar/pen-new-square-line-duotone.tsx').default
-  const IconSolarPlus: typeof import('~icons/solar/plus.tsx').default
   const IconSolarPresentationGraphLinear: typeof import('~icons/solar/presentation-graph-linear.tsx').default
   const IconSolarSafe2Linear: typeof import('~icons/solar/safe2-linear.tsx').default
   const IconSolarScooterLinear: typeof import('~icons/solar/scooter-linear.tsx').default
-  const IconSolarSearch: typeof import('~icons/solar/search.tsx').default
-  const IconSolarSettingsLineDuotone: typeof import('~icons/solar/settings-line-duotone.tsx').default
   const IconSolarSettingsMinimalisticLinear: typeof import('~icons/solar/settings-minimalistic-linear.tsx').default
-  const IconSolarSettingsMinimalisticlLinear: typeof import('~icons/solar/settings-minimalisticl-linear.tsx').default
   const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
-  const IconSolarSidebarLineDuotone: typeof import('~icons/solar/sidebar-line-duotone.tsx').default
   const IconSolarSiderbarLineDuotone: typeof import('~icons/solar/siderbar-line-duotone.tsx').default
-  const IconSolarSirenLineDuotone: typeof import('~icons/solar/siren-line-duotone.tsx').default
   const IconSolarSirenRoundedLineDuotone: typeof import('~icons/solar/siren-rounded-line-duotone.tsx').default
-  const IconSolarSortVerticalLinear: typeof import('~icons/solar/sort-vertical-linear.tsx').default
-  const IconSolarSunLineDuotone: typeof import('~icons/solar/sun-line-duotone.tsx').default
   const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
   const IconSolarTrashBinMinimalisticBoldDuotone: typeof import('~icons/solar/trash-bin-minimalistic-bold-duotone.tsx').default
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
@@ -430,7 +390,6 @@ declare global {
   const categorySchema: typeof import('./renderer/features/categories/model/category-schema').categorySchema
   const categoryService: typeof import('./renderer/features/categories/services/category-service').categoryService
   const categoryToForm: typeof import('./renderer/features/categories/model/category-mappers').categoryToForm
-  const columns: typeof import('./renderer/features/products/ui/products-table-content').columns
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
@@ -460,7 +419,6 @@ declare global {
   const productAdapter: typeof import('./renderer/features/products/api/product-adapter').productAdapter
   const productFormSchema: typeof import('./renderer/features/products/model/product-form-schema').productFormSchema
   const productKeys: typeof import('./renderer/features/products/hooks/product-keys').productKeys
-  const productSchema: typeof import('./renderer/features/products/model/product-schema').productSchema
   const productService: typeof import('./renderer/features/products/services/product-service').productService
   const productToForm: typeof import('./renderer/features/products/model/product-mappers').productToForm
   const purchaseOrderAdapter: typeof import('./renderer/features/purchase-orders/api/purchase-order-adapter').purchaseOrderAdapter
