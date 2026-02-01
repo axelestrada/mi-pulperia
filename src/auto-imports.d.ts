@@ -637,9 +637,6 @@ declare global {
   export type { ProductFormInput, ProductFormData } from './renderer/features/products/model/product-form-schema'
   import('./renderer/features/products/model/product-form-schema')
   // @ts-ignore
-  export type { Product } from './renderer/features/products/model/product-schema'
-  import('./renderer/features/products/model/product-schema')
-  // @ts-ignore
   export type { ProductStatus } from './renderer/features/products/model/product-status'
   import('./renderer/features/products/model/product-status')
   // @ts-ignore

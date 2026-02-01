@@ -7,14 +7,15 @@ import {
   type SelectProduct,
 } from 'main/db/schema/products'
 
-import { and, eq, getTableColumns, like, or, sql } from 'drizzle-orm'
-
+import { and, eq, inArray, like, or, sql } from 'drizzle-orm'
 import { presentationsTable } from '../../db/schema/presentations'
 
 type FindAllParams = {
-  categoryId?: number
-  isActive?: boolean
+  categories?: number[]
+  status?: Array<'active' | 'inactive'>
   lowStock?: boolean
+  expired?: boolean
+  expiringSoon?: boolean
   search?: string
   page: number
   pageSize: number
@@ -22,12 +23,14 @@ type FindAllParams = {
 
 export const ProductsRepository = {
   findAll: async ({
-    categoryId,
-    isActive,
+    categories,
+    status,
     lowStock,
     page,
     search,
     pageSize,
+    expired,
+    expiringSoon,
   }: FindAllParams) => {
     const dayStart = sql`strftime('%s', 'now', 'start of day', 'localtime')`
     const dayStartPlus30 = sql`strftime('%s', 'now', 'start of day', 'localtime', '+30 days')`
@@ -43,7 +46,7 @@ export const ProductsRepository = {
       )
     `
 
-    const presentationsCountSubquery = sql<number>`
+    const totalPresentationsCountSubquery = sql<number>`
       (
         SELECT COUNT(*)
         FROM presentations p
@@ -52,8 +55,30 @@ export const ProductsRepository = {
       )
     `
 
-    const lowStockSubquery = sql<boolean>`
-      ${stockSubquery} <= ${productsTable.minStock}
+    const presentationsSubquery = sql<
+      {
+        id: number
+        name: string
+        salePrice: number
+      }[]
+    >`
+      (
+        SELECT json_group_array(
+          json_object(
+            'id', p.id,
+            'name', p.name,
+            'salePrice', p.sale_price
+          )
+        )
+        FROM (
+          SELECT id, name, sale_price
+          FROM presentations
+          WHERE product_id = ${productsTable.id}
+            AND deleted = false
+          ORDER BY is_base DESC, id ASC
+          LIMIT 3
+        ) p
+      )
     `
 
     const expiredBatchesSubquery = sql<number>`
@@ -87,7 +112,7 @@ export const ProductsRepository = {
       )
     `
 
-    const hasExpiringBatchesSubquery = sql<number>`
+    const hasExpiringSoonBatchesSubquery = sql<number>`
       EXISTS (
         SELECT 1
         FROM inventory_batches ib
@@ -102,16 +127,24 @@ export const ProductsRepository = {
 
     const whereConditions = [eq(productsTable.deleted, false)]
 
-    if (categoryId) {
-      whereConditions.push(eq(productsTable.categoryId, categoryId))
+    if (categories?.length) {
+      whereConditions.push(inArray(productsTable.categoryId, categories))
     }
 
-    if (typeof isActive === 'boolean') {
-      whereConditions.push(eq(productsTable.isActive, isActive))
+    if (status?.length) {
+      whereConditions.push(inArray(productsTable.status, status))
     }
 
     if (lowStock) {
-      whereConditions.push(lowStockSubquery)
+      whereConditions.push(sql`${stockSubquery} <= ${productsTable.minStock}`)
+    }
+
+    if (expired) {
+      whereConditions.push(hasExpiredBatchesSubquery)
+    }
+
+    if (expiringSoon) {
+      whereConditions.push(hasExpiringSoonBatchesSubquery)
     }
 
     if (search) {
@@ -140,26 +173,37 @@ export const ProductsRepository = {
 
     const rows = await db
       .select({
-        ...getTableColumns(productsTable),
+        id: productsTable.id,
+        name: productsTable.name,
+        description: productsTable.description,
+
+        baseUnit: productsTable.baseUnit,
+        unitPrecision: productsTable.unitPrecision,
+
+        image: presentationsTable.image,
+
+        minStock: productsTable.minStock,
+        status: productsTable.status,
 
         categoryId: categoriesTable.id,
         categoryName: categoriesTable.name,
 
-        salePrice: presentationsTable.salePrice,
-        barcode: presentationsTable.barcode,
-        sku: presentationsTable.sku,
-        image: presentationsTable.image,
-
-        presentationsCount: presentationsCountSubquery.as('presentationsCount'),
-
         stock: stockSubquery.as('stock'),
 
-        expiredBatchesCount: expiredBatchesSubquery.as('expiredBatchesCount'),
-        expiringBatchesCount: expiringBatchesSubquery.as(
-          'expiringBatchesCount'
+        presentations: presentationsSubquery.as('presentations'),
+        totalPresentationsCount: totalPresentationsCountSubquery.as(
+          'totalPresentationsCount'
         ),
+
+        expiredBatchesCount: expiredBatchesSubquery.as('expiredBatchesCount'),
+        expiringSoonBatchesCount: expiringBatchesSubquery.as(
+          'expiringSoonBatchesCount'
+        ),
+
         hasExpiredBatches: hasExpiredBatchesSubquery.as('hasExpiredBatches'),
-        hasExpiringBatches: hasExpiringBatchesSubquery.as('hasExpiringBatches'),
+        hasExpiringSoonBatches: hasExpiringSoonBatchesSubquery.as(
+          'hasExpiringSoonBatches'
+        ),
 
         total: totalSubquery,
       })
@@ -180,7 +224,21 @@ export const ProductsRepository = {
       .limit(pageSize)
       .offset(offset)
 
-    return rows
+    const parsedRows = rows.map((r) => {
+      const p = r.presentations ?? []
+
+      if (typeof p === 'string') {
+        try {
+          return { ...r, presentations: JSON.parse(p) }
+        } catch {
+          return { ...r, presentations: [] }
+        }
+      }
+
+      return { ...r, presentations: p }
+    })
+
+    return parsedRows
   },
 
   create: (data: InsertProduct) => {

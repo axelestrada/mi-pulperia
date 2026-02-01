@@ -1,8 +1,10 @@
 export type ProductsListFilters = {
-  search?: string
   categories?: number[]
-  status?: string[]
+  status?: Array<'active' | 'inactive'>
   lowStock?: boolean
+  expired?: boolean
+  expiringSoon?: boolean
+  search?: string
   page?: number
   pageSize?: number
 }

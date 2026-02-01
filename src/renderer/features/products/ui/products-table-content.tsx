@@ -25,16 +25,14 @@ import { ProductDTO } from 'domains/products/products-model'
 
 type Props = {
   products: ProductDTO[]
-  onEdit: (product: Product) => void
+  onEdit: (product: ProductDTO) => void
 }
 
 const INITIAL_VISIBLE_COLUMNS = [
   'image',
   'name',
-  'sku',
-  'barcode',
   'category',
-  'salePrice',
+  'presentations',
   'stock',
   'status',
   'actions',
@@ -45,11 +43,9 @@ const columns = [
   { name: 'IMAGEN', uid: 'image' },
   { name: 'NOMBRE', uid: 'name' },
   { name: 'DESCRIPCION', uid: 'description' },
-  { name: 'SKU', uid: 'sku' },
-  { name: 'CODIGO DE BARRAS', uid: 'barcode' },
   { name: 'CATEGORIA', uid: 'category' },
   { name: 'UNIDAD', uid: 'baseUnit' },
-  { name: 'PRECIO', uid: 'salePrice' },
+  { name: 'PRESENTACIONES', uid: 'presentations' },
   { name: 'STOCK', uid: 'stock' },
   { name: 'ESTADO', uid: 'status' },
   { name: 'ACCIONES', uid: 'actions' },
@@ -113,6 +109,8 @@ export const ProductsTableContent = ({ products }: Props) => {
           return <ProductImage src={product.image} alt={product.name} />
         case 'name':
           return <p>{product.name}</p>
+        case 'description':
+          return <p>{product.description}</p>
         case 'category':
           return (
             <Chip className="capitalize" size="sm" variant="flat">
@@ -121,8 +119,21 @@ export const ProductsTableContent = ({ products }: Props) => {
           )
         case 'baseUnit':
           return <MeasurementUnitBadge unit={product.baseUnit} />
-        case 'salePrice':
-          return <p>{formatLempira(fromCents(product.salePrice ?? 0))}</p>
+        case 'presentations':
+          return (
+            <div className="flex flex-col gap-2">
+              {product.presentations.map(presentation => (
+                <Chip
+                  key={presentation.id}
+                  className="capitalize"
+                  size="sm"
+                  variant="flat"
+                >
+                  {`${presentation.name} - ${formatLempira(fromCents(presentation.salePrice))}`}
+                </Chip>
+              ))}
+            </div>
+          )
         case 'status':
           return (
             <Chip
@@ -163,20 +174,20 @@ export const ProductsTableContent = ({ products }: Props) => {
                 </Chip>
               </Tooltip>
 
-              {product.hasExpiredBatches || product.hasExpiringBatches ? (
+              {product.hasExpiredBatches || product.hasExpiringSoonBatches ? (
                 <Tooltip
                   className="text-white"
                   content={
                     product.hasExpiredBatches
                       ? `${product.expiredBatchesCount} lote(s) vencido(s)`
-                      : `${product.expiringBatchesCount} lote(s) por vencer`
+                      : `${product.expiringSoonBatchesCount} lote(s) por vencer`
                   }
                   color={product.hasExpiredBatches ? 'danger' : 'warning'}
                 >
                   <IconSolarSirenRoundedLineDuotone
                     className={cn('size-5', {
                       'text-warning-500':
-                        product.hasExpiringBatches &&
+                        product.hasExpiringSoonBatches &&
                         !product.hasExpiredBatches,
                       'text-danger-500': product.hasExpiredBatches,
                     })}

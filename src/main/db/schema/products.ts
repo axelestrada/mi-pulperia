@@ -22,7 +22,7 @@ export const productsTable = sqliteTable('products', {
 
   minStock: int('min_stock').notNull().default(5),
 
-  isActive: int('is_active', { mode: 'boolean' }).notNull().default(true),
+  status: text().$type<'active' | 'inactive'>().notNull().default('active'),
 
   createdAt: int('created_at', { mode: 'timestamp' })
     .notNull()

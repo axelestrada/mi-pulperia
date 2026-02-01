@@ -1,8 +1,10 @@
+import { productDTOSchema } from "~/src/main/domains/products/products-model"
+
 export const productService = {
   async list() {
     const result = await productAdapter.list()
 
-    const { data, error } = productSchema.array().safeParse(result.data)
+    const { data, error } = productDTOSchema.array().safeParse(result.data)
 
     if (error) {
       console.error('Error al obtener los productos', error)

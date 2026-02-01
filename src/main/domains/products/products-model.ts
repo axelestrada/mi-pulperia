@@ -1,51 +1,68 @@
+import z from "zod"
+
 export type ProductRow = {
   id: number
   name: string
+
   description: string | null
   baseUnit: 'unit' | 'lb' | 'liter'
+  unitPrecision: number
+
   minStock: number
-  isActive: boolean | number
-  createdAt: Date
+  status: 'active' | 'inactive'
   categoryId: number | null
   categoryName: string | null
-  salePrice: number | null
-  sku: string | null
-  barcode: string | null
   image: string | null
   stock: number
-  presentationsCount: number
+  presentations: {
+    id: number
+    name: string,
+    salePrice: number
+  }[]
+  totalPresentationsCount: number
   hasExpiredBatches: number
-  hasExpiringBatches: number
+  hasExpiringSoonBatches: number
   expiredBatchesCount: number
-  expiringBatchesCount: number
+  expiringSoonBatchesCount: number
+  total: number
 }
 
-export type ProductDTO = {
-  id: number
-  name: string
-  barcode: string | null
-  salePrice: number | null
-  baseUnit: 'unit' | 'lb' | 'liter'
+export const productDTOSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  baseUnit: z.enum(['unit', 'lb', 'liter']),
+  unitPrecision: z.number(),
+  minStock: z.number(),
+  status: z.enum(['active', 'inactive']),
+  categoryId: z.number().nullable(),
+  categoryName: z.string().nullable(),
+  image: z.string().nullable(),
+  stock: z.number(),
+  presentations: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      salePrice: z.number(),
+    })
+  ),
+  totalPresentationsCount: z.number(),
+  hasExpiredBatches: z.number(),
+  hasExpiringSoonBatches: z.number(),
+  expiredBatchesCount: z.number(),
+  expiringSoonBatchesCount: z.number(),
+  total: z.number(),
+}).transform((product) => ({
+  ...product,
+  outOfStock: product.stock === 0,
+  lowStock: product.stock < product.minStock,
   category: {
-    id: number | null
-    name: string | null
+    id: product.categoryId,
+    name: product.categoryName,
   }
-  stock: number
-  createdAt: Date
-  description: string | null
-  image: string | null
-  status: 'active' | 'inactive'
-  minStock: number
-  lowStock: boolean
-  outOfStock: boolean
-  sku: string | null
-  presentationsCount: number
+}))
 
-  hasExpiredBatches: boolean
-  hasExpiringBatches: boolean
-  expiredBatchesCount: number
-  expiringBatchesCount: number
-}
+export type ProductDTO = z.infer<typeof productDTOSchema>
 
 export type NewProductDTO = {
   name: string

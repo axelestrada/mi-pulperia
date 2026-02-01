@@ -1,7 +1,6 @@
 import { SelectProduct } from 'main/db/schema/products'
 import { ProductsRepository } from './products-repository'
-import { toProductDTO } from './products-mappers'
-import { NewProductDTO, ProductDTO } from './products-model'
+import { NewProductDTO, ProductDTO, productDTOSchema } from './products-model'
 import { PresentationsRepository } from '../presentations/presentations-repository'
 import { UNIT_CONFIG } from './products-units'
 import { ProductsListFilters } from './products-list-filters'
@@ -22,7 +21,7 @@ export const ProductsService = {
     const total = rows[0]?.total ?? 0
 
     return {
-      data: rows.map(toProductDTO),
+      data: productDTOSchema.array().parse(rows),
       total,
       page,
       pageSize,
