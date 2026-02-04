@@ -1,32 +1,34 @@
-export const ProductsPage = () => {
-  const [formOpen, setFormOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+import { useDisclosure } from '@heroui/react'
 
-  const { data: products } = useProducts()
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+
+export const ProductsPage = () => {
+  const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure()
+
+  const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(
+    null
+  )
 
   const handleCreate = () => {
     setSelectedProduct(null)
-    setFormOpen(true)
+    onOpen()
   }
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: ProductDTO) => {
     setSelectedProduct(product)
-    setFormOpen(true)
+    onOpen()
   }
 
   return (
     <div>
-      <ProductsHeader />
+      <ProductsHeader onCreate={handleCreate} />
 
-      <ProductsTable
-        products={products?.data ?? []}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-      />
+      <ProductsTable onEdit={handleEdit} />
 
       <ProductFormDialog
-        open={formOpen}
-        setOpen={setFormOpen}
+        onClose={onClose}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
         product={selectedProduct}
       />
     </div>

@@ -1,5 +1,7 @@
 import { Button, NumberInput, Image } from '@heroui/react'
 
+import placeholder from '@/assets/images/placeholder.svg'
+
 type Props = {
   title: string
   image?: string | null
@@ -25,8 +27,9 @@ export const PosCartItem = ({
       <div className="flex gap-3 items-center">
         <Image
           isBlurred
-          className="aspect-4/3 w-14 object-cover"
+          className="aspect-4/3 w-14 object-cover bg-white"
           src={imagePath ?? undefined}
+          fallbackSrc={placeholder}
           alt={title}
         />
 

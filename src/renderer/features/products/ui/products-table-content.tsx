@@ -24,7 +24,6 @@ import type { Selection } from '@heroui/react'
 import { ProductDTO } from 'domains/products/products-model'
 
 type Props = {
-  products: ProductDTO[]
   onEdit: (product: ProductDTO) => void
 }
 
@@ -59,7 +58,9 @@ const statusConfig: Record<
   inactive: { label: 'Inactivo', color: 'danger' },
 }
 
-export const ProductsTableContent = ({ products }: Props) => {
+export const ProductsTableContent = ({ onEdit }: Props) => {
+  const { data: products } = useProducts()
+
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   )
@@ -79,6 +80,18 @@ export const ProductsTableContent = ({ products }: Props) => {
       Array.from(visibleColumns).includes(column.uid)
     )
   }, [visibleColumns])
+
+  const totalItems = useMemo(() => {
+    return products?.pagination.totalItems || 0
+  }, [products])
+
+  const pages = useMemo(() => {
+    return products?.pagination.totalPages || 0
+  }, [products])
+
+  const currentPage = useMemo(() => {
+    return products?.pagination.currentPage || 1
+  }, [products])
 
   const renderCell = useCallback(
     (product: ProductDTO, columnKey: React.Key): string | React.ReactNode => {
@@ -280,10 +293,12 @@ export const ProductsTableContent = ({ products }: Props) => {
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button
-                  endContent={<IconLucideChevronDown className="text-small" />}
+                  startContent={
+                    <IconSolarTuning2Linear className="text-default-400" />
+                  }
                   variant="flat"
                 >
-                  Estado
+                  Filtros
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
@@ -302,7 +317,9 @@ export const ProductsTableContent = ({ products }: Props) => {
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button
-                  endContent={<IconLucideChevronDown className="text-small" />}
+                  startContent={
+                    <IconSolarSortHorizontalLinear className="text-default-400" />
+                  }
                   variant="flat"
                 >
                   Columnas
@@ -327,7 +344,7 @@ export const ProductsTableContent = ({ products }: Props) => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Total 100 productos
+            {`Total ${totalItems} productos`}
           </span>
           <Select
             label="Productos por página"
@@ -345,14 +362,14 @@ export const ProductsTableContent = ({ products }: Props) => {
         </div>
       </div>
     )
-  }, [statusOptions, visibleColumns])
+  }, [statusOptions, visibleColumns, totalItems])
 
   const bottomContent = useMemo(() => {
     return (
       <div className="p-2 flex justify-end items-center">
         <Pagination
-          total={10}
-          page={1}
+          total={pages}
+          page={currentPage}
           isCompact
           showControls
           showShadow
@@ -360,7 +377,7 @@ export const ProductsTableContent = ({ products }: Props) => {
         />
       </div>
     )
-  }, [])
+  }, [pages, currentPage])
 
   return (
     <Table
@@ -384,9 +401,9 @@ export const ProductsTableContent = ({ products }: Props) => {
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody emptyContent={'No hay productos'} items={products}>
+      <TableBody emptyContent={'No hay productos'} items={products?.data ?? []}>
         {item => (
-          <TableRow key={item.id}>
+          <TableRow className="hover:bg-default-100" key={item.id}>
             {columnKey => <TableCell>{renderCell(item, columnKey)}</TableCell>}
           </TableRow>
         )}

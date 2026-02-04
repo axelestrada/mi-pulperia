@@ -20,7 +20,7 @@ export const PosItem = ({ presentation, onClick }: Props) => {
       <CardBody className="overflow-visible p-0">
         <Image
           alt={title}
-          className="w-full object-cover aspect-4/3"
+          className="w-full object-cover aspect-4/3 bg-white"
           radius="lg"
           isBlurred
           src={image ?? placeholder}

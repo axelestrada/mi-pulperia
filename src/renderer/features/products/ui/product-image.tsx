@@ -16,7 +16,7 @@ export const ProductImage = ({ src, alt }: Props) => {
       fallbackSrc={placeholder}
       alt={alt}
       isBlurred
-      className="w-14 aspect-4/3 object-cover"
+      className="w-14 aspect-4/3 object-cover bg-white"
     />
   )
 }

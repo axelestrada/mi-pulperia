@@ -1,5 +1,7 @@
+import { ProductDTO } from "~/src/main/domains/products/products-model"
+
 export const useProductForm = (
-  product: Product | null,
+  product: ProductDTO | null,
   onSuccess: () => void
 ) => {
   const form = useForm<ProductFormInput, unknown, ProductFormData>({

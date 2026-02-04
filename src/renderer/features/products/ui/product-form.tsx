@@ -1,34 +1,13 @@
+import { Form, Button } from '@heroui/react'
+
 type Props = {
-  product: Product | null
-  onClose: () => void
+  onSubmit: (data: ProductFormData) => Promise<void>
 }
 
-export const ProductForm = ({ product, onClose }: Props) => {
-  const { form, onSubmit, isEditing } = useProductForm(product, onClose)
+export const ProductForm = ({ onSubmit }: Props) => {
+  const form = useFormContext<ProductFormInput, unknown, ProductFormData>()
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = form
+  const { handleSubmit } = form
 
-  return (
-    <FormProvider {...form}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <FieldGroup>
-          <ProductFormFields />
-
-          <Field orientation="horizontal" className="justify-end">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Spinner />}
-              {isEditing ? 'Actualizar' : 'Guardar'}
-            </Button>
-          </Field>
-        </FieldGroup>
-      </form>
-    </FormProvider>
-  )
+  return <ProductFormFields />
 }

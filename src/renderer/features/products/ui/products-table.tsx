@@ -1,9 +1,9 @@
+import { ProductDTO } from "~/src/main/domains/products/products-model"
+
 type Props = {
-  products: Product[]
-  onCreate: () => void
-  onEdit: (product: Product) => void
+  onEdit: (product: ProductDTO) => void
 }
 
-export const ProductsTable = ({ onEdit, products }: Props) => {
-  return <ProductsTableContent products={products} onEdit={onEdit} />
+export const ProductsTable = ({ onEdit }: Props) => {
+  return <ProductsTableContent onEdit={onEdit} />
 }

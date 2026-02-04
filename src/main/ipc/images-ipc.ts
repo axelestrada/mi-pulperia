@@ -18,7 +18,10 @@ export const registerImagesHandlers = () => {
     const filepath = path.join(imagesDir, filename)
 
     await sharp(buffer)
-      .resize(600, 450, { fit: 'cover' })
+      .resize(600, 450, {
+        fit: 'contain',
+        background: { r: 255, g: 255, b: 255, alpha: 1 },
+      })
       .webp({ quality: 100 })
       .toFile(filepath)
 

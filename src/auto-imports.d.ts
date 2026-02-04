@@ -212,9 +212,12 @@ declare global {
   const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
   const IconSolarSiderbarLineDuotone: typeof import('~icons/solar/siderbar-line-duotone.tsx').default
   const IconSolarSirenRoundedLineDuotone: typeof import('~icons/solar/siren-rounded-line-duotone.tsx').default
+  const IconSolarSortHorizontalLinear: typeof import('~icons/solar/sort-horizontal-linear.tsx').default
+  const IconSolarSortTuning2Linear: typeof import('~icons/solar/sort-tuning2-linear.tsx').default
   const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
   const IconSolarTrashBinMinimalisticBoldDuotone: typeof import('~icons/solar/trash-bin-minimalistic-bold-duotone.tsx').default
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
+  const IconSolarTuning2Linear: typeof import('~icons/solar/tuning2-linear.tsx').default
   const IconSolarUsersGroupTwoRoundedLinear: typeof import('~icons/solar/users-group-two-rounded-linear.tsx').default
   const IconSolarWidget2BoldDuotone: typeof import('~icons/solar/widget2-bold-duotone.tsx').default
   const IconSolarWidget2Outline: typeof import('~icons/solar/widget2-outline.tsx').default
@@ -375,6 +378,7 @@ declare global {
   const TypographyH3: typeof import('./renderer/components/ui/typography').TypographyH3
   const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
   const UNIT_CONFIG: typeof import('./renderer/features/products/ui/product-units').UNIT_CONFIG
+  const Units: typeof import('./renderer/features/products/ui/product-units').Units
   const adjustmentAdapter: typeof import('./renderer/features/inventory-adjustments/api/adjustment-adapter').adjustmentAdapter
   const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
   const batchSchema: typeof import('./renderer/features/inventory/batches/model/inventory-batch-schema').batchSchema

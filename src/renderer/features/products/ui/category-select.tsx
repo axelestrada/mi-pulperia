@@ -1,11 +1,30 @@
-import { Autocomplete, AutocompleteItem } from '@heroui/react'
+import {
+  Autocomplete,
+  AutocompleteItem,
+  AutocompleteProps,
+} from '@heroui/react'
 
-type Props = {
-  value?: number
-  onChange: (value: number | undefined) => void
-}
+type Props = Pick<
+  AutocompleteProps,
+  | 'value'
+  | 'onChange'
+  | 'ref'
+  | 'errorMessage'
+  | 'validationBehavior'
+  | 'isInvalid'
+  | 'label'
+  | 'labelPlacement'
+  | 'placeholder'
+  | 'name'
+  | 'fullWidth'
+  | 'onBlur'
+  | 'className'
+  | 'isRequired'
+  | 'isClearable'
+  | 'onSelectionChange'
+>
 
-export const CategorySelect = ({ value, onChange }: Props) => {
+export const CategorySelect = (props: Props) => {
   const { data: categories = [] } = useCategories()
 
   const items = categories.map(category => ({
@@ -15,21 +34,10 @@ export const CategorySelect = ({ value, onChange }: Props) => {
 
   return (
     <Autocomplete
-      className="sm:max-w-64"
-      defaultSelectedKey={value}
-      defaultItems={items}
-      placeholder="Seleccione una categoría"
-      onClear={() => onChange(undefined)}
-      onSelectionChange={val => {
-        console.log(val)
-        onChange(Number(val) ?? undefined)
-      }}
+      {...props}
+      items={items}
     >
-      {item => (
-        <AutocompleteItem key={item.key} onClick={() => onChange(item.key)}>
-          {item.label}
-        </AutocompleteItem>
-      )}
+      {item => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
     </Autocomplete>
   )
 }

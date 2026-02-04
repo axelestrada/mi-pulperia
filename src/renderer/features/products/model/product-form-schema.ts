@@ -3,7 +3,9 @@ import { z } from 'zod'
 export const productFormSchema = z.object({
   id: z.number().optional(),
 
-  name: z.string().refine(value => value.trim() !== '', {
+  name: z.string({
+    error: 'Ingrese el nombre del producto',
+  }).refine(value => value.trim() !== '', {
     message: 'Ingrese el nombre del producto',
   }),
 

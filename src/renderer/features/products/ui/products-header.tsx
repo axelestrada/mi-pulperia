@@ -1,12 +1,17 @@
 import { Button } from '@heroui/react'
 
-export const ProductsHeader = () => {
+type Props = {
+  onCreate: () => void
+}
+
+export const ProductsHeader = ({ onCreate }: Props) => {
   return (
     <PageHeader
       title="Productos"
-      description="Gestione sus productos aquí."
+      description="Gestione su catálogo de productos y mantenga la información siempre actualizada."
       actions={
         <Button
+          onPress={onCreate}
           startContent={<IconLucidePlus />}
           color="default"
           className="bg-foreground text-background"
