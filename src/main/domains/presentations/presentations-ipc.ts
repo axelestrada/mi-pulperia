@@ -20,7 +20,11 @@ export const registerPresentationsHandlers = () => {
     PresentationsService.update(id, data)
   )
 
-  ipcMain.handle('presentations:toggle', (_, id, isActive) =>
-    PresentationsService.toggleActive(id, isActive)
+  ipcMain.handle('presentations:toggle', (_, id) =>
+    PresentationsService.toggleActive(id)
   )
+
+  ipcMain.handle('presentations:delete', (_, id) => {
+    PresentationsService.delete(id)
+  })
 }

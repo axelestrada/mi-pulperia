@@ -20,7 +20,8 @@ export const presentationSchema = z.object({
 
   salePrice: z.number(),
 
-  isActive: z.boolean(),
+  status: z.enum(['active', 'inactive', 'deleted']),
+
   createdAt: z.date(),
 })
 

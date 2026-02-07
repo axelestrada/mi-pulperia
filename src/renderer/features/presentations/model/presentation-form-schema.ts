@@ -20,7 +20,7 @@ const baseSchema = {
     .positive('El precio de venta debe ser mayor a 0')
     .transform(v => Math.round(v * 100)),
 
-  isActive: z.boolean(),
+  status: z.enum(['active', 'inactive', 'deleted']),
 } as const
 
 export const presentationFormSchema = z

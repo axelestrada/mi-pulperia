@@ -12,7 +12,7 @@ export const presentationToForm = (
       sku: presentation.sku || '',
       unit: presentation.unit,
       salePrice: presentation.salePrice / 100,
-      isActive: presentation.isActive,
+      status: presentation.status,
       factorType: 'fixed',
       factor: presentation.factor ?? 1,
     }
@@ -28,7 +28,7 @@ export const presentationToForm = (
     sku: presentation.sku || '',
     unit: presentation.unit,
     salePrice: presentation.salePrice / 100,
-    isActive: presentation.isActive,
+    status: presentation.status,
     factorType: 'variable',
     factor: 'n',
   }

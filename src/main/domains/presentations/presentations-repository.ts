@@ -13,7 +13,6 @@ export const PresentationsRepository = {
   async findAll({
     productId,
     categoryId,
-    isActive,
     page = 1,
     pageSize = 20,
     search,
@@ -26,10 +25,6 @@ export const PresentationsRepository = {
 
     if (categoryId) {
       whereConditions.push(eq(productsTable.categoryId, categoryId))
-    }
-
-    if (typeof isActive === 'boolean') {
-      whereConditions.push(eq(presentationsTable.isActive, isActive))
     }
 
     if (search) {
@@ -99,17 +94,20 @@ export const PresentationsRepository = {
   async update(id: number, data: Partial<InsertPresentation>) {
     const [row] = await db
       .update(presentationsTable)
-      .set({...data, updatedAt: new Date() })
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(presentationsTable.id, id))
       .returning()
 
     return row
   },
 
-  async updateBasePresentation(productId: number, data: Partial<InsertPresentation>) {
+  async updateBasePresentation(
+    productId: number,
+    data: Partial<InsertPresentation>
+  ) {
     const [row] = await db
       .update(presentationsTable)
-      .set({...data, updatedAt: new Date() })
+      .set({ ...data, updatedAt: new Date() })
       .where(
         and(
           eq(presentationsTable.productId, productId),
@@ -122,10 +120,29 @@ export const PresentationsRepository = {
     return row
   },
 
-  toggleActive(id: number, isActive: boolean) {
+  toggleActive(id: number) {
     return db
       .update(presentationsTable)
-      .set({ isActive, updatedAt: new Date() })
+      .set({
+        status: sql`
+        CASE
+          WHEN ${presentationsTable.status} = 'active' THEN 'inactive'
+          ELSE 'active'
+        END
+      `,
+        updatedAt: new Date(),
+      })
+      .where(eq(presentationsTable.id, id))
+  },
+
+  delete(id: number) {
+    return db
+      .update(presentationsTable)
+      .set({
+        deleted: true,
+        status: 'deleted',
+        updatedAt: new Date(),
+      })
       .where(eq(presentationsTable.id, id))
   },
 }

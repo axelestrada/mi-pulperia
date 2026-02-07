@@ -16,7 +16,11 @@ import {
   InventoryMovementFilters,
 } from './domains/inventory/inventory-model'
 
-import { NewProductDTO, ProductDTO, UpdateProductDTO } from './domains/products/products-model'
+import {
+  NewProductDTO,
+  ProductDTO,
+  UpdateProductDTO,
+} from './domains/products/products-model'
 import { NewPresentationDTO } from './domains/presentations/presentations-model'
 import { PaginatedResult } from '../shared/types/pagination'
 import { PresentationsListFilters } from '../shared/types/presentations'
@@ -29,7 +33,9 @@ import { ProductsListFilters } from './domains/products/products-list-filters'
 
 contextBridge.exposeInMainWorld('api', {
   products: {
-    list: (filters: ProductsListFilters): Promise<PaginatedResult<ProductDTO>> =>
+    list: (
+      filters: ProductsListFilters
+    ): Promise<PaginatedResult<ProductDTO>> =>
       ipcRenderer.invoke('products:list', filters),
     create: (product: NewProductDTO) =>
       ipcRenderer.invoke('products:create', product),
@@ -49,8 +55,8 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('presentations:create', data),
     update: (id: number, data: Partial<NewPresentationDTO>) =>
       ipcRenderer.invoke('presentations:update', id, data),
-    toggle: (id: number, isActive: boolean) =>
-      ipcRenderer.invoke('presentations:toggle', id, isActive),
+    toggle: (id: number) => ipcRenderer.invoke('presentations:toggle', id),
+    delete: (id: number) => ipcRenderer.invoke('presentations:delete', id),
   },
   categories: {
     list: () => ipcRenderer.invoke('categories:list'),

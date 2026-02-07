@@ -79,6 +79,7 @@ export const ProductsRepository = {
           FROM presentations
           WHERE product_id = ${productsTable.id}
             AND deleted = false
+            AND status = 'active'
           ORDER BY is_base DESC, id ASC
           LIMIT 3
         ) p

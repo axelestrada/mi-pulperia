@@ -1,38 +1,36 @@
-import { CreatePresentationButton } from '@/features/presentations/ui/create-presentation-button'
+import { Modal, ModalBody, ModalContent, ModalHeader } from '@heroui/react'
+import { ProductDTO } from '~/src/main/domains/products/products-model'
 
 type Props = {
-  product: Product
-  open: boolean
+  product: ProductDTO
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function ProductPresentationsDialog({
   product,
-  open,
+  isOpen,
   onOpenChange,
 }: Props) {
-  const { data, isLoading } = usePresentationsByProduct(product.id)
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-6xl max-h-11/12 overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Presentaciones – {product.name}</DialogTitle>
-          <DialogDescription>
-            Administra las presentaciones de este producto
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex justify-end">
-          <CreatePresentationButton product={product} />
-        </div>
-
-        <PresentationsTable
-          presentations={data ?? []}
-          isLoading={isLoading}
-          product={product}
-        />
-      </DialogContent>
-    </Dialog>
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      scrollBehavior="inside"
+      className="sm:max-w-4xl"
+    >
+      <ModalContent>
+        {() => (
+          <>
+            <ModalHeader className="flex flex-col">
+              Presentaciones de {product.name}
+            </ModalHeader>
+            <ModalBody>
+              <PresentationsTable product={product} />
+            </ModalBody>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
 }

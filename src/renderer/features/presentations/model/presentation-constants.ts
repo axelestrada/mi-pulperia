@@ -6,5 +6,5 @@ export const EMPTY_PRESENTATION_FORM: Partial<PresentationFormInput> = {
   image: '',
   barcode: '',
   sku: '',
-  isActive: true,
+  status: 'active',
 }

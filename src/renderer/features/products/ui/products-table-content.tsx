@@ -19,6 +19,7 @@ import {
   Tooltip,
   Spinner,
   DropdownSection,
+  useDisclosure,
 } from '@heroui/react'
 
 import type { Selection } from '@heroui/react'
@@ -53,16 +54,35 @@ const columns = [
 
 const statusConfig: Record<
   ProductDTO['status'],
-  { label: string; color: 'success' | 'danger' }
+  { label: string; color: 'success' | 'danger' | 'warning' }
 > = {
   active: { label: 'Activo', color: 'success' },
   inactive: { label: 'Inactivo', color: 'danger' },
+  deleted: { label: 'Eliminado', color: 'warning' },
 }
 
 export const ProductsTableContent = ({ onEdit }: Props) => {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [pageSize, setPageSize] = useState(5)
+
+  const {
+    isOpen: isPresentationsDialogOpen,
+    onOpenChange: setIsPresentationsDialogOpen,
+    onOpen,
+  } = useDisclosure()
+  
+  const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(
+    null
+  )
+
+  const showPresentations = useCallback(
+    (product: ProductDTO) => {
+      setSelectedProduct(product)
+      onOpen()
+    },
+    [onOpen]
+  )
 
   const { data: products, isLoading } = useProducts({
     search,
@@ -225,6 +245,9 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
                 <DropdownSection showDivider title="Acciones">
                   <DropdownItem
                     key="view"
+                    onPress={() => {
+                      showPresentations(product)
+                    }}
                     startContent={
                       <IconSolarWidget2BoldDuotone className={iconClasses} />
                     }
@@ -285,7 +308,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
           return cellValue?.toString()
       }
     },
-    [deleteProduct, onEdit, toggleProduct]
+    [deleteProduct, onEdit, toggleProduct, showPresentations]
   )
 
   const topContent = useMemo(() => {
@@ -296,7 +319,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
             isClearable
             className="w-full sm:max-w-72"
             placeholder="Buscar..."
-            startContent={<IconSolarMagniferOutline />}
+            startContent={<IconSolarMagniferOutline className="text-default-400" />}
             value={search}
             onValueChange={value => {
               setSearch(value)
@@ -361,7 +384,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
             {`Total ${totalItems} productos`}
           </span>
           <Select
-            label="Productos por página"
+            label="Elementos por página"
             labelPlacement="outside-left"
             className="sm:max-w-56"
             defaultSelectedKeys={[String(pageSize)]}
@@ -394,39 +417,51 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
   )
 
   return (
-    <Table
-      isHeaderSticky
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: 'max-h-[382px]',
-      }}
-      selectionMode="none"
-      topContent={topContent}
-      topContentPlacement="outside"
-    >
-      <TableHeader columns={headerColumns}>
-        {column => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === 'actions' ? 'center' : 'start'}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        loadingContent={<Spinner />}
-        loadingState={isLoading ? 'loading' : 'idle'}
-        emptyContent={'No hay productos'}
-        items={products?.data ?? []}
+    <>
+      <Table
+        isHeaderSticky
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        classNames={{
+          wrapper: 'max-h-[382px]',
+        }}
+        selectionMode="none"
+        topContent={topContent}
+        topContentPlacement="outside"
       >
-        {item => (
-          <TableRow className="hover:bg-default-100" key={item.id}>
-            {columnKey => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        <TableHeader columns={headerColumns}>
+          {column => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          loadingContent={<Spinner />}
+          loadingState={isLoading ? 'loading' : 'idle'}
+          emptyContent={'No hay productos'}
+          items={products?.data ?? []}
+        >
+          {item => (
+            <TableRow className="hover:bg-default-100" key={item.id}>
+              {columnKey => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      {selectedProduct && (
+        <ProductPresentationsDialog
+          product={selectedProduct}
+          isOpen={isPresentationsDialogOpen}
+          onOpenChange={setIsPresentationsDialogOpen}
+        />
+      )}
+    </>
   )
 }

@@ -1,4 +1,11 @@
-import { Input, NumberInput, Textarea, Select, SelectItem } from '@heroui/react'
+import {
+  Input,
+  NumberInput,
+  Textarea,
+  Select,
+  SelectItem,
+  Tooltip,
+} from '@heroui/react'
 
 export const ProductFormFields = () => {
   const { control, watch } = useFormContext<ProductFormData>()
@@ -93,8 +100,22 @@ export const ProductFormFields = () => {
               errorMessage={error?.message}
               validationBehavior="aria"
               isInvalid={invalid}
-              label="Precio"
-              isRequired
+              label={
+                <div className="flex gap-0.5 items-center">
+                  <span>Precio</span>
+                  <span className="text-danger">*</span>
+                  <Tooltip
+                    content="Precio de venta de la presentación base"
+                    size="sm"
+                    classNames={{
+                      base: 'sm:max-w-[150px]',
+                      content: 'text-center',
+                    }}
+                  >
+                    <IconSolarInfoCircleLinear className="text-default-300 size-4" />
+                  </Tooltip>
+                </div>
+              }
               labelPlacement="outside-top"
               placeholder="22"
               startContent={
@@ -155,7 +176,21 @@ export const ProductFormFields = () => {
               errorMessage={error?.message}
               validationBehavior="aria"
               isInvalid={invalid}
-              label="SKU"
+              label={
+                <div className="flex gap-0.5 items-center">
+                  <span>SKU</span>
+                  <Tooltip
+                    content="SKU de la presentación base"
+                    size="sm"
+                    classNames={{
+                      base: 'sm:max-w-[150px]',
+                      content: 'text-center',
+                    }}
+                  >
+                    <IconSolarInfoCircleLinear className="text-default-300 size-4" />
+                  </Tooltip>
+                </div>
+              }
               labelPlacement="outside-top"
               placeholder="COCA-500"
               fullWidth
@@ -179,7 +214,21 @@ export const ProductFormFields = () => {
               errorMessage={error?.message}
               validationBehavior="aria"
               isInvalid={invalid}
-              label="Código de barras"
+              label={
+                <div className="flex gap-0.5 items-center">
+                  <span>Código de barras</span>
+                  <Tooltip
+                    content="Código de barras de la presentación base"
+                    size="sm"
+                    classNames={{
+                      base: 'sm:max-w-[150px]',
+                      content: 'text-center',
+                    }}
+                  >
+                    <IconSolarInfoCircleLinear className="text-default-300 size-4" />
+                  </Tooltip>
+                </div>
+              }
               labelPlacement="outside-top"
               placeholder="0784562010652"
               name={name}

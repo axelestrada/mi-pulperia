@@ -1,8 +1,8 @@
-export function useTogglePresentation() {
+export const useDeletePresentation = () => {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => presentationsService.toggleActive(id),
+    mutationFn: (id: number) => presentationsService.delete(id),
 
     onSuccess: (_, id) => {
       qc.invalidateQueries({

@@ -49,7 +49,6 @@ export const POSRepository = {
     const {
       search,
       categoryId,
-      isActive = true,
       page = 1,
       limit = 50,
       sortBy = 'name',
@@ -61,9 +60,9 @@ export const POSRepository = {
     // Build where conditions
     const whereConditions = [
       eq(presentationsTable.deleted, false),
-      eq(presentationsTable.isActive, isActive),
       eq(productsTable.deleted, false),
       eq(productsTable.status, 'active'),
+      eq(presentationsTable.status, 'active')
     ]
 
     if (search) {
@@ -277,7 +276,7 @@ export const POSRepository = {
         and(
           eq(presentationsTable.id, presentationId),
           eq(presentationsTable.deleted, false),
-          eq(presentationsTable.isActive, true),
+          eq(presentationsTable.status, 'active'),
           eq(productsTable.deleted, false),
           eq(productsTable.status, 'active')
         )
@@ -431,7 +430,7 @@ export const POSRepository = {
             eq(presentationsTable.sku, code)
           ),
           eq(presentationsTable.deleted, false),
-          eq(presentationsTable.isActive, true),
+          eq(presentationsTable.status, 'active'),
           eq(productsTable.deleted, false),
           eq(productsTable.status, 'active')
         )

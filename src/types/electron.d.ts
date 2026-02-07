@@ -235,7 +235,8 @@ declare global {
           id: PresentationDTO['id'],
           presentation: Partial<NewPresentationDTO>
         ) => Promise<PresentationDTO>
-        toggle: (id: PresentationDTO['id'], isActive: boolean) => Promise<void>
+        toggle: (id: PresentationDTO['id']) => Promise<void>
+        delete: (id: PresentationDTO['id']) => Promise<void>
       }
       categories: {
         list: () => Promise<Category[]>

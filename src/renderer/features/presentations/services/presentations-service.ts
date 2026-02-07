@@ -1,4 +1,4 @@
-import { PresentationsListFilters } from "shared/types/presentations"
+import { PresentationsListFilters } from 'shared/types/presentations'
 
 export const presentationsService = {
   async list(filters: PresentationsListFilters) {
@@ -43,7 +43,11 @@ export const presentationsService = {
     await presentationsAdapter.update(id, payload)
   },
 
-  async toggleActive(id: number, isActive: boolean) {
-    await presentationsAdapter.toggleActive(id, isActive)
+  async toggleActive(id: number) {
+    await presentationsAdapter.toggleActive(id)
+  },
+
+  async delete(id: number) {
+    await presentationsAdapter.delete(id)
   },
 }

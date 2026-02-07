@@ -61,7 +61,11 @@ export const PresentationsService = {
     return toPresentationDTO(row)
   },
 
-  async toggleActive(id: number, isActive: boolean) {
-    await PresentationsRepository.toggleActive(id, isActive)
+  async toggleActive(id: number) {
+    await PresentationsRepository.toggleActive(id)
+  },
+
+  async delete(id: number) {
+    await PresentationsRepository.delete(id)
   },
 }

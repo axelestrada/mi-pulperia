@@ -183,7 +183,9 @@ declare global {
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
+  const IconSolarAddCircleBold: typeof import('~icons/solar/add-circle-bold.tsx').default
   const IconSolarAddCircleLineDuotone: typeof import('~icons/solar/add-circle-line-duotone.tsx').default
+  const IconSolarAddCircleLinear: typeof import('~icons/solar/add-circle-linear.tsx').default
   const IconSolarBanknote2Linear: typeof import('~icons/solar/banknote2-linear.tsx').default
   const IconSolarBellOutline: typeof import('~icons/solar/bell-outline.tsx').default
   const IconSolarBillListLinear: typeof import('~icons/solar/bill-list-linear.tsx').default
@@ -197,6 +199,7 @@ declare global {
   const IconSolarCopyLinear: typeof import('~icons/solar/copy-linear.tsx').default
   const IconSolarDocumentAddLinear: typeof import('~icons/solar/document-add-linear.tsx').default
   const IconSolarHome2Linear: typeof import('~icons/solar/home2-linear.tsx').default
+  const IconSolarInfoCircleLinear: typeof import('~icons/solar/info-circle-linear.tsx').default
   const IconSolarLaptopMinimalisticLinear: typeof import('~icons/solar/laptop-minimalistic-linear.tsx').default
   const IconSolarMagniferOutline: typeof import('~icons/solar/magnifer-outline.tsx').default
   const IconSolarMenuDotsLinear: typeof import('~icons/solar/menu-dots-linear.tsx').default
@@ -475,6 +478,7 @@ declare global {
   const useDeleteCustomer: typeof import('./renderer/features/customers/hooks/use-customers').useDeleteCustomer
   const useDeleteImage: typeof import('./renderer/features/images/hooks/use-delete-image').useDeleteImage
   const useDeleteInventoryAdjustment: typeof import('./renderer/features/inventory-adjustments/hooks/use-adjustments').useDeleteInventoryAdjustment
+  const useDeletePresentation: typeof import('./renderer/features/presentations/hooks/use-delete-presentation').useDeletePresentation
   const useDeleteProduct: typeof import('./renderer/features/products/hooks/use-delete-product').useDeleteProduct
   const useDeletePurchaseOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useDeletePurchaseOrder
   const useDeleteSupplier: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useDeleteSupplier
