@@ -3,7 +3,7 @@
   "author": "Axel Estrada <axele1524@gmail.com>",
   "description": "Aplicación de escritorio diseñada para la gestión de inventario, ventas y clientes de una pulpería.",
   "private": true,
-  "version": "0.4.4",
+  "version": "0.4.5",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
