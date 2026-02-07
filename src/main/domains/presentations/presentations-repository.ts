@@ -99,8 +99,24 @@ export const PresentationsRepository = {
   async update(id: number, data: Partial<InsertPresentation>) {
     const [row] = await db
       .update(presentationsTable)
-      .set(data)
+      .set({...data, updatedAt: new Date() })
       .where(eq(presentationsTable.id, id))
+      .returning()
+
+    return row
+  },
+
+  async updateBasePresentation(productId: number, data: Partial<InsertPresentation>) {
+    const [row] = await db
+      .update(presentationsTable)
+      .set({...data, updatedAt: new Date() })
+      .where(
+        and(
+          eq(presentationsTable.productId, productId),
+          eq(presentationsTable.isBase, true),
+          eq(presentationsTable.deleted, false)
+        )
+      )
       .returning()
 
     return row
@@ -109,7 +125,7 @@ export const PresentationsRepository = {
   toggleActive(id: number, isActive: boolean) {
     return db
       .update(presentationsTable)
-      .set({ isActive })
+      .set({ isActive, updatedAt: new Date() })
       .where(eq(presentationsTable.id, id))
   },
 }

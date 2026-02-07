@@ -89,12 +89,12 @@ export const ProductFormFields = () => {
           }) => (
             <NumberInput
               ref={ref}
-              isRequired
               fullWidth
               errorMessage={error?.message}
               validationBehavior="aria"
               isInvalid={invalid}
               label="Precio"
+              isRequired
               labelPlacement="outside-top"
               placeholder="22"
               startContent={
@@ -211,8 +211,8 @@ export const ProductFormFields = () => {
               isRequired
               isClearable={false}
               fullWidth
-              value={value ?? ''}
               onBlur={onBlur}
+              defaultSelectedKey={String(value)}
               onSelectionChange={key => onChange(Number(key) ?? undefined)}
             />
           )}

@@ -1,14 +1,7 @@
-import {
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  ModalContent,
-  Button,
-  Form,
-} from '@heroui/react'
+import { Modal, ModalContent } from '@heroui/react'
 
 import { ProductDTO } from '~/src/main/domains/products/products-model'
+import { ProductFormDialogContent } from './product-form-dialog-content'
 
 type Props = {
   isOpen: boolean
@@ -17,18 +10,9 @@ type Props = {
   onOpenChange: (open: boolean) => void
 }
 
-export const ProductFormDialog = ({
-  isOpen,
-  onClose,
-  product,
-  onOpenChange,
-}: Props) => {
-  const { form, isEditing, onSubmit } = useProductForm(product, onClose)
-
+export const ProductFormDialog = ({ isOpen, product, onOpenChange }: Props) => {
   return (
     <Modal
-      isDismissable={false}
-      isKeyboardDismissDisabled={true}
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       scrollBehavior="inside"
@@ -36,37 +20,7 @@ export const ProductFormDialog = ({
     >
       <ModalContent>
         {onClose => (
-          <FormProvider {...form}>
-            <ModalHeader className="flex flex-col gap-1">
-              {isEditing ? 'Actualizar Producto' : 'Agregar Producto'}
-            </ModalHeader>
-            <ModalBody>
-              <Form onSubmit={form.handleSubmit(onSubmit)}>
-                <ProductForm onSubmit={onSubmit} />
-
-                <div className="flex justify-end gap-2 w-full py-4">
-                  <Button
-                    color="danger"
-                    variant="light"
-                    onPress={() => {
-                      form.reset()
-                      onClose()
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    color="primary"
-                    variant="shadow"
-                    isLoading={form.formState.isSubmitting}
-                    type="submit"
-                  >
-                    {isEditing ? 'Actualizar' : 'Agregar'}
-                  </Button>
-                </div>
-              </Form>
-            </ModalBody>
-          </FormProvider>
+          <ProductFormDialogContent onClose={onClose} product={product} />
         )}
       </ModalContent>
     </Modal>

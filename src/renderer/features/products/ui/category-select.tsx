@@ -22,6 +22,8 @@ type Props = Pick<
   | 'isRequired'
   | 'isClearable'
   | 'onSelectionChange'
+  | 'selectedKey'
+  | 'defaultSelectedKey'
 >
 
 export const CategorySelect = (props: Props) => {
@@ -33,10 +35,7 @@ export const CategorySelect = (props: Props) => {
   }))
 
   return (
-    <Autocomplete
-      {...props}
-      items={items}
-    >
+    <Autocomplete {...props} items={items}>
       {item => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
     </Autocomplete>
   )

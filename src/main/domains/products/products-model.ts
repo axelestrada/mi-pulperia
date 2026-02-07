@@ -44,6 +44,9 @@ export const productDTOSchema = z.object({
       id: z.number(),
       name: z.string(),
       salePrice: z.number(),
+      barcode: z.string().nullable(),
+      sku: z.string().nullable(),
+      isBase: z.coerce.boolean(),
     })
   ),
   totalPresentationsCount: z.number(),
@@ -69,6 +72,18 @@ export type NewProductDTO = {
   description: string | null
   categoryId: number
   baseUnit: 'unit' | 'lb' | 'liter'
+  minStock: number
+  salePrice: number
+  sku: string | null
+  barcode: string | null
+  image: string | null
+}
+
+
+export type UpdateProductDTO = {
+  name: string
+  description: string | null
+  categoryId: number
   minStock: number
   salePrice: number
   sku: string | null

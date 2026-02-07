@@ -12,7 +12,7 @@ export const ProductImage = ({ src, alt }: Props) => {
 
   return (
     <Image
-      src={imagePath ?? ''}
+      src={imagePath || placeholder}
       fallbackSrc={placeholder}
       alt={alt}
       isBlurred

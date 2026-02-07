@@ -41,8 +41,6 @@ export const productFormSchema = z.object({
     })
     .int()
     .min(0, 'El stock mínimo no puede ser negativo'),
-
-  isActive: z.boolean(),
 })
 
 export type ProductFormInput = z.input<typeof productFormSchema>

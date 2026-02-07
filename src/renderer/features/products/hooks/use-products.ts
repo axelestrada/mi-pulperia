@@ -1,5 +1,7 @@
-export const useProducts = () =>
+import { ProductsListFilters } from '~/src/main/domains/products/products-list-filters'
+
+export const useProducts = (filters?: ProductsListFilters) =>
   useQuery({
-    queryKey: productKeys.all,
-    queryFn: productService.list,
+    queryKey: productKeys.list(filters),
+    queryFn: () => productService.list(filters),
   })

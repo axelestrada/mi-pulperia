@@ -1,6 +1,11 @@
 import { SelectProduct } from 'main/db/schema/products'
 import { ProductsRepository } from './products-repository'
-import { NewProductDTO, ProductDTO, productDTOSchema } from './products-model'
+import {
+  NewProductDTO,
+  ProductDTO,
+  productDTOSchema,
+  UpdateProductDTO,
+} from './products-model'
 import { PresentationsRepository } from '../presentations/presentations-repository'
 import { UNIT_CONFIG } from './products-units'
 import { ProductsListFilters } from './products-list-filters'
@@ -10,6 +15,7 @@ export const ProductsService = {
   async list(
     filters: ProductsListFilters = {}
   ): Promise<PaginatedResult<ProductDTO>> {
+    console.log('ProductsService.list called with filters:', filters)
     const { page = 1, pageSize = 20 } = filters
 
     const rows = await ProductsRepository.findAll({
@@ -69,7 +75,7 @@ export const ProductsService = {
     })
   },
 
-  async update(id: SelectProduct['id'], input: Partial<SelectProduct>) {
+  async update(id: SelectProduct['id'], input: UpdateProductDTO) {
     if (!Number.isInteger(id)) {
       throw new Error('ID inválido para el producto')
     }
@@ -78,7 +84,19 @@ export const ProductsService = {
       throw new Error('El nombre del producto es obligatorio')
     }
 
-    return ProductsRepository.update(id, input)
+    await ProductsRepository.update(id, {
+      name: input.name,
+      description: input.description,
+      categoryId: input.categoryId,
+      minStock: input.minStock,
+    })
+
+    await PresentationsRepository.updateBasePresentation(id, {
+      image: input.image,
+      sku: input.sku,
+      barcode: input.barcode,
+      salePrice: input.salePrice,
+    })
   },
 
   async remove(id: SelectProduct['id']) {

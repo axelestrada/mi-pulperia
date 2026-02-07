@@ -275,6 +275,7 @@ declare global {
   const PresentationsTableRow: typeof import('./renderer/features/presentations/ui/presentations-table-row').PresentationsTableRow
   const ProductForm: typeof import('./renderer/features/products/ui/product-form').ProductForm
   const ProductFormDialog: typeof import('./renderer/features/products/ui/product-form-dialog').ProductFormDialog
+  const ProductFormDialogContent: typeof import('./renderer/features/products/ui/product-form-dialog-content').ProductFormDialogContent
   const ProductFormFields: typeof import('./renderer/features/products/ui/product-form-fields').ProductFormFields
   const ProductImage: typeof import('./renderer/features/products/ui/product-image').ProductImage
   const ProductImagePicker: typeof import('./renderer/features/products/ui/product-image-picker').ProductImagePicker

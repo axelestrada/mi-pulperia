@@ -17,6 +17,7 @@ import {
   TableCell,
   Pagination,
   Tooltip,
+  Spinner,
   DropdownSection,
 } from '@heroui/react'
 
@@ -59,7 +60,17 @@ const statusConfig: Record<
 }
 
 export const ProductsTableContent = ({ onEdit }: Props) => {
-  const { data: products } = useProducts()
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [pageSize, setPageSize] = useState(5)
+
+  const { data: products, isLoading } = useProducts({
+    search,
+    page,
+    pageSize,
+  })
+
+  const { mutateAsync: deleteProduct } = useDeleteProduct()
 
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
@@ -81,17 +92,9 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
     )
   }, [visibleColumns])
 
-  const totalItems = useMemo(() => {
-    return products?.pagination.totalItems || 0
-  }, [products])
+  const totalItems = products?.pagination.totalItems || 0
 
-  const pages = useMemo(() => {
-    return products?.pagination.totalPages || 0
-  }, [products])
-
-  const currentPage = useMemo(() => {
-    return products?.pagination.currentPage || 1
-  }, [products])
+  const pages = products?.pagination.totalPages || 0
 
   const renderCell = useCallback(
     (product: ProductDTO, columnKey: React.Key): string | React.ReactNode => {
@@ -150,7 +153,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
         case 'status':
           return (
             <Chip
-              className="capitalize border-none"
+              className="capitalize border-none bg-default-100 rounded-lg"
               size="sm"
               variant="dot"
               color={statusConfig[product.status].color}
@@ -229,6 +232,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
                   </DropdownItem>
                   <DropdownItem
                     key="edit"
+                    onPress={() => onEdit(product)}
                     startContent={
                       <IconSolarPenNewSquareBoldDuotone
                         className={iconClasses}
@@ -265,6 +269,9 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
                         className={cn(iconClasses, 'text-current')}
                       />
                     }
+                    onPress={() => {
+                      deleteProduct(product.id)
+                    }}
                   >
                     Eliminar
                   </DropdownItem>
@@ -276,7 +283,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
           return cellValue?.toString()
       }
     },
-    []
+    [deleteProduct, onEdit]
   )
 
   const topContent = useMemo(() => {
@@ -288,6 +295,11 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
             className="w-full sm:max-w-72"
             placeholder="Buscar..."
             startContent={<IconSolarMagniferOutline />}
+            value={search}
+            onValueChange={value => {
+              setSearch(value)
+              setPage(1)
+            }}
           />
           <div className="flex gap-3">
             <Dropdown>
@@ -350,10 +362,11 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
             label="Productos por página"
             labelPlacement="outside-left"
             className="sm:max-w-56"
-            defaultSelectedKeys={['5']}
+            defaultSelectedKeys={[String(pageSize)]}
             classNames={{
               label: 'text-default-400',
             }}
+            onSelectionChange={key => setPageSize(Number(key.currentKey))}
           >
             <SelectItem key="5">5</SelectItem>
             <SelectItem key="10">10</SelectItem>
@@ -362,22 +375,21 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
         </div>
       </div>
     )
-  }, [statusOptions, visibleColumns, totalItems])
+  }, [statusOptions, visibleColumns, totalItems, search, pageSize])
 
-  const bottomContent = useMemo(() => {
-    return (
-      <div className="p-2 flex justify-end items-center">
-        <Pagination
-          total={pages}
-          page={currentPage}
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-        />
-      </div>
-    )
-  }, [pages, currentPage])
+  const bottomContent = (
+    <div className="p-2 flex justify-end items-center">
+      <Pagination
+        total={pages}
+        page={page}
+        onChange={setPage}
+        isCompact
+        showControls
+        showShadow
+        color="primary"
+      />
+    </div>
+  )
 
   return (
     <Table
@@ -401,7 +413,12 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody emptyContent={'No hay productos'} items={products?.data ?? []}>
+      <TableBody
+        loadingContent={<Spinner />}
+        loadingState={isLoading ? 'loading' : 'idle'}
+        emptyContent={'No hay productos'}
+        items={products?.data ?? []}
+      >
         {item => (
           <TableRow className="hover:bg-default-100" key={item.id}>
             {columnKey => <TableCell>{renderCell(item, columnKey)}</TableCell>}

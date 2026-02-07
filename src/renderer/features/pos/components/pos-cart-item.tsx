@@ -28,7 +28,7 @@ export const PosCartItem = ({
         <Image
           isBlurred
           className="aspect-4/3 w-14 object-cover bg-white"
-          src={imagePath ?? undefined}
+          src={imagePath || placeholder}
           fallbackSrc={placeholder}
           alt={title}
         />

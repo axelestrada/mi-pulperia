@@ -1,8 +1,9 @@
-import { productDTOSchema } from "~/src/main/domains/products/products-model"
+import { ProductsListFilters } from "~/src/main/domains/products/products-list-filters"
+import { ProductDTO, productDTOSchema } from "~/src/main/domains/products/products-model"
 
 export const productService = {
-  async list() {
-    const result = await productAdapter.list()
+  async list(filters?: ProductsListFilters) {
+    const result = await productAdapter.list(filters)
 
     const { data, error } = productDTOSchema.array().safeParse(result.data)
 
@@ -26,11 +27,11 @@ export const productService = {
     await productAdapter.create(payload)
   },
 
-  async update(id: Product['id'], payload: Partial<ProductFormData>) {
+  async update(id: ProductDTO['id'], payload: Partial<ProductFormData>) {
     await productAdapter.update(id, payload)
   },
 
-  async remove(id: Product['id']) {
+  async remove(id: ProductDTO['id']) {
     await productAdapter.remove(id)
   },
 }

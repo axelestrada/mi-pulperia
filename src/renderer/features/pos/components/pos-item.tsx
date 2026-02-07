@@ -24,6 +24,7 @@ export const PosItem = ({ presentation, onClick }: Props) => {
           radius="lg"
           isBlurred
           src={image ?? placeholder}
+          fallbackSrc={placeholder}
           width="100%"
         />
       </CardBody>

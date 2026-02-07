@@ -76,7 +76,7 @@ export const ProductImagePicker = () => {
     >
       {preview || imagePath ? (
         <Image
-          className="w-32 aspect-4/3 object-cover bg-white"
+          className="w-32 aspect-4/3 object-contain bg-white"
           src={preview ?? imagePath ?? ''}
           fallbackSrc={placeholder}
           isBlurred

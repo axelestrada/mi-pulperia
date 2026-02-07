@@ -202,6 +202,7 @@ import {
   SalesFilters,
   CreateSaleData,
 } from 'main/repositories/sales-repository'
+import { ProductsListFilters } from '../main/domains/products/products-list-filters'
 
 export {}
 
@@ -209,7 +210,7 @@ declare global {
   interface Window {
     api: {
       products: {
-        list: () => Promise<PaginatedResult<ProductDTO>>
+        list: (filters?: ProductsListFilters) => Promise<PaginatedResult<ProductDTO>>
         create: (product: NewProductDTO) => Promise<void>
         update: (
           id: Product['id'],

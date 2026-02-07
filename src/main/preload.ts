@@ -25,11 +25,12 @@ import { CashRegistersFilters } from './repositories/cash-registers-repository'
 import { CashSessionsFilters } from './repositories/cash-sessions-repository'
 import { POSFilters } from './repositories/pos-repository'
 import { SalesFilters, CreateSaleData } from './repositories/sales-repository'
+import { ProductsListFilters } from './domains/products/products-list-filters'
 
 contextBridge.exposeInMainWorld('api', {
   products: {
-    list: (): Promise<PaginatedResult<ProductDTO>> =>
-      ipcRenderer.invoke('products:list'),
+    list: (filters: ProductsListFilters): Promise<PaginatedResult<ProductDTO>> =>
+      ipcRenderer.invoke('products:list', filters),
     create: (product: NewProductDTO) =>
       ipcRenderer.invoke('products:create', product),
     update: (id: SelectProduct['id'], product: Partial<SelectProduct>) =>

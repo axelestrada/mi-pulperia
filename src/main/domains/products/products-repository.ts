@@ -60,6 +60,7 @@ export const ProductsRepository = {
         id: number
         name: string
         salePrice: number
+        isBase: number
       }[]
     >`
       (
@@ -67,11 +68,14 @@ export const ProductsRepository = {
           json_object(
             'id', p.id,
             'name', p.name,
-            'salePrice', p.sale_price
+            'salePrice', p.sale_price,
+            'isBase', p.is_base,
+            'barcode', p.barcode,
+            'sku', p.sku
           )
         )
         FROM (
-          SELECT id, name, sale_price
+          SELECT id, name, sale_price, is_base, barcode, sku
           FROM presentations
           WHERE product_id = ${productsTable.id}
             AND deleted = false
@@ -149,7 +153,8 @@ export const ProductsRepository = {
 
     if (search) {
       const searchCondition = or(
-        like(productsTable.name, search),
+        like(productsTable.name, `%${search}%`),
+        like(productsTable.description, `%${search}%`),
         sql<boolean>`
           EXISTS (
             SELECT 1
@@ -224,7 +229,7 @@ export const ProductsRepository = {
       .limit(pageSize)
       .offset(offset)
 
-    const parsedRows = rows.map((r) => {
+    const parsedRows = rows.map(r => {
       const p = r.presentations ?? []
 
       if (typeof p === 'string') {
