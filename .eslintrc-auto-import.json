@@ -556,6 +556,7 @@
     "useSyncExternalStore": true,
     "useToggleCategoryStatus": true,
     "useTogglePresentation": true,
+    "useToggleProduct": true,
     "useTransition": true,
     "useUpdateCategory": true,
     "useUpdateCredit": true,

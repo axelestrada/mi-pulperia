@@ -256,9 +256,23 @@ export const ProductsRepository = {
       .set({ ...data, updatedAt: new Date() })
       .where(eq(productsTable.id, id)),
 
+  toggle: async (id: SelectProduct['id']) =>
+    db
+      .update(productsTable)
+      .set({
+        status: sql`
+        CASE
+          WHEN ${productsTable.status} = 'active' THEN 'inactive'
+          ELSE 'active'
+        END
+      `,
+        updatedAt: new Date(),
+      })
+      .where(eq(productsTable.id, id)),
+
   delete: async (id: SelectProduct['id']) =>
     db
       .update(productsTable)
-      .set({ deleted: true, updatedAt: new Date() })
+      .set({ deleted: true, status: 'deleted', updatedAt: new Date() })
       .where(eq(productsTable.id, id)),
 }

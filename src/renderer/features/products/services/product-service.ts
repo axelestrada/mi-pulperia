@@ -27,11 +27,15 @@ export const productService = {
     await productAdapter.create(payload)
   },
 
-  async update(id: ProductDTO['id'], payload: Partial<ProductFormData>) {
+  async update(id: ProductDTO['id'], payload: ProductFormData) {
     await productAdapter.update(id, payload)
   },
 
   async remove(id: ProductDTO['id']) {
     await productAdapter.remove(id)
   },
+
+  async toggle(id: ProductDTO['id']) {
+    await productAdapter.toggle(id)
+  }
 }

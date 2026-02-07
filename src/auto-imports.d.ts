@@ -538,6 +538,7 @@ declare global {
   const useSyncExternalStore: typeof import('react').useSyncExternalStore
   const useToggleCategoryStatus: typeof import('./renderer/features/categories/hooks/use-toggle-category-status').useToggleCategoryStatus
   const useTogglePresentation: typeof import('./renderer/features/presentations/hooks/use-toggle-presentation').useTogglePresentation
+  const useToggleProduct: typeof import('./renderer/features/products/hooks/use-toggle-product').useToggleProduct
   const useTransition: typeof import('react').useTransition
   const useUpdateCategory: typeof import('./renderer/features/categories/hooks/use-update-category').useUpdateCategory
   const useUpdateCredit: typeof import('./renderer/features/credits/hooks/use-credits').useUpdateCredit

@@ -71,6 +71,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
   })
 
   const { mutateAsync: deleteProduct } = useDeleteProduct()
+  const { mutateAsync: toggleProduct } = useToggleProduct()
 
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
@@ -243,6 +244,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
                   </DropdownItem>
                   <DropdownItem
                     key="toggle"
+                    onPress={() => toggleProduct(product.id)}
                     startContent={
                       product.status === 'active' ? (
                         <IconSolarCloseCircleBoldDuotone
@@ -283,7 +285,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
           return cellValue?.toString()
       }
     },
-    [deleteProduct, onEdit]
+    [deleteProduct, onEdit, toggleProduct]
   )
 
   const topContent = useMemo(() => {

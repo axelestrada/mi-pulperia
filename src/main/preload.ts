@@ -16,7 +16,7 @@ import {
   InventoryMovementFilters,
 } from './domains/inventory/inventory-model'
 
-import { NewProductDTO, ProductDTO } from './domains/products/products-model'
+import { NewProductDTO, ProductDTO, UpdateProductDTO } from './domains/products/products-model'
 import { NewPresentationDTO } from './domains/presentations/presentations-model'
 import { PaginatedResult } from '../shared/types/pagination'
 import { PresentationsListFilters } from '../shared/types/presentations'
@@ -33,10 +33,12 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('products:list', filters),
     create: (product: NewProductDTO) =>
       ipcRenderer.invoke('products:create', product),
-    update: (id: SelectProduct['id'], product: Partial<SelectProduct>) =>
+    update: (id: SelectProduct['id'], product: UpdateProductDTO) =>
       ipcRenderer.invoke('products:update', id, product),
     remove: (id: SelectProduct['id']) =>
       ipcRenderer.invoke('products:remove', id),
+    toggle: (id: SelectProduct['id']) =>
+      ipcRenderer.invoke('products:toggle', id),
   },
   presentations: {
     list: (filters: PresentationsListFilters) =>

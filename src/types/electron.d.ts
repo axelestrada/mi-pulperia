@@ -187,7 +187,11 @@ import {
   InventoryMovementDTO,
   InventoryMovementFilters,
 } from 'main/domains/inventory/inventory-model'
-import { NewProductDTO, ProductDTO } from 'main/domains/products/products-model'
+import {
+  NewProductDTO,
+  ProductDTO,
+  UpdateProductDTO,
+} from 'main/domains/products/products-model'
 import { PaginatedResult } from 'main/domains/common/pagination'
 import {
   NewPresentationDTO,
@@ -210,13 +214,16 @@ declare global {
   interface Window {
     api: {
       products: {
-        list: (filters?: ProductsListFilters) => Promise<PaginatedResult<ProductDTO>>
+        list: (
+          filters?: ProductsListFilters
+        ) => Promise<PaginatedResult<ProductDTO>>
         create: (product: NewProductDTO) => Promise<void>
         update: (
           id: Product['id'],
-          product: Partial<Product>
+          product: UpdateProductDTO
         ) => Promise<Product>
         remove: (id: Product['id']) => Promise<void>
+        toggle: (id: Product['id']) => Promise<void>
       }
       presentations: {
         list: (

@@ -99,6 +99,14 @@ export const ProductsService = {
     })
   },
 
+  async toggle(id: SelectProduct['id']) {
+    if (!Number.isInteger(id)) {
+      throw new Error('ID inválido para el producto')
+    }
+
+    return ProductsRepository.toggle(id)
+  },
+
   async remove(id: SelectProduct['id']) {
     if (!Number.isInteger(id)) {
       throw new Error('ID inválido para el producto')

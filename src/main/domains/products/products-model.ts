@@ -9,7 +9,7 @@ export type ProductRow = {
   unitPrecision: number
 
   minStock: number
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'deleted'
   categoryId: number | null
   categoryName: string | null
   image: string | null
@@ -34,7 +34,7 @@ export const productDTOSchema = z.object({
   baseUnit: z.enum(['unit', 'lb', 'liter']),
   unitPrecision: z.number(),
   minStock: z.number(),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum(['active', 'inactive', 'deleted']),
   categoryId: z.number().nullable(),
   categoryName: z.string().nullable(),
   image: z.string().nullable(),

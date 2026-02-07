@@ -1,16 +1,10 @@
-type UpdateProductInput = {
-  id: number
-  data: ProductFormData
-}
-
-export const useUpdateProduct = () => {
+export const useToggleProduct = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: UpdateProductInput) =>
-      productService.update(id, data),
+    mutationFn: (id: number) => productService.toggle(id),
 
-    onSuccess: (_, { id }) => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({
         queryKey: productKeys.all,
       })
