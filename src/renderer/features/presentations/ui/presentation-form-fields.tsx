@@ -1,13 +1,32 @@
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+
+import { Input, Textarea, NumberInput, Select, SelectItem } from '@heroui/react'
+
 type Props = {
-  product: Product
+  product: ProductDTO
   mode: PresentationFormMode
 }
 
-export const PresentationFormFields = ({ product, mode }: Props) => {
-  const { control, watch, setValue, clearErrors } =
+export const PresentationFormFields = ({ product }: Props) => {
+  const { control, watch, clearErrors, resetField } =
     useFormContext<PresentationFormInput>()
 
   const factorType = watch('factorType')
+
+  const productsUnits = [
+    {
+      key: 'unit',
+      label: 'Unidad',
+    },
+    {
+      key: 'lb',
+      label: 'Libra',
+    },
+    {
+      key: 'liter',
+      label: 'Litro',
+    },
+  ]
 
   return (
     <>
@@ -16,179 +35,248 @@ export const PresentationFormFields = ({ product, mode }: Props) => {
       <Controller
         name="name"
         control={control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel>Nombre</FieldLabel>
-            <Input {...field} placeholder="Docena" />
-            {fieldState.error && <FieldError errors={[fieldState.error]} />}
-          </Field>
+        render={({
+          field: { name, value, onChange, onBlur, ref },
+          fieldState: { invalid, error },
+        }) => (
+          <Input
+            ref={ref}
+            isRequired
+            fullWidth
+            errorMessage={error?.message}
+            validationBehavior="aria"
+            isInvalid={invalid}
+            label="Nombre"
+            labelPlacement="outside-top"
+            placeholder="Docena"
+            name={name}
+            value={value}
+            onBlur={onBlur}
+            onChange={onChange}
+          />
         )}
       />
 
       <Controller
         name="description"
         control={control}
-        render={({ field: { value, ...field }, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel>Descripción</FieldLabel>
-            <Textarea
-              {...field}
-              value={value ?? ''}
-              placeholder="Docena de huevos de gallina"
-              className="min-h-20 resize-none"
-            />
-            {fieldState.error && <FieldError errors={[fieldState.error]} />}
-          </Field>
+        render={({
+          field: { name, value, onChange, onBlur, ref },
+          fieldState: { invalid, error },
+        }) => (
+          <Textarea
+            ref={ref}
+            errorMessage={error?.message}
+            disableAnimation
+            fullWidth
+            disableAutosize
+            classNames={{
+              input: 'min-h-[60px]',
+              inputWrapper: 'py-1.5',
+            }}
+            validationBehavior="aria"
+            isInvalid={invalid}
+            label="Descripción"
+            labelPlacement="outside-top"
+            placeholder="Huevos de gallina por docena"
+            name={name}
+            value={value ?? ''}
+            onBlur={onBlur}
+            onChange={onChange}
+          />
         )}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 w-full">
         <Controller
           name="salePrice"
           control={control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Precio de venta</FieldLabel>
-              <InputGroup>
-                <InputGroupAddon>L</InputGroupAddon>
-                <InputGroupInput
-                  {...field}
-                  value={(field.value as string) ?? ''}
-                  onChange={e => {
-                    field.onChange(e.target.value)
-                  }}
-                  placeholder="45"
-                />
-              </InputGroup>
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
+          render={({
+            field: { name, value, onChange, onBlur, ref },
+            fieldState: { invalid, error },
+          }) => (
+            <NumberInput
+              ref={ref}
+              fullWidth
+              errorMessage={error?.message}
+              validationBehavior="aria"
+              isInvalid={invalid}
+              label="Precio"
+              isRequired
+              labelPlacement="outside-top"
+              placeholder="22"
+              startContent={
+                <div className="pointer-events-none flex items-center">
+                  <span className="text-default-400 text-small">L</span>
+                </div>
+              }
+              name={name}
+              value={value ? Number(value) : undefined}
+              onBlur={onBlur}
+              onChange={onChange}
+            />
           )}
         />
 
         <Controller
           name="unit"
           control={control}
-          render={({ field: { onChange, ...field }, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Unidad</FieldLabel>
-              <Select
-                {...field}
-                onValueChange={onChange}
-                disabled={mode === 'edit'}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Seleccione una unidad"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unit">Unidad</SelectItem>
-                  <SelectItem value="lb">Libra</SelectItem>
-                  <SelectItem value="liter">Litro</SelectItem>
-                </SelectContent>
-              </Select>
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
+          render={({
+            field: { name, value, onChange, onBlur, ref },
+            fieldState: { invalid, error },
+          }) => (
+            <Select
+              ref={ref}
+              errorMessage={error?.message}
+              validationBehavior="aria"
+              isInvalid={invalid}
+              label="Unidad"
+              labelPlacement="outside-top"
+              placeholder="Seleccione una unidad"
+              name={name}
+              isRequired
+              fullWidth
+              selectedKeys={[value]}
+              onBlur={onBlur}
+              onSelectionChange={keys => onChange(keys.currentKey)}
+              disallowEmptySelection
+            >
+              {productsUnits.map(item => (
+                <SelectItem key={item.key}>{item.label}</SelectItem>
+              ))}
+            </Select>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 w-full">
         <Controller
           name="factorType"
           control={control}
-          render={({ field: { onChange, ...field }, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Tipo de factor</FieldLabel>
-              <Select
-                {...field}
-                onValueChange={value => {
-                  if (value === 'fixed') {
-                    setValue('factor', '', {
-                      shouldValidate: true,
-                    })
-                  } else {
-                    setValue('factor', 'n')
-                    clearErrors('factor')
-                  }
+          render={({
+            field: { name, value, onChange, onBlur, ref },
+            fieldState: { invalid, error },
+          }) => (
+            <Select
+              ref={ref}
+              errorMessage={error?.message}
+              validationBehavior="aria"
+              isInvalid={invalid}
+              label="Tipo de factor"
+              labelPlacement="outside-top"
+              placeholder="Seleccione un tipo de factor"
+              name={name}
+              isRequired
+              fullWidth
+              selectedKeys={[value]}
+              onBlur={onBlur}
+              onSelectionChange={keys => {
+                const value = keys.currentKey
+                onChange(value)
 
-                  onChange(value)
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Seleccione un factor"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fixed">Fijo</SelectItem>
-                  <SelectItem value="variable">Variable</SelectItem>
-                </SelectContent>
-              </Select>
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
+                resetField('factor', {
+                  defaultValue: undefined,
+                })
+                clearErrors('factor')
+              }}
+              disallowEmptySelection
+            >
+              <SelectItem key="fixed">Fijo</SelectItem>
+              <SelectItem key="variable">Variable</SelectItem>
+            </Select>
           )}
         />
 
         <Controller
           name="factor"
           control={control}
-          render={({ field: { value, ...field }, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Factor</FieldLabel>
-              <InputGroup>
-                <InputGroupAddon>x</InputGroupAddon>
-                <InputGroupInput
-                  {...field}
-                  value={(value as string) ?? ''}
-                  placeholder="12"
-                  disabled={factorType === 'variable'}
-                />
-                <InputGroupAddon align="inline-end">
-                  {UNIT_CONFIG[product.baseUnit].label}
-                </InputGroupAddon>
-              </InputGroup>
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
+          render={({
+            field: { name, value, onChange, onBlur, ref },
+            fieldState: { invalid, error },
+          }) => (
+            <NumberInput
+              ref={ref}
+              fullWidth
+              errorMessage={error?.message}
+              validationBehavior="aria"
+              isInvalid={invalid}
+              label="Factor"
+              isRequired
+              labelPlacement="outside-top"
+              placeholder={factorType === 'fixed' ? '12' : 'n'}
+              startContent={
+                <div className="pointer-events-none flex items-center">
+                  <span className="text-default-400 text-small">x</span>
+                </div>
+              }
+              endContent={
+                <div className="pointer-events-none flex items-center">
+                  <span className="text-default-400 text-small">
+                    {UNIT_CONFIG[product.baseUnit].label}
+                  </span>
+                </div>
+              }
+              name={name}
+              value={
+                factorType === 'fixed'
+                  ? value
+                    ? Number(value)
+                    : undefined
+                  : undefined
+              }
+              onBlur={onBlur}
+              onChange={onChange}
+            />
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 w-full">
         <Controller
           name="sku"
           control={control}
-          render={({ field: { value, onChange, ...field }, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>SKU</FieldLabel>
-              <Input
-                {...field}
-                value={value ?? ''}
-                onChange={e => {
-                  onChange(e.target.value.toUpperCase())
-                }}
-                placeholder="ARROZ-1KG"
-              />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
+          render={({
+            field: { name, value, onChange, onBlur, ref },
+            fieldState: { invalid, error },
+          }) => (
+            <Input
+              ref={ref}
+              errorMessage={error?.message}
+              validationBehavior="aria"
+              isInvalid={invalid}
+              label="SKU"
+              labelPlacement="outside-top"
+              placeholder="HUEVOS-DOCE"
+              fullWidth
+              name={name}
+              value={value}
+              onBlur={onBlur}
+              onChange={onChange}
+            />
           )}
         />
 
         <Controller
           name="barcode"
           control={control}
-          render={({ field: { value, ...field }, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Código de barras</FieldLabel>
-              <Input
-                {...field}
-                value={value ?? ''}
-                placeholder="7421234567890"
-              />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
+          render={({
+            field: { name, value, onChange, onBlur, ref },
+            fieldState: { invalid, error },
+          }) => (
+            <Input
+              ref={ref}
+              errorMessage={error?.message}
+              validationBehavior="aria"
+              isInvalid={invalid}
+              label="Código de barras"
+              labelPlacement="outside-top"
+              placeholder="0784562010652"
+              name={name}
+              fullWidth
+              value={value}
+              onBlur={onBlur}
+              onChange={onChange}
+            />
           )}
         />
       </div>

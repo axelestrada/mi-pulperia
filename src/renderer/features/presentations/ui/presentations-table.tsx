@@ -21,6 +21,7 @@ import {
   Selection,
   Tooltip,
   Chip,
+  useDisclosure,
 } from '@heroui/react'
 import { Presentation } from '../model/presentation-schema'
 import { cn } from '@/lib/utils'
@@ -68,6 +69,18 @@ export function PresentationsTable({ product }: Props) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [search, setSearch] = useState('')
+
+  const [presentationFormMode, setPresentationFormMode] =
+    useState<PresentationFormMode>('create')
+
+  const [selectedPresentation, setSelectedPresentation] =
+    useState<Presentation | null>(null)
+
+  const {
+    isOpen: isPresentationFormOpen,
+    onOpen: openPresentationForm,
+    onOpenChange: setIsPresentationFormOpen,
+  } = useDisclosure()
 
   const { data: presentations, isLoading } = usePresentationsByProduct(
     product.id
@@ -234,6 +247,11 @@ export function PresentationsTable({ product }: Props) {
                 >
                   <DropdownItem
                     key="edit"
+                    onPress={() => {
+                      setPresentationFormMode('edit')
+                      setSelectedPresentation(presentation)
+                      openPresentationForm()
+                    }}
                     startContent={
                       <IconSolarPenNewSquareBoldDuotone
                         className={iconClasses}
@@ -290,7 +308,7 @@ export function PresentationsTable({ product }: Props) {
           return cellValue?.toString()
       }
     },
-    [product, togglePresentation, deletePresentation]
+    [product, togglePresentation, deletePresentation, openPresentationForm]
   )
 
   const topContent = useMemo(() => {
@@ -370,6 +388,11 @@ export function PresentationsTable({ product }: Props) {
               endContent={<IconLucidePlus className="size-4" />}
               color="default"
               className="bg-foreground text-background"
+              onPress={() => {
+                setPresentationFormMode('create')
+                setSelectedPresentation(null)
+                openPresentationForm()
+              }}
             >
               Nueva Presentación
             </Button>
@@ -396,7 +419,14 @@ export function PresentationsTable({ product }: Props) {
         </div>
       </div>
     )
-  }, [statusOptions, visibleColumns, totalItems, search, pageSize])
+  }, [
+    statusOptions,
+    visibleColumns,
+    totalItems,
+    search,
+    pageSize,
+    openPresentationForm,
+  ])
 
   const bottomContent = (
     <div className="p-2 flex justify-end items-center">
@@ -412,39 +442,51 @@ export function PresentationsTable({ product }: Props) {
   )
 
   return (
-    <Table
-      isHeaderSticky
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: 'max-h-[382px]',
-      }}
-      selectionMode="none"
-      topContent={topContent}
-      topContentPlacement="outside"
-    >
-      <TableHeader columns={headerColumns}>
-        {column => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === 'actions' ? 'center' : 'start'}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        loadingContent={<Spinner />}
-        loadingState={isLoading ? 'loading' : 'idle'}
-        emptyContent={'No hay presentaciones'}
-        items={presentations ?? []}
+    <>
+      <Table
+        isHeaderSticky
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        classNames={{
+          wrapper: 'max-h-[382px]',
+        }}
+        selectionMode="none"
+        topContent={topContent}
+        topContentPlacement="outside"
       >
-        {item => (
-          <TableRow className="hover:bg-default-100" key={item.id}>
-            {columnKey => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        <TableHeader columns={headerColumns}>
+          {column => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          loadingContent={<Spinner />}
+          loadingState={isLoading ? 'loading' : 'idle'}
+          emptyContent={'No hay presentaciones'}
+          items={presentations ?? []}
+        >
+          {item => (
+            <TableRow className="hover:bg-default-100" key={item.id}>
+              {columnKey => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      <PresentationFormDialog
+        isOpen={isPresentationFormOpen}
+        onOpenChange={setIsPresentationFormOpen}
+        product={product}
+        presentation={selectedPresentation}
+        mode={presentationFormMode}
+      />
+    </>
   )
 }

@@ -1,7 +1,10 @@
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+import { Form, Button } from '@heroui/react'
+
 type Props = {
   mode: PresentationFormMode
-  product: Product
-  presentation?: Presentation
+  product: ProductDTO
+  presentation: Presentation | null
   onClose: () => void
 }
 
@@ -20,26 +23,36 @@ export function PresentationForm({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit}>
-        <FieldGroup>
-          <PresentationFormFields product={product} mode={mode} />
+      <Form
+        onSubmit={e => {
+          e.preventDefault()
+          form.handleSubmit(onSubmit)()
+        }}
+      >
+        <PresentationFormFields product={product} mode={mode} />
 
-          <Field orientation="horizontal" className="justify-end">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
+        <div className="flex justify-end gap-2 w-full py-4">
+          <Button
+            color="danger"
+            variant="light"
+            onPress={() => {
+              form.reset()
+              onClose()
+            }}
+          >
+            Cancelar
+          </Button>
 
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Spinner />}
-              {isSubmitting
-                ? 'Guardando...'
-                : mode === 'edit'
-                  ? 'Actualizar'
-                  : 'Guardar'}
-            </Button>
-          </Field>
-        </FieldGroup>
-      </form>
+          <Button
+            color="primary"
+            variant="shadow"
+            isLoading={isSubmitting}
+            type="submit"
+          >
+            {mode === 'edit' ? 'Actualizar' : 'Agregar'}
+          </Button>
+        </div>
+      </Form>
     </FormProvider>
   )
 }

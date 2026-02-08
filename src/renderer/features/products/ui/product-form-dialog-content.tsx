@@ -19,8 +19,8 @@ export const ProductFormDialogContent = ({ onClose, product }: Props) => {
       </ModalHeader>
       <ModalBody>
         <Form
-          onSubmit={() => {
-            console.log(form)
+          onSubmit={(e) => {
+            e.preventDefault()
             form.handleSubmit(onSubmit)()
           }}
         >
