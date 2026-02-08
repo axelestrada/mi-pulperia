@@ -36,7 +36,7 @@ export const presentationFormSchema = z
     z.object({
       ...baseSchema,
       factorType: z.literal('variable'),
-      factor: z.string().transform(() => null),
+      factor: z.coerce.string().transform(() => null),
     }),
   ])
   .transform(data => ({
