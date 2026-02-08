@@ -165,7 +165,7 @@ export function PresentationsTable({ product }: Props) {
         case 'factor':
           return (
             <Chip variant="flat" size="sm">
-              x{presentation.factor ?? 'Variable'}
+              {presentation.factor ? `x${presentation.factor}` : 'Variable'}
             </Chip>
           )
         case 'unit':

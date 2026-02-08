@@ -8,7 +8,7 @@ type Props = {
 }
 
 export const PresentationFormFields = ({ product }: Props) => {
-  const { control, watch, clearErrors, resetField } =
+  const { control, watch, clearErrors, setValue } =
     useFormContext<PresentationFormInput>()
 
   const factorType = watch('factorType')
@@ -174,9 +174,8 @@ export const PresentationFormFields = ({ product }: Props) => {
                 const value = keys.currentKey
                 onChange(value)
 
-                resetField('factor', {
-                  defaultValue: undefined,
-                })
+                setValue('factor', '')
+
                 clearErrors('factor')
               }}
               disallowEmptySelection
