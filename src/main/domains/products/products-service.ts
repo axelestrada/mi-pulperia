@@ -15,7 +15,6 @@ export const ProductsService = {
   async list(
     filters: ProductsListFilters = {}
   ): Promise<PaginatedResult<ProductDTO>> {
-    console.log('ProductsService.list called with filters:', filters)
     const { page = 1, pageSize = 20 } = filters
 
     const rows = await ProductsRepository.findAll({
