@@ -237,7 +237,7 @@ export const DashboardPage = () => {
         }
       />
 
-      <dl className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      <dl className="grid w-full grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
         {data.map(
           (
             { title, value, change, changeType, icon, trendChipPosition },
@@ -247,7 +247,7 @@ export const DashboardPage = () => {
               key={index}
               className="dark:border-default-100 border border-transparent"
             >
-              <div className="flex p-4">
+              <div className="flex py-4 px-2 xl:px-4">
                 <div
                   className={cn(
                     'mt-1 flex h-8 w-8 items-center justify-center rounded-md',
@@ -268,17 +268,17 @@ export const DashboardPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-y-2">
-                  <dt className="text-small text-default-500 mx-4 font-medium">
+                  <dt className="text-small text-default-500 mx-2 xl:mx-4 font-medium">
                     {title}
                   </dt>
-                  <dd className="text-default-700 px-4 text-2xl font-semibold">
+                  <dd className="text-default-700 px-2 xl:px-4 text-2xl font-semibold">
                     {value}
                   </dd>
                 </div>
 
                 {change && (
                   <Chip
-                    className={cn('absolute right-4', {
+                    className={cn('absolute right-2 xl:right-4', {
                       'top-4': trendChipPosition === 'top',
                       'bottom-4': trendChipPosition === 'bottom',
                     })}
