@@ -186,6 +186,9 @@ declare global {
   const IconSolarAddCircleBold: typeof import('~icons/solar/add-circle-bold.tsx').default
   const IconSolarAddCircleLineDuotone: typeof import('~icons/solar/add-circle-line-duotone.tsx').default
   const IconSolarAddCircleLinear: typeof import('~icons/solar/add-circle-linear.tsx').default
+  const IconSolarArrowRightDownLinear: typeof import('~icons/solar/arrow-right-down-linear.tsx').default
+  const IconSolarArrowRightLinear: typeof import('~icons/solar/arrow-right-linear.tsx').default
+  const IconSolarArrowRightUpLinear: typeof import('~icons/solar/arrow-right-up-linear.tsx').default
   const IconSolarBanknote2Linear: typeof import('~icons/solar/banknote2-linear.tsx').default
   const IconSolarBellOutline: typeof import('~icons/solar/bell-outline.tsx').default
   const IconSolarBillListLinear: typeof import('~icons/solar/bill-list-linear.tsx').default
@@ -198,6 +201,7 @@ declare global {
   const IconSolarCloseCircleBoldDuotone: typeof import('~icons/solar/close-circle-bold-duotone.tsx').default
   const IconSolarCopyLinear: typeof import('~icons/solar/copy-linear.tsx').default
   const IconSolarDocumentAddLinear: typeof import('~icons/solar/document-add-linear.tsx').default
+  const IconSolarHandMoneyLinear: typeof import('~icons/solar/hand-money-linear.tsx').default
   const IconSolarHome2Linear: typeof import('~icons/solar/home2-linear.tsx').default
   const IconSolarInfoCircleLinear: typeof import('~icons/solar/info-circle-linear.tsx').default
   const IconSolarLaptopMinimalisticLinear: typeof import('~icons/solar/laptop-minimalistic-linear.tsx').default
@@ -222,6 +226,7 @@ declare global {
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
   const IconSolarTuning2Linear: typeof import('~icons/solar/tuning2-linear.tsx').default
   const IconSolarUsersGroupTwoRoundedLinear: typeof import('~icons/solar/users-group-two-rounded-linear.tsx').default
+  const IconSolarWalletMoneyLinear: typeof import('~icons/solar/wallet-money-linear.tsx').default
   const IconSolarWidget2BoldDuotone: typeof import('~icons/solar/widget2-bold-duotone.tsx').default
   const IconSolarWidget2Outline: typeof import('~icons/solar/widget2-outline.tsx').default
   const Input: typeof import('./renderer/components/ui/input').Input
@@ -555,6 +560,7 @@ declare global {
   const useUpdatePurchaseOrder: typeof import('./renderer/features/purchase-orders/hooks/use-purchase-orders').useUpdatePurchaseOrder
   const useUpdateSupplier: typeof import('./renderer/features/suppliers/hooks/use-suppliers').useUpdateSupplier
   const useUploadImage: typeof import('./renderer/features/images/hooks/use-upload-image').useUploadImage
+  const users: typeof import('./renderer/features/pos/components/pos-interface').users
   const zodResolver: typeof import('@hookform/resolvers/zod').zodResolver
 }
 // for type re-export
@@ -593,7 +599,7 @@ declare global {
   export type { InventoryMovement } from './renderer/features/inventory/model/inventory-movement-schema'
   import('./renderer/features/inventory/model/inventory-movement-schema')
   // @ts-ignore
-  export type { POSFormData } from './renderer/features/pos/components/pos-interface'
+  export type { POSFormInput, POSFormData } from './renderer/features/pos/components/pos-interface'
   import('./renderer/features/pos/components/pos-interface')
   // @ts-ignore
   export type { PresentationFormInput, PresentationFormData, PresentationFormMode } from './renderer/features/presentations/model/presentation-form-schema'

@@ -14,6 +14,7 @@ export const ProductsHeader = ({ onCreate }: Props) => {
           onPress={onCreate}
           startContent={<IconLucidePlus />}
           color="default"
+          variant="shadow"
           className="bg-foreground text-background"
         >
           Agregar Producto

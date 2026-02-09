@@ -10,6 +10,7 @@ import {
   SelectItem,
   NumberInput,
 } from '@heroui/react'
+import { POSFormInput } from './pos-interface'
 
 type Props = {
   total: number
@@ -19,7 +20,7 @@ type Props = {
 export const PosChargeModal = ({ total, onSubmit }: Props) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
 
-  const { control, watch } = useFormContext<POSFormData>()
+  const { control, watch } = useFormContext<POSFormInput>()
 
   const {
     fields: paymentFields,
@@ -37,12 +38,12 @@ export const PosChargeModal = ({ total, onSubmit }: Props) => {
     total -
       payments
         .filter(p => p.method !== 'cash')
-        .reduce((sum, p) => sum + toCents(p.amount), 0)
+        .reduce((sum, p) => sum + toCents(Number(p.amount || 0)), 0)
   )
 
   const totalCash = payments
     .filter(p => p.method === 'cash')
-    .reduce((sum, p) => sum + toCents(p.amount), 0)
+    .reduce((sum, p) => sum + toCents(Number(p.amount || 0)), 0)
 
   const totalChange = totalCash - remaining
 
@@ -97,7 +98,7 @@ export const PosChargeModal = ({ total, onSubmit }: Props) => {
                         <NumberInput
                           placeholder="0.00"
                           step={10}
-                          value={field.value}
+                          value={field.value ? Number(field.value) : undefined}
                           onValueChange={value => {
                             field.onChange(value)
                           }}
@@ -125,8 +126,8 @@ export const PosChargeModal = ({ total, onSubmit }: Props) => {
                   className="border-2 border-dashed border-default-200 text-default-500"
                   onPress={() => {
                     appendPayment({
-                      amount: 0,
                       method: 'cash',
+                      amount: '',
                     })
                   }}
                 >

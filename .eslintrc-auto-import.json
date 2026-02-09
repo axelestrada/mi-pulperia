@@ -186,6 +186,9 @@
     "IconLucideTrash2": true,
     "IconLucideX": true,
     "IconSolarAddCircleLineDuotone": true,
+    "IconSolarArrowRightDownLinear": true,
+    "IconSolarArrowRightLinear": true,
+    "IconSolarArrowRightUpLinear": true,
     "IconSolarBanknote2Linear": true,
     "IconSolarBellOutline": true,
     "IconSolarBillListLinear": true,
@@ -198,6 +201,7 @@
     "IconSolarCloseCircleBoldDuotone": true,
     "IconSolarCopyLinear": true,
     "IconSolarDocumentAddLinear": true,
+    "IconSolarHandMoneyLinear": true,
     "IconSolarHome2Linear": true,
     "IconSolarInfoCircleLinear": true,
     "IconSolarLaptopMinimalisticLinear": true,
@@ -221,6 +225,7 @@
     "IconSolarTrashBinMinimalisticLineDuotone": true,
     "IconSolarTuning2Linear": true,
     "IconSolarUsersGroupTwoRoundedLinear": true,
+    "IconSolarWalletMoneyLinear": true,
     "IconSolarWidget2BoldDuotone": true,
     "IconSolarWidget2Outline": true,
     "Input": true,
@@ -266,6 +271,7 @@
     "NotFoundPage": true,
     "Outlet": true,
     "POSFormData": true,
+    "POSFormInput": true,
     "POSInterface": true,
     "PRODUCT_STATUSES": true,
     "PageHeader": true,
@@ -571,6 +577,7 @@
     "useUpdatePurchaseOrder": true,
     "useUpdateSupplier": true,
     "useUploadImage": true,
+    "users": true,
     "zodResolver": true
   }
 }

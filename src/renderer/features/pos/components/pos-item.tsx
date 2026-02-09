@@ -16,7 +16,7 @@ export const PosItem = ({ presentation, onClick }: Props) => {
     : `${presentation.productName} (${presentation.name})`
 
   return (
-    <Card isPressable shadow="sm" onPress={() => onClick(presentation)}>
+    <Card isPressable shadow="sm" onPress={() => onClick(presentation)} className='h-max min-h-full'>
       <CardBody className="overflow-visible p-0">
         <Image
           alt={title}

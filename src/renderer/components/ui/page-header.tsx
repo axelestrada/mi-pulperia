@@ -17,7 +17,7 @@ export const PageHeader = ({ title, description, actions }: Props) => {
         </p>
       </div>
 
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex items-center gap-3">{actions}</div>}
     </header>
   )
 }
