@@ -197,7 +197,7 @@ export const CustomersTable = () => {
         })
         setPaymentAmount('')
         setIsPaymentDialogOpen(false)
-        alert(`Abono de ${formatCurrency(amount)} registrado exitosamente`)
+        toast.success(`Abono de ${formatCurrency(amount)} registrado exitosamente`)
       }
     }
   }

@@ -160,7 +160,7 @@ export const CashSessionManager: React.FC<CashSessionManagerProps> = ({
       }
 
       // You can add toast notification here if you have a toast system
-      alert(errorMessage)
+      toast.error(errorMessage)
     }
   }
 

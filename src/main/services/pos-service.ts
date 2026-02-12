@@ -1,5 +1,8 @@
 import { POSRepository } from '../repositories/pos-repository'
-import { SalesRepository, CreateSaleData } from '../repositories/sales-repository'
+import {
+  SalesRepository,
+  CreateSaleData,
+} from '../repositories/sales-repository'
 import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { CashSessionsService } from './cash-sessions-service'
@@ -16,10 +19,8 @@ export interface POSSaleItem {
 }
 
 export interface POSPayment {
-  method: 'cash' | 'credit' | 'debit' | 'transfer' | 'check'
+  method: 'cash' | 'credit'
   amount: number
-  receivedAmount?: number
-  changeAmount?: number
   referenceNumber?: string
   authorizationCode?: string
   details?: string
@@ -47,7 +48,8 @@ export const POSService = {
       throw new Error('Invalid presentation id')
     }
 
-    const presentation = await POSRepository.getPresentationWithBatches(presentationId)
+    const presentation =
+      await POSRepository.getPresentationWithBatches(presentationId)
     if (!presentation) {
       throw new Error('Presentation not found or not available')
     }
@@ -88,13 +90,20 @@ export const POSService = {
       }
 
       // Get presentation with batches to validate availability
-      const presentation = await POSRepository.getPresentationWithBatches(item.presentationId)
+      const presentation = await POSRepository.getPresentationWithBatches(
+        item.presentationId
+      )
       if (!presentation) {
-        throw new Error(`Presentation with id ${item.presentationId} not found or not available`)
+        throw new Error(
+          `Presentation with id ${item.presentationId} not found or not available`
+        )
       }
 
       // Check if we have enough stock using FEFO
-      const allocation = await POSRepository.getFEFOAllocation(presentation.productId, item.quantity)
+      const allocation = await POSRepository.getFEFOAllocation(
+        presentation.productId,
+        item.quantity
+      )
       if (!allocation.isFullyAllocated) {
         throw new Error(
           `Insufficient stock for ${presentation.name}. Available: ${allocation.totalAllocated}, Requested: ${item.quantity}`
@@ -118,14 +127,13 @@ export const POSService = {
 
     let totalPaymentAmount = 0
     let totalCashReceived = 0
-    let totalChangeGiven = 0
 
     for (const payment of payments) {
       if (payment.amount <= 0) {
         throw new Error('Payment amount must be positive')
       }
 
-      if (!['cash', 'credit', 'debit', 'transfer', 'check'].includes(payment.method)) {
+      if (!['cash', 'credit'].includes(payment.method)) {
         throw new Error('Invalid payment method')
       }
 
@@ -133,35 +141,26 @@ export const POSService = {
 
       // Validate cash payments
       if (payment.method === 'cash') {
-        if (!payment.receivedAmount || payment.receivedAmount < payment.amount) {
-          throw new Error('Received cash amount must be at least the payment amount')
-        }
-
-        const expectedChange = payment.receivedAmount - payment.amount
-        if (payment.changeAmount !== expectedChange) {
-          throw new Error('Change amount calculation is incorrect')
-        }
-
-        totalCashReceived += payment.receivedAmount
-        totalChangeGiven += payment.changeAmount || 0
+        totalCashReceived += payment.amount
       }
 
       // Validate card/transfer payments
       if (['credit', 'debit', 'transfer'].includes(payment.method)) {
         if (!payment.referenceNumber?.trim()) {
-          throw new Error(`Reference number is required for ${payment.method} payments`)
+          throw new Error(
+            `Reference number is required for ${payment.method} payments`
+          )
         }
       }
     }
 
-    if (Math.abs(totalPaymentAmount - total) > 0.01) {
-      throw new Error('Total payment amount must equal sale total')
+    if (totalPaymentAmount < total) {
+      throw new Error('Total payment amount is less than the sale total')
     }
 
     return {
       totalPaymentAmount,
       totalCashReceived,
-      totalChangeGiven,
       isValid: true,
     }
   },
@@ -206,7 +205,7 @@ export const POSService = {
       sale: {
         saleNumber,
         customerId: input.customerId,
-        cashSessionId: openSession.id,
+        cashSessionId: Number(openSession.id),
         subtotal: input.subtotal,
         taxAmount: input.taxAmount || 0,
         discountAmount: input.discountAmount || 0,
@@ -224,7 +223,8 @@ export const POSService = {
 
       // For each batch in the allocation, create a sale item
       for (const batchAllocation of allocation.allocation) {
-        const itemTotalPrice = Math.round((item.unitPrice * batchAllocation.quantity) * 100) / 100
+        const itemTotalPrice =
+          Math.round(item.unitPrice * batchAllocation.quantity * 100) / 100
 
         saleData.items.push({
           presentationId: item.presentationId,
@@ -317,7 +317,10 @@ export const POSService = {
   async calculateChange(payments: POSPayment[]) {
     const cashPayments = payments.filter(p => p.method === 'cash')
 
-    const totalCashReceived = cashPayments.reduce((sum, p) => sum + (p.receivedAmount || 0), 0)
+    const totalCashReceived = cashPayments.reduce(
+      (sum, p) => sum + (p.amount || 0),
+      0
+    )
     const totalCashAmount = cashPayments.reduce((sum, p) => sum + p.amount, 0)
 
     return Math.max(0, totalCashReceived - totalCashAmount)
@@ -333,31 +336,38 @@ export const POSService = {
 
   // Get low stock presentations
   async getLowStockPresentations(threshold: number = 5) {
-    const presentations = await POSRepository.getAvailablePresentations({ limit: 1000 })
+    const presentations = await POSRepository.getAvailablePresentations({
+      limit: 1000,
+    })
 
-    return presentations.data.filter(presentation =>
-      presentation.availableQuantity <= threshold
+    return presentations.data.filter(
+      presentation => presentation.availableQuantity <= threshold
     )
   },
 
   // Get presentations expiring soon
   async getExpiringPresentations(daysFromNow: number = 7) {
-    const presentations = await POSRepository.getAvailablePresentations({ limit: 1000 })
+    const presentations = await POSRepository.getAvailablePresentations({
+      limit: 1000,
+    })
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() + daysFromNow)
 
     const expiring = []
 
     for (const presentation of presentations.data) {
-      const expiringBatches = presentation.batches.filter(batch =>
-        batch.expirationDate && batch.expirationDate <= cutoffDate
+      const expiringBatches = presentation.batches.filter(
+        batch => batch.expirationDate && batch.expirationDate <= cutoffDate
       )
 
       if (expiringBatches.length > 0) {
         expiring.push({
           ...presentation,
           expiringBatches,
-          totalExpiringQuantity: expiringBatches.reduce((sum, batch) => sum + batch.availableQuantity, 0),
+          totalExpiringQuantity: expiringBatches.reduce(
+            (sum, batch) => sum + batch.availableQuantity,
+            0
+          ),
         })
       }
     }

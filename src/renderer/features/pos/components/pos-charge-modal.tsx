@@ -5,7 +5,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
   Select,
   SelectItem,
   NumberInput,
@@ -14,11 +13,14 @@ import { POSFormInput } from './pos-interface'
 
 type Props = {
   total: number
-  onSubmit: (callback: () => void) => void
+  onSubmit: () => void
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  onOpenChange: (v: boolean) => void
 }
 
-export const PosChargeModal = ({ total, onSubmit }: Props) => {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure()
+export const PosChargeModal = ({ total, onSubmit, isOpen, onOpen, onOpenChange }: Props) => {
 
   const { control, watch } = useFormContext<POSFormInput>()
 
@@ -94,10 +96,12 @@ export const PosChargeModal = ({ total, onSubmit }: Props) => {
                     <Controller
                       control={control}
                       name={`payments.${index}.amount`}
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <NumberInput
                           placeholder="0.00"
                           step={10}
+                          errorMessage={fieldState.error?.message}
+                          isInvalid={!!fieldState.error}
                           value={field.value ? Number(field.value) : undefined}
                           onValueChange={value => {
                             field.onChange(value)
@@ -148,13 +152,7 @@ export const PosChargeModal = ({ total, onSubmit }: Props) => {
                 <Button color="danger" variant="light" onPress={onClose}>
                   Cancelar
                 </Button>
-                <Button
-                  color="primary"
-                  onPress={() => {
-                    onSubmit(onClose)
-                  }}
-                  variant="shadow"
-                >
+                <Button color="primary" variant="shadow" onPress={onSubmit} type='submit'>
                   Finalizar Venta
                 </Button>
               </ModalFooter>

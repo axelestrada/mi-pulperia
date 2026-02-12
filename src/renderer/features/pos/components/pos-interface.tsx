@@ -23,6 +23,8 @@ import {
   SelectItem,
   SelectedItems,
   Avatar,
+  Form,
+  useDisclosure,
 } from '@heroui/react'
 import { PosChargeModal } from './pos-charge-modal'
 
@@ -40,9 +42,11 @@ const saleItemSchema = z.object({
 
 const paymentMethodSchema = z.object({
   method: z.enum(['cash', 'credit']),
-  amount: z.coerce.number().min(0.01, 'Must be at least 0.01'),
-  receivedAmount: z.number().min(0, 'Cannot be negative').optional(),
-  changeAmount: z.number().min(0, 'Cannot be negative').optional(),
+  amount: z.coerce
+    .number({
+      error: 'Ingrese un monto válido',
+    })
+    .transform(v => toCents(v)),
   referenceNumber: z.string().optional(),
   authorizationCode: z.string().optional(),
   details: z.string().optional(),
@@ -285,6 +289,15 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
 
+  const formRef = React.useRef<HTMLFormElement>(null)
+
+  const {
+    isOpen: isChargeModalOpen,
+    onOpen: onOpenChargeModal,
+    onClose: onCloseChargeModal,
+      onOpenChange: onChargeModalOpenChange,
+  } = useDisclosure()
+
   // Queries
   const { data: openSession } = useCurrentOpenSession()
   const { data: presentationsData } = useAvailablePresentations({
@@ -346,12 +359,12 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     const total = subtotal + taxAmount
 
     const totalPayments = payments.reduce(
-      (sum, payment) => sum + Number( payment.amount || 0),
+      (sum, payment) => sum + Number(payment.amount || 0),
       0
     )
     const totalCash = payments
       .filter(p => p.method === 'cash')
-      .reduce((sum, p) => sum + (p.receivedAmount || 0), 0)
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0)
 
     const totalChange = payments
       .filter(p => p.method !== 'cash')
@@ -402,15 +415,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
   }
 
   // Submit sale
-  const onSubmit = async (data: POSFormData, callback?: () => void) => {
+  const onSubmit = async (data: POSFormData) => {
     console.log('Submitting sale', data)
     if (!openSession) {
-      alert('No hay una caja abierta')
-      return
-    }
-
-    if (Math.abs(totals.balance) > 0.01) {
-      alert('El total de pagos debe igualar el total de la venta')
+      toast.error('No hay una caja abierta')
       return
     }
 
@@ -428,19 +436,16 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
       const result = await createSale.mutateAsync(saleInput)
 
-      // Reset form
       form.reset({
         items: [],
         payments: [],
       })
 
-      callback?.()
-
-      alert('Venta realizada exitosamente')
+      onCloseChargeModal()
       onSaleComplete?.(result.sale?.id || result.id)
     } catch (error) {
       console.error('Error creating sale:', error)
-      alert('Error al procesar la venta: ' + (error as Error).message)
+      toast.error('Error al procesar la venta: ' + (error as Error).message)
     }
   }
 
@@ -463,7 +468,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
   return (
     <div className="grid grid-cols-[2fr_1fr] gap-6 max-h-[calc(100dvh-84px)]">
       <div className="space-y-4 flex-col flex h-[calc(100dvh-84px)]">
-        <div className="flex items-center gap-3">
+        <div className="grid items-center grid-cols-[1fr_auto] gap-3">
           <Input
             placeholder="Buscar producto, SKU o código de barras..."
             startContent={<IconSolarMinimalisticMagniferLineDuotone />}
@@ -473,6 +478,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
           />
 
           <CategorySelect
+            fullWidth={false}
             value={selectedCategory}
             placeholder="Todas las categorías"
             onSelectionChange={key => setSelectedCategory(Number(key))}
@@ -557,15 +563,18 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
         <Divider />
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col w-full">
           <FormProvider {...form}>
-            <form
-              onSubmit={form.handleSubmit(data => {
-                onSubmit(data)
-              })}
-              className="flex flex-col h-[calc(100dvh-220px)]"
+            <Form
+              ref={formRef}
+              onSubmit={e => {
+                e.preventDefault()
+                console.log('form', form)
+                form.handleSubmit(onSubmit)()
+              }}
+              className="flex flex-col h-[calc(100dvh-220px)] w-full"
             >
-              <div className="flex flex-col mb-4 flex-1 overflow-y-auto h-full">
+              <div className="flex flex-col mb-4 flex-1 w-full overflow-y-auto h-full">
                 {itemFields.length === 0 ? (
                   <div className="text-center py-8 flex-1 flex items-center justify-center flex-col">
                     <IconSolarCartCrossLineDuotone className="size-12 mb-2" />
@@ -606,7 +615,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
               <Divider />
 
-              <div className="space-y-4 mt-2">
+              <div className="space-y-4 mt-2 w-full">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <p>Subtotal:</p>
@@ -633,13 +642,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
                 <div className="space-y-3">
                   <PosChargeModal
                     total={totals.total}
-                    onSubmit={callback => {
-                      console.log(form)
-
-                      form.handleSubmit(data => {
-                        onSubmit(data, callback)
-                      })
+                    onSubmit={() => {
+                      formRef.current?.requestSubmit()
                     }}
+                    isOpen={isChargeModalOpen}
+                    onClose={onCloseChargeModal}
+                    onOpenChange={onChargeModalOpenChange}
+                    onOpen={onOpenChargeModal}
                   />
 
                   <Button
@@ -653,7 +662,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
                   </Button>
                 </div>
               </div>
-            </form>
+            </Form>
           </FormProvider>
         </div>
       </div>

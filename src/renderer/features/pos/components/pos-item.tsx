@@ -16,7 +16,15 @@ export const PosItem = ({ presentation, onClick }: Props) => {
     : `${presentation.productName} (${presentation.name})`
 
   return (
-    <Card isPressable shadow="sm" onPress={() => onClick(presentation)} className='h-max min-h-full'>
+    <Card
+      isPressable
+      shadow="sm"
+      onPress={() => onClick(presentation)}
+      className="h-max min-h-full"
+      classNames={{
+        body: 'flex-none',
+      }}
+    >
       <CardBody className="overflow-visible p-0">
         <Image
           alt={title}
@@ -28,7 +36,7 @@ export const PosItem = ({ presentation, onClick }: Props) => {
           width="100%"
         />
       </CardBody>
-      <CardFooter className="text-small text-left flex-col gap-1 items-start h-full justify-between">
+      <CardFooter className="text-small text-left flex-col gap-1 items-start h-full flex-1 justify-between">
         <b>{title}</b>
         <div className="flex justify-between items-center w-full">
           <p className="text-default-500">
