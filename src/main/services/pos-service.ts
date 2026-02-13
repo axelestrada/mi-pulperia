@@ -143,15 +143,6 @@ export const POSService = {
       if (payment.method === 'cash') {
         totalCashReceived += payment.amount
       }
-
-      // Validate card/transfer payments
-      if (['credit', 'debit', 'transfer'].includes(payment.method)) {
-        if (!payment.referenceNumber?.trim()) {
-          throw new Error(
-            `Reference number is required for ${payment.method} payments`
-          )
-        }
-      }
     }
 
     if (totalPaymentAmount < total) {

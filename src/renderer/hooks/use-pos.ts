@@ -146,12 +146,10 @@ export const usePresentationWithBatches = (presentationId: number) => {
   })
 }
 
-export const useSearchByCode = (code: string) => {
-  return useQuery({
-    queryKey: posKeys.searchByCode(code),
-    queryFn: (): Promise<POSPresentation | undefined> =>
+export const useSearchByCode = () => {
+  return useMutation({
+    mutationFn: (code: string): Promise<POSPresentation | undefined> =>
       window.electron.ipcRenderer.invoke('pos:searchByCode', code),
-    enabled: !!code && code.length >= 3,
   })
 }
 

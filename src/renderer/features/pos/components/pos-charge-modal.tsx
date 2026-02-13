@@ -1,13 +1,13 @@
 import {
   Button,
   Modal,
-  ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   Select,
   SelectItem,
   NumberInput,
+  Form,
 } from '@heroui/react'
 import { POSFormInput } from './pos-interface'
 
@@ -20,8 +20,13 @@ type Props = {
   onOpenChange: (v: boolean) => void
 }
 
-export const PosChargeModal = ({ total, onSubmit, isOpen, onOpen, onOpenChange }: Props) => {
-
+export const PosChargeModal = ({
+  total,
+  onSubmit,
+  isOpen,
+  onOpen,
+  onOpenChange,
+}: Props) => {
   const { control, watch } = useFormContext<POSFormInput>()
 
   const {
@@ -49,6 +54,8 @@ export const PosChargeModal = ({ total, onSubmit, isOpen, onOpen, onOpenChange }
 
   const totalChange = totalCash - remaining
 
+  const formRef = useRef<HTMLFormElement>(null)
+
   return (
     <>
       <Button
@@ -68,14 +75,18 @@ export const PosChargeModal = ({ total, onSubmit, isOpen, onOpen, onOpenChange }
               <ModalHeader className="flex flex-col gap-1">
                 Cobrar Venta
               </ModalHeader>
-              <ModalBody>
-                <div className="bg-default-50 p-4 text-center rounded-large space-y-1">
+              <Form
+                onSubmit={onSubmit}
+                ref={formRef}
+                className="flex flex-1 flex-col gap-3 px-6 py-2"
+              >
+                <div className="bg-default-50 p-4 text-center rounded-large space-y-1 w-full">
                   <p className="text-default-500 text-small">Total a Cobrar</p>
                   <b className="text-3xl">{formatCurrency(fromCents(total))}</b>
                 </div>
 
                 {paymentFields.map((field, index) => (
-                  <div className="flex gap-3" key={field.id}>
+                  <div className="flex gap-3 items-start" key={field.id}>
                     <Controller
                       control={control}
                       name={`payments.${index}.method`}
@@ -99,7 +110,6 @@ export const PosChargeModal = ({ total, onSubmit, isOpen, onOpen, onOpenChange }
                       render={({ field, fieldState }) => (
                         <NumberInput
                           placeholder="0.00"
-                          step={10}
                           errorMessage={fieldState.error?.message}
                           isInvalid={!!fieldState.error}
                           value={field.value ? Number(field.value) : undefined}
@@ -140,19 +150,23 @@ export const PosChargeModal = ({ total, onSubmit, isOpen, onOpen, onOpenChange }
                 </Button>
 
                 {totalChange > 0 && (
-                  <div className="bg-success-50 p-4 text-center rounded-large space-y-1">
+                  <div className="bg-success-50 p-4 text-center rounded-large space-y-1 w-full">
                     <p className="text-default-500 text-small">Cambio</p>
                     <b className="text-xl text-success-600">
                       {formatCurrency(fromCents(totalChange))}
                     </b>
                   </div>
                 )}
-              </ModalBody>
+              </Form>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Cancelar
                 </Button>
-                <Button color="primary" variant="shadow" onPress={onSubmit} type='submit'>
+                <Button
+                  color="primary"
+                  variant="shadow"
+                  onPress={() => formRef.current?.requestSubmit()}
+                >
                   Finalizar Venta
                 </Button>
               </ModalFooter>

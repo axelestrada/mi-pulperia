@@ -6,14 +6,15 @@
   "version": "0.4.10",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "build:frontend": "vite build",
     "build:electron": "npm run build:frontend && electron-builder",
     "release": "npm run build:frontend && electron-builder --publish always",
-    "db:generate": "npx drizzle-kit generate"
+    "db:generate": "npx drizzle-kit generate",
+    "postinstall": "npx electron-rebuild -f"
   },
   "dependencies": {
     "@heroui/react": "^2.8.7",

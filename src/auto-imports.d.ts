@@ -173,15 +173,18 @@ declare global {
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideChevronDown: typeof import('~icons/lucide/chevron-down.tsx').default
   const IconLucideChevronsUpDown: typeof import('~icons/lucide/chevrons-up-down.tsx').default
+  const IconLucideCircleCheck: typeof import('~icons/lucide/circle-check.tsx').default
   const IconLucideEdit: typeof import('~icons/lucide/edit.tsx').default
   const IconLucideFolderOpen: typeof import('~icons/lucide/folder-open.tsx').default
   const IconLucideHistory: typeof import('~icons/lucide/history.tsx').default
+  const IconLucideInfo: typeof import('~icons/lucide/info.tsx').default
   const IconLucideMoreHorizontal: typeof import('~icons/lucide/more-horizontal.tsx').default
   const IconLucidePackage: typeof import('~icons/lucide/package.tsx').default
   const IconLucidePlus: typeof import('~icons/lucide/plus.tsx').default
   const IconLucideSearch: typeof import('~icons/lucide/search.tsx').default
   const IconLucideTrash: typeof import('~icons/lucide/trash.tsx').default
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
+  const IconLucideTriangleAlert: typeof import('~icons/lucide/triangle-alert.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
   const IconSolarAddCircleBold: typeof import('~icons/solar/add-circle-bold.tsx').default
   const IconSolarAddCircleLineDuotone: typeof import('~icons/solar/add-circle-line-duotone.tsx').default
@@ -204,6 +207,7 @@ declare global {
   const IconSolarHandMoneyLinear: typeof import('~icons/solar/hand-money-linear.tsx').default
   const IconSolarHome2Linear: typeof import('~icons/solar/home2-linear.tsx').default
   const IconSolarInfoCircleLinear: typeof import('~icons/solar/info-circle-linear.tsx').default
+  const IconSolarInfoCircleOutline: typeof import('~icons/solar/info-circle-outline.tsx').default
   const IconSolarLaptopMinimalisticLinear: typeof import('~icons/solar/laptop-minimalistic-linear.tsx').default
   const IconSolarMagniferOutline: typeof import('~icons/solar/magnifer-outline.tsx').default
   const IconSolarMenuDotsLinear: typeof import('~icons/solar/menu-dots-linear.tsx').default
@@ -217,6 +221,7 @@ declare global {
   const IconSolarScooterLinear: typeof import('~icons/solar/scooter-linear.tsx').default
   const IconSolarSettingsMinimalisticLinear: typeof import('~icons/solar/settings-minimalistic-linear.tsx').default
   const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
+  const IconSolarShieldWarningLineDuotone: typeof import('~icons/solar/shield-warning-line-duotone.tsx').default
   const IconSolarSiderbarLineDuotone: typeof import('~icons/solar/siderbar-line-duotone.tsx').default
   const IconSolarSirenRoundedLineDuotone: typeof import('~icons/solar/siren-rounded-line-duotone.tsx').default
   const IconSolarSortHorizontalLinear: typeof import('~icons/solar/sort-horizontal-linear.tsx').default
