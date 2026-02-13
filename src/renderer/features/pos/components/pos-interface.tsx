@@ -238,6 +238,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       })
 
       onCloseChargeModal()
+      toast.success('Venta realizada exitosamente', {
+        description: `Venta #${result.sale?.id || result.id}`,
+      })
       onSaleComplete?.(result.sale?.id || result.id)
     } catch (error) {
       console.error('Error creating sale:', error)

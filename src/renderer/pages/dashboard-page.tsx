@@ -10,7 +10,7 @@ import { Button, Select, SelectItem, Card, Chip, cn } from '@heroui/react'
 const data = [
   {
     title: 'Ventas de hoy',
-    value: 'L 2,534.00',
+    value: 'L 0.00',
     change: '33%',
     changeType: 'positive',
     trendChipPosition: 'top',
@@ -18,7 +18,7 @@ const data = [
   },
   {
     title: 'Ganancia de hoy',
-    value: 'L 639.25',
+    value: 'L 0.00',
     change: '0.0%',
     changeType: 'neutral',
     trendChipPosition: 'top',
@@ -26,14 +26,14 @@ const data = [
   },
   {
     title: 'Stock bajo',
-    value: 5,
+    value: 0,
     changeType: 'negative',
     trendChipPosition: 'top',
     icon: <IconSolarBoxLinear />,
   },
   {
     title: 'Créditos totales',
-    value: 'L 1,250.00',
+    value: 'L 0.00',
     changeType: 'negative',
     trendChipPosition: 'top',
     icon: <IconSolarBoxLinear />,
