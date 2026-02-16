@@ -1,36 +1,39 @@
-import React, { useState } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-import AvatarMale from '@/assets/images/avatar-male.png'
-
 import {
-  useAvailablePresentations,
-  useCreatePOSSale,
-  POSPresentation,
-  CreatePOSSaleInput,
-  useSearchByCode,
-} from '../../../hooks/use-pos'
-import { useCurrentOpenSession } from '../../../hooks/use-cash-sessions'
-import { formatCurrency } from '../../../../shared/utils/formatCurrency'
-import {
-  Divider,
-  Input,
-  Button,
-  Select,
-  SelectItem,
-  SelectedItems,
   Avatar,
-  Form,
-  useDisclosure,
+  Button,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
+  Divider,
+  Form,
+  Input,
+  Select,
+  type SelectedItems,
+  SelectItem,
+  useDisclosure,
 } from '@heroui/react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import React, { useState } from 'react'
+import { useFieldArray, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import AvatarMale from '@/assets/images/avatar-male.png'
+import {
+  type Customer,
+  useActiveCustomersForSelection,
+} from '@/hooks/use-customers'
+import { formatCurrency } from '../../../../shared/utils/formatCurrency'
+import { useCurrentOpenSession } from '../../../hooks/use-cash-sessions'
+import {
+  type CreatePOSSaleInput,
+  type POSPresentation,
+  useAvailablePresentations,
+  useCreatePOSSale,
+  useSearchByCode,
+} from '../../../hooks/use-pos'
 import { PosChargeModal } from './pos-charge-modal'
-import { Customer, useActiveCustomersForSelection } from '@/hooks/use-customers'
 
 // Form validation schemas
 const saleItemSchema = z.object({
@@ -422,9 +425,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
         <div className="flex-1 flex flex-col w-full">
           <FormProvider {...form}>
-            <Form
-              className="flex flex-col h-[calc(100dvh-220px)] w-full"
-            >
+            <Form className="flex flex-col h-[calc(100dvh-220px)] w-full">
               <div className="flex flex-col mb-4 flex-1 w-full overflow-y-auto h-full">
                 {itemFields.length === 0 ? (
                   <div className="text-center py-8 flex-1 flex items-center justify-center flex-col">
