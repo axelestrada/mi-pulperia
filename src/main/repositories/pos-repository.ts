@@ -1,10 +1,9 @@
+import { and, asc, desc, eq, gt, like, or, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { eq, and, or, desc, asc, gt, sql, like } from 'drizzle-orm'
-
-import { presentationsTable } from '../db/schema/presentations'
-import { productsTable } from '../db/schema/products'
 import { categoriesTable } from '../db/schema/categories'
 import { inventoryBatchesTable } from '../db/schema/inventory-batches'
+import { presentationsTable } from '../db/schema/presentations'
+import { productsTable } from '../db/schema/products'
 
 export interface POSFilters {
   search?: string
@@ -62,7 +61,7 @@ export const POSRepository = {
       eq(presentationsTable.deleted, false),
       eq(productsTable.deleted, false),
       eq(productsTable.status, 'active'),
-      eq(presentationsTable.status, 'active')
+      eq(presentationsTable.status, 'active'),
     ]
 
     if (search) {
@@ -83,19 +82,28 @@ export const POSRepository = {
     }
 
     // Build order by
-    const getOrderByColumn = () => {
+    const getOrderByColumns = () => {
       switch (sortBy) {
         case 'salePrice':
-          return presentationsTable.salePrice
+          return [categoriesTable.name, presentationsTable.salePrice]
+
         case 'createdAt':
-          return presentationsTable.createdAt
+          return [categoriesTable.name, presentationsTable.createdAt]
+
         default:
-          return presentationsTable.name
+          return [
+            categoriesTable.name,
+            productsTable.name,
+            presentationsTable.name,
+          ]
       }
     }
 
-    const orderBy =
-      sortOrder === 'desc' ? desc(getOrderByColumn()) : asc(getOrderByColumn())
+    const orderColumns = getOrderByColumns()
+
+    const orderBy = orderColumns.map(column =>
+      sortOrder === 'desc' ? desc(column) : asc(column)
+    )
 
     // First get the presentations with their basic info and total available quantity
     const presentationsQuery = db
@@ -153,7 +161,7 @@ export const POSRepository = {
         categoriesTable.id,
         categoriesTable.name
       )
-      .orderBy(orderBy)
+      .orderBy(...orderBy)
       .limit(limit)
       .offset(offset)
 
