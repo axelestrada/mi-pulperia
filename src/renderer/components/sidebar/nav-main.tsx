@@ -1,11 +1,13 @@
 'use client'
-1 
-import { ReactElement } from 'react'
+1
+
+import type { ReactElement } from 'react'
 
 export type INavMainSubItem = {
   title: string
   url: string
   icon: ReactElement
+  shortcut?: string
 }
 
 export type INavMainItem = {

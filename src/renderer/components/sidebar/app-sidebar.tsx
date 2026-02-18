@@ -1,4 +1,4 @@
-import * as React from 'react'
+import type * as React from 'react'
 
 import { Sidebar } from '@/components/ui/sidebar'
 
@@ -10,31 +10,43 @@ const data = {
   },
   navMain: [
     {
-      title: 'Panel Principal',
+      title: 'Panel principal',
       url: '/',
       icon: <IconSolarHome2Linear className="size-6" />,
     },
     {
-      title: 'Punto de Venta',
+      title: 'Punto de venta',
       shortcut: 'F2',
       url: 'pos',
       icon: <IconSolarLaptopMinimalisticLinear className="size-6" />,
     },
     {
-      title: 'Clientes',
-      url: 'customers',
-      icon: <IconSolarUsersGroupTwoRoundedLinear className="size-6" />,
-    },
-    {
-      title: 'Productos',
-      url: 'products',
-      icon: <IconSolarBoxLinear className="size-6" />,
+      title: 'Ventas',
+      url: 'sales',
+      icon: <IconSolarWalletMoneyLinear className="size-6" />,
       isActive: true,
       items: [
         {
-          title: 'Lista de Productos',
+          title: 'Historial',
+          url: 'sales',
+          icon: <IconSolarHistoryLinear className="size-5" />,
+        },
+        {
+          title: 'Devoluciones',
+          url: 'returns',
+          icon: <IconSolarRefreshSquareLinear className="size-5" />,
+        },
+      ],
+    },
+    {
+      title: 'Catálogo',
+      url: 'products',
+      icon: <IconSolarClipboardListLinear className="size-6" />,
+      items: [
+        {
+          title: 'Lista de productos',
           url: 'products',
-          icon: <IconSolarBoxMinimalisticLinear className="size-5" />,
+          icon: <IconSolarBoxLinear className="size-5" />,
         },
         {
           title: 'Categorías',
@@ -42,19 +54,39 @@ const data = {
           icon: <IconSolarWidget2Outline className="size-5" />,
         },
         {
-          title: 'Inventario',
+          title: 'Promociones',
+          url: 'promotions',
+          icon: <IconSolarSaleLinear className="size-5" />,
+        },
+      ],
+    },
+    {
+      title: 'Inventario',
+      url: 'inventory',
+      icon: <IconSolarDocumentAddLinear className="size-6" />,
+      items: [
+        {
+          title: 'Stock',
           url: 'inventory',
           icon: <IconSolarChecklistMinimalisticLinear className="size-5" />,
         },
-        {
-          title: 'Ordenes de Compra',
-          url: 'purchase-orders',
-          icon: <IconSolarBillListLinear className="size-5" />,
-        },
+
         {
           title: 'Ajustes y Merma',
           url: 'adjustments',
           icon: <IconSolarSettingsMinimalisticLinear className="size-5" />,
+        },
+      ],
+    },
+    {
+      title: 'Compras',
+      url: 'purchase-orders',
+      icon: <IconSolarMoneyBagLinear className="size-6" />,
+      items: [
+        {
+          title: 'Ordenes de Compra',
+          url: 'purchase-orders',
+          icon: <IconSolarBillListLinear className="size-5" />,
         },
         {
           title: 'Proveedores',
@@ -64,24 +96,41 @@ const data = {
       ],
     },
     {
-      title: 'Créditos',
+      title: 'Finanazas',
       url: 'credits',
-      icon: <IconSolarBanknote2Linear className="size-6" />,
+      icon: <IconSolarBanknoteLinear className="size-6" />,
+      items: [
+        {
+          title: 'Créditos',
+          url: 'credits',
+          icon: <IconSolarBanknote2Linear className="size-5" />,
+        },
+        {
+          title: 'Gastos',
+          url: 'expenses',
+          icon: <IconSolarDocumentAddLinear className="size-5" />,
+        },
+        {
+          title: 'Caja',
+          url: 'cash',
+          icon: <IconSolarSafe2Linear className="size-5" />,
+        },
+      ],
     },
     {
-      title: 'Gastos',
-      url: 'expenses',
-      icon: <IconSolarDocumentAddLinear className="size-6" />,
+      title: 'Clientes',
+      url: 'customers',
+      icon: <IconSolarUsersGroupTwoRoundedLinear className="size-6" />,
+    },
+    {
+      title: 'Recargas',
+      url: 'top-ups',
+      icon: <IconSolarSmartphoneUpdateLinear className="size-6" />,
     },
     {
       title: 'Reportes',
       url: 'reports',
       icon: <IconSolarPresentationGraphLinear className="size-6" />,
-    },
-    {
-      title: 'Caja',
-      url: 'cash',
-      icon: <IconSolarSafe2Linear className="size-6" />,
     },
   ],
   navSecondary: [

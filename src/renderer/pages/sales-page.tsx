@@ -279,7 +279,7 @@ export const SalesPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(summary.totalRevenue)}
+                {formatCurrency(fromCents(summary.totalRevenue))}
               </div>
             </CardContent>
           </Card>
@@ -293,7 +293,7 @@ export const SalesPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(summary.averageSaleAmount)}
+                {formatCurrency(fromCents(summary.averageSaleAmount))}
               </div>
             </CardContent>
           </Card>
@@ -367,7 +367,9 @@ export const SalesPage = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Todos los estados</SelectItem>
+                            <SelectItem value="all">
+                              Todos los estados
+                            </SelectItem>
                             <SelectItem value="completed">
                               Completada
                             </SelectItem>
@@ -494,12 +496,12 @@ export const SalesPage = () => {
                         )}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {formatCurrency(sale.total)}
+                        {formatCurrency(fromCents(sale.total))}
                       </TableCell>
                       <TableCell>{getStatusBadge(sale.status)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger>
                             <Button variant="ghost" size="sm">
                               •••
                             </Button>
@@ -598,7 +600,7 @@ export const SalesPage = () => {
                       {product.totalQuantity} unidades
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {formatCurrency(product.totalRevenue)}
+                      {formatCurrency(fromCents(product.totalRevenue))}
                     </p>
                   </div>
                 </div>
@@ -621,6 +623,7 @@ export const SalesPage = () => {
                 <div>
                   <p className="text-sm font-medium">Número de Venta</p>
                   <p>{selectedSale.saleNumber}</p>
+                  {/* TODO: poner aqui un boton para copiar el numero de la venta */}
                 </div>
                 <div>
                   <p className="text-sm font-medium">Fecha</p>
@@ -646,32 +649,36 @@ export const SalesPage = () => {
               <div>
                 <h4 className="font-medium mb-2">Artículos</h4>
                 <div className="space-y-2">
-                  {selectedSale.items?.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                    >
-                      <div>
-                        <p className="font-medium">{item.presentationName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.productName}
-                        </p>
-                        <p className="text-xs">
-                          {item.quantity} × {formatCurrency(item.unitPrice)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">
-                          {formatCurrency(item.totalPrice)}
-                        </p>
-                        {item.discount > 0 && (
-                          <p className="text-xs text-green-600">
-                            Desc: -{formatCurrency(item.discount)}
+                  {selectedSale.items?.map((item, index) => {
+                    const displayName = `${item.productName} (${item.presentationName})`
+
+                    return (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                      >
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {displayName}
                           </p>
-                        )}
+                          <p className="text-xs">
+                            {item.quantity} ×{' '}
+                            {formatCurrency(fromCents(item.unitPrice))}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">
+                            {formatCurrency(fromCents(item.totalPrice))}
+                          </p>
+                          {item.discount > 0 && (
+                            <p className="text-xs text-green-600">
+                              Desc: -{formatCurrency(item.discount)}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
@@ -689,13 +696,17 @@ export const SalesPage = () => {
                       <span className="capitalize">{payment.method}</span>
                       <div className="text-right">
                         <p className="font-medium">
-                          {formatCurrency(payment.amount)}
+                          {formatCurrency(fromCents(payment.amount))}
                         </p>
-                        {payment.changeAmount && payment.changeAmount > 0 && (
-                          <p className="text-xs text-blue-600">
-                            Cambio: {formatCurrency(payment.changeAmount)}
-                          </p>
-                        )}
+                        {payment.amount > selectedSale.total &&
+                          payment.method === 'cash' && (
+                            <p className="text-xs text-blue-600">
+                              Cambio:{' '}
+                              {formatCurrency(
+                                fromCents(payment.amount - selectedSale.total)
+                              )}
+                            </p>
+                          )}
                       </div>
                     </div>
                   ))}
@@ -708,23 +719,29 @@ export const SalesPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{formatCurrency(selectedSale.subtotal)}</span>
+                  <span>
+                    {formatCurrency(fromCents(selectedSale.subtotal))}
+                  </span>
                 </div>
                 {selectedSale.discountAmount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Descuento:</span>
-                    <span>-{formatCurrency(selectedSale.discountAmount)}</span>
+                    <span>
+                      -{formatCurrency(fromCents(selectedSale.discountAmount))}
+                    </span>
                   </div>
                 )}
                 {selectedSale.taxAmount > 0 && (
                   <div className="flex justify-between">
                     <span>Impuesto:</span>
-                    <span>{formatCurrency(selectedSale.taxAmount)}</span>
+                    <span>
+                      {formatCurrency(fromCents(selectedSale.taxAmount))}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Total:</span>
-                  <span>{formatCurrency(selectedSale.total)}</span>
+                  <span>{formatCurrency(fromCents(selectedSale.total))}</span>
                 </div>
               </div>
 

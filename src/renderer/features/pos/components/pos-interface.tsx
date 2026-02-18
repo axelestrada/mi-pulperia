@@ -98,7 +98,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     search: searchTerm,
     categoryId: selectedCategory,
     page: 1,
-    limit: 50,
+    limit: 30,
   })
 
   const createSale = useCreatePOSSale()

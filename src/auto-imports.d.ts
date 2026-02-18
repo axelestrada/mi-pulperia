@@ -193,18 +193,24 @@ declare global {
   const IconSolarArrowRightLinear: typeof import('~icons/solar/arrow-right-linear.tsx').default
   const IconSolarArrowRightUpLinear: typeof import('~icons/solar/arrow-right-up-linear.tsx').default
   const IconSolarBanknote2Linear: typeof import('~icons/solar/banknote2-linear.tsx').default
+  const IconSolarBanknoteLinear: typeof import('~icons/solar/banknote-linear.tsx').default
   const IconSolarBellOutline: typeof import('~icons/solar/bell-outline.tsx').default
   const IconSolarBillListLinear: typeof import('~icons/solar/bill-list-linear.tsx').default
   const IconSolarBoxLinear: typeof import('~icons/solar/box-linear.tsx').default
   const IconSolarBoxMinimalisticLinear: typeof import('~icons/solar/box-minimalistic-linear.tsx').default
   const IconSolarCartCrossLineDuotone: typeof import('~icons/solar/cart-cross-line-duotone.tsx').default
   const IconSolarCartLarge2LineDuotone: typeof import('~icons/solar/cart-large2-line-duotone.tsx').default
+  const IconSolarCartLinear: typeof import('~icons/solar/cart-linear.tsx').default
   const IconSolarCheckCircleBoldDuotone: typeof import('~icons/solar/check-circle-bold-duotone.tsx').default
   const IconSolarChecklistMinimalisticLinear: typeof import('~icons/solar/checklist-minimalistic-linear.tsx').default
+  const IconSolarClipboardListLinear: typeof import('~icons/solar/clipboard-list-linear.tsx').default
+  const IconSolarClipboardListinear: typeof import('~icons/solar/clipboard-listinear.tsx').default
   const IconSolarCloseCircleBoldDuotone: typeof import('~icons/solar/close-circle-bold-duotone.tsx').default
   const IconSolarCopyLinear: typeof import('~icons/solar/copy-linear.tsx').default
   const IconSolarDocumentAddLinear: typeof import('~icons/solar/document-add-linear.tsx').default
   const IconSolarHandMoneyLinear: typeof import('~icons/solar/hand-money-linear.tsx').default
+  const IconSolarHistory2Linear: typeof import('~icons/solar/history2-linear.tsx').default
+  const IconSolarHistoryLinear: typeof import('~icons/solar/history-linear.tsx').default
   const IconSolarHome2Linear: typeof import('~icons/solar/home2-linear.tsx').default
   const IconSolarInfoCircleLinear: typeof import('~icons/solar/info-circle-linear.tsx').default
   const IconSolarInfoCircleOutline: typeof import('~icons/solar/info-circle-outline.tsx').default
@@ -213,17 +219,22 @@ declare global {
   const IconSolarMenuDotsLinear: typeof import('~icons/solar/menu-dots-linear.tsx').default
   const IconSolarMinimalisticMagniferLineDuotone: typeof import('~icons/solar/minimalistic-magnifer-line-duotone.tsx').default
   const IconSolarMinusCircleLineDuotone: typeof import('~icons/solar/minus-circle-line-duotone.tsx').default
+  const IconSolarMoneyBagLinear: typeof import('~icons/solar/money-bag-linear.tsx').default
   const IconSolarPauseCircleLineDuotone: typeof import('~icons/solar/pause-circle-line-duotone.tsx').default
   const IconSolarPauseLineDuotone: typeof import('~icons/solar/pause-line-duotone.tsx').default
   const IconSolarPenNewSquareBoldDuotone: typeof import('~icons/solar/pen-new-square-bold-duotone.tsx').default
   const IconSolarPresentationGraphLinear: typeof import('~icons/solar/presentation-graph-linear.tsx').default
+  const IconSolarRefreshSquareLinear: typeof import('~icons/solar/refresh-square-linear.tsx').default
   const IconSolarSafe2Linear: typeof import('~icons/solar/safe2-linear.tsx').default
+  const IconSolarSaleLinear: typeof import('~icons/solar/sale-linear.tsx').default
   const IconSolarScooterLinear: typeof import('~icons/solar/scooter-linear.tsx').default
   const IconSolarSettingsMinimalisticLinear: typeof import('~icons/solar/settings-minimalistic-linear.tsx').default
   const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
   const IconSolarShieldWarningLineDuotone: typeof import('~icons/solar/shield-warning-line-duotone.tsx').default
   const IconSolarSiderbarLineDuotone: typeof import('~icons/solar/siderbar-line-duotone.tsx').default
   const IconSolarSirenRoundedLineDuotone: typeof import('~icons/solar/siren-rounded-line-duotone.tsx').default
+  const IconSolarSmartphoneLinear: typeof import('~icons/solar/smartphone-linear.tsx').default
+  const IconSolarSmartphoneUpdateLinear: typeof import('~icons/solar/smartphone-update-linear.tsx').default
   const IconSolarSortHorizontalLinear: typeof import('~icons/solar/sort-horizontal-linear.tsx').default
   const IconSolarSortTuning2Linear: typeof import('~icons/solar/sort-tuning2-linear.tsx').default
   const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
@@ -231,6 +242,7 @@ declare global {
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
   const IconSolarTuning2Linear: typeof import('~icons/solar/tuning2-linear.tsx').default
   const IconSolarUsersGroupTwoRoundedLinear: typeof import('~icons/solar/users-group-two-rounded-linear.tsx').default
+  const IconSolarWalletLinear: typeof import('~icons/solar/wallet-linear.tsx').default
   const IconSolarWalletMoneyLinear: typeof import('~icons/solar/wallet-money-linear.tsx').default
   const IconSolarWidget2BoldDuotone: typeof import('~icons/solar/widget2-bold-duotone.tsx').default
   const IconSolarWidget2Outline: typeof import('~icons/solar/widget2-outline.tsx').default

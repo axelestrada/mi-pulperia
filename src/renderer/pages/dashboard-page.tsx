@@ -36,7 +36,7 @@ const data = [
     value: 'L 0.00',
     changeType: 'negative',
     trendChipPosition: 'top',
-    icon: <IconSolarBoxLinear />,
+    icon: <IconSolarBanknote2Linear />,
   },
 ]
 
