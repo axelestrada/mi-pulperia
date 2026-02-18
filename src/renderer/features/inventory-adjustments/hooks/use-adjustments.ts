@@ -65,8 +65,13 @@ export function useUpdateInventoryAdjustment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<InventoryAdjustmentFormData> }) =>
-      adjustmentAdapter.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number
+      data: Partial<InventoryAdjustmentFormData>
+    }) => adjustmentAdapter.update(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments'] })
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments', id] })

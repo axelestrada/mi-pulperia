@@ -1,15 +1,15 @@
 import {
   Button,
+  Form,
   Modal,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
   Select,
   SelectItem,
-  NumberInput,
-  Form,
 } from '@heroui/react'
-import { POSFormInput } from './pos-interface'
+import type { POSFormInput } from './pos-interface'
 
 type Props = {
   total: number
@@ -58,6 +58,27 @@ export const PosChargeModal = ({
 
   return (
     <>
+      <div className="grid gap-3 grid-cols-2">
+        <Button
+          variant="flat"
+          startContent={
+            <IconSolarTicketSaleLinear className="text-default-500 size-5" />
+          }
+          size="sm"
+        >
+          Descuento
+        </Button>
+        <Button
+          variant="flat"
+          size="sm"
+          startContent={
+            <IconSolarDocumentTextLinear className="text-default-500 size-5" />
+          }
+        >
+          Nota
+        </Button>
+      </div>
+
       <Button
         fullWidth
         color="primary"
@@ -113,6 +134,14 @@ export const PosChargeModal = ({
                           errorMessage={fieldState.error?.message}
                           isInvalid={!!fieldState.error}
                           value={field.value ? Number(field.value) : undefined}
+                          onChange={e => {
+                            const value =
+                              typeof e === 'number' ? e : Number(e.target.value)
+
+                            if (isNaN(value)) return
+
+                            field.onChange(value || undefined)
+                          }}
                           onValueChange={value => {
                             field.onChange(value)
                           }}

@@ -49,7 +49,7 @@ export const POSRepository = {
       search,
       categoryId,
       page = 1,
-      limit = 50,
+      limit = 30,
       sortBy = 'name',
       sortOrder = 'asc',
     } = filters
@@ -71,7 +71,9 @@ export const POSRepository = {
         like(presentationsTable.barcode, `%${search}%`),
         like(presentationsTable.sku, `%${search}%`),
         like(productsTable.name, `%${search}%`),
-        like(productsTable.description, `%${search}%`)
+        like(productsTable.description, `%${search}%`),
+        like(categoriesTable.name, `%${search}%`),
+        like(categoriesTable.description, `%${search}%`)
       )
 
       if (searchConditions) whereConditions.push(searchConditions)
@@ -143,24 +145,7 @@ export const POSRepository = {
         eq(inventoryBatchesTable.productId, productsTable.id)
       )
       .where(and(...whereConditions))
-      .groupBy(
-        presentationsTable.id,
-        presentationsTable.name,
-        presentationsTable.description,
-        presentationsTable.image,
-        presentationsTable.isBase,
-        presentationsTable.barcode,
-        presentationsTable.sku,
-        presentationsTable.salePrice,
-        presentationsTable.unit,
-        presentationsTable.unitPrecision,
-        presentationsTable.factorType,
-        presentationsTable.factor,
-        productsTable.id,
-        productsTable.name,
-        categoriesTable.id,
-        categoriesTable.name
-      )
+      .groupBy(productsTable.id, categoriesTable.id, presentationsTable.id)
       .orderBy(...orderBy)
       .limit(limit)
       .offset(offset)

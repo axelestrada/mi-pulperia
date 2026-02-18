@@ -46,8 +46,13 @@ export function useUpdateSupplier() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<SupplierFormData> }) =>
-      supplierAdapter.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number
+      data: Partial<SupplierFormData>
+    }) => supplierAdapter.update(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
       queryClient.invalidateQueries({ queryKey: ['suppliers', id] })

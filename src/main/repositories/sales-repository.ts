@@ -1,31 +1,31 @@
-import { db } from '../db'
 import {
-  eq,
   and,
-  like,
-  or,
-  desc,
   asc,
-  count,
-  gte,
-  lte,
-  sum,
   avg,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
   inArray,
+  like,
+  lte,
+  or,
+  sum,
 } from 'drizzle-orm'
-
-import {
-  salesTable,
-  type SelectSale,
-  type InsertSale,
-} from '../db/schema/sales'
-import { saleItemsTable } from '../db/schema/sale-items'
-import { paymentMethodsTable } from '../db/schema/payment-methods'
-import { customersTable } from '../db/schema/customers'
-import { cashSessionsTable } from '../db/schema/cash-sessions'
+import { db } from '../db'
 import { cashRegistersTable } from '../db/schema/cash-registers'
+import { cashSessionsTable } from '../db/schema/cash-sessions'
+import { customersTable } from '../db/schema/customers'
+import { paymentMethodsTable } from '../db/schema/payment-methods'
 import { presentationsTable } from '../db/schema/presentations'
 import { productsTable } from '../db/schema/products'
+import { saleItemsTable } from '../db/schema/sale-items'
+import {
+  type InsertSale,
+  type SelectSale,
+  salesTable,
+} from '../db/schema/sales'
 
 export interface SalesFilters {
   search?: string
@@ -227,7 +227,7 @@ export const SalesRepository = {
   ): Promise<SaleWithDetails | undefined> => {
     const saleResult = await db
       .select({
-        ...salesTable,
+        ...getTableColumns(salesTable),
         customer: {
           id: customersTable.id,
           name: customersTable.name,
@@ -294,31 +294,28 @@ export const SalesRepository = {
   },
 
   create: async (data: CreateSaleData) => {
-      // Create sale
-      const saleResult = await db
-        .insert(salesTable)
-        .values(data.sale)
-        .returning()
+    // Create sale
+    const saleResult = await db.insert(salesTable).values(data.sale).returning()
 
-      const sale = saleResult[0]
+    const sale = saleResult[0]
 
-      // Create sale items
-      const saleItems = data.items.map(item => ({
-        ...item,
-        saleId: sale.id,
-      }))
+    // Create sale items
+    const saleItems = data.items.map(item => ({
+      ...item,
+      saleId: sale.id,
+    }))
 
-      await db.insert(saleItemsTable).values(saleItems)
+    await db.insert(saleItemsTable).values(saleItems)
 
-      // Create payment methods
-      const payments = data.payments.map(payment => ({
-        ...payment,
-        saleId: sale.id,
-      }))
+    // Create payment methods
+    const payments = data.payments.map(payment => ({
+      ...payment,
+      saleId: sale.id,
+    }))
 
-      await db.insert(paymentMethodsTable).values(payments)
+    await db.insert(paymentMethodsTable).values(payments)
 
-      return sale
+    return sale
   },
 
   update: async (id: SelectSale['id'], data: Partial<SelectSale>) =>

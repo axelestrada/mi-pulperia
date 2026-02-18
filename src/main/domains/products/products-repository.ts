@@ -1,13 +1,11 @@
+import { and, eq, inArray, like, or, sql } from 'drizzle-orm'
 import { db } from 'main/db'
 import { categoriesTable } from 'main/db/schema/categories'
-
 import {
-  InsertProduct,
+  type InsertProduct,
   productsTable,
   type SelectProduct,
 } from 'main/db/schema/products'
-
-import { and, eq, inArray, like, or, sql } from 'drizzle-orm'
 import { presentationsTable } from '../../db/schema/presentations'
 
 type FindAllParams = {
@@ -156,15 +154,20 @@ export const ProductsRepository = {
       const searchCondition = or(
         like(productsTable.name, `%${search}%`),
         like(productsTable.description, `%${search}%`),
+        like(categoriesTable.name, `%${search}%`),
+        like(categoriesTable.description, `%${search}%`),
         sql<boolean>`
           EXISTS (
             SELECT 1
             FROM presentations p
             WHERE p.product_id = ${productsTable.id}
               AND p.deleted = false
+              AND p.status = 'active'
               AND (
                 p.sku LIKE ${`%${search}%`}
                 OR p.barcode LIKE ${`%${search}%`}
+                OR p.name LIKE ${`%${search}%`}
+                OR p.description LIKE ${`%${search}%`}
               )
           )
         `

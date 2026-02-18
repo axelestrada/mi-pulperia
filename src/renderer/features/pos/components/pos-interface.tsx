@@ -11,13 +11,13 @@ import {
   Select,
   type SelectedItems,
   SelectItem,
+  Spinner,
   useDisclosure,
 } from '@heroui/react'
-
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import React, { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import useFormPersist from 'react-hook-form-persist'
 import { AutoSizer, Grid } from 'react-virtualized'
 import { z } from 'zod'
 import AvatarMale from '@/assets/images/avatar-male.png'
@@ -98,7 +98,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
   } = useDisclosure()
 
   // Queries
-  const { data: openSession } = useCurrentOpenSession()
+  const { data: openSession, isLoading } = useCurrentOpenSession()
   const presentationsData = useAvailablePresentations({
     search: debounceSearchTerm,
     categoryId: selectedCategory,
@@ -121,6 +121,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       ],
     },
   })
+
+  useFormPersist('POS_FORM', {
+    watch: form.watch,
+    setValue: form.setValue,
+    storage: window.localStorage,
+  })
+
+  const customerId = form.watch('customerId')
 
   const {
     fields: itemFields,
@@ -222,7 +230,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     if (createSale.isPending) return
 
     if (!openSession) {
-      toast.error('No hay una caja abierta')
+      sileo.error({
+        title: 'No hay una caja abierta.',
+        description:
+          'Por favor, abre una sesión de caja antes de realizar una venta.',
+      })
       return
     }
 
@@ -246,13 +258,21 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       })
 
       onCloseChargeModal()
-      toast.success('Venta realizada exitosamente', {
-        description: `Venta #${result.sale?.id || result.id}`,
+
+      console.log(result)
+
+      sileo.success({
+        title: 'Venta realizada exitosamente.',
+        description: `Venta #${result.saleDetails?.saleNumber} realizada exitosamente para el cliente ${result.saleDetails?.customer?.name || 'Cliente Final'}.`,
       })
       onSaleComplete?.(result.sale?.id || result.id)
     } catch (error) {
       console.error('Error creating sale:', error)
-      toast.error('Error al procesar la venta: ' + (error as Error).message)
+
+      sileo.error({
+        title: 'Error al crear la venta.',
+        description: parseError(error),
+      })
     }
   }
 
@@ -317,6 +337,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       if (currentLoadMore) observer.unobserve(currentLoadMore)
     }
   }, [presentationsData])
+
+  if (isLoading) {
+    return (
+      <div className="grid place-items-center h-[calc(100dvh-84px)]">
+        <Spinner />
+      </div>
+    )
+  }
 
   if (!openSession) {
     return (
@@ -442,6 +470,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
             }}
             items={customers}
             placeholder="Seleccionar cliente"
+            onSelectionChange={key => {
+              form.setValue('customerId', Number(key.currentKey))
+            }}
+            selectedKeys={[String(customerId)]}
+            defaultSelectedKeys={[String(form.watch('customerId'))]}
             renderValue={(items: SelectedItems<Customer>) => {
               return items.map(item => (
                 <div key={item.key} className="flex items-center gap-2">

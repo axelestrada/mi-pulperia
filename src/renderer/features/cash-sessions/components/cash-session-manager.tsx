@@ -1,33 +1,41 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import {
-  DollarSign,
-  Clock,
-  Calculator,
-  PlusCircle,
-  XCircle,
   AlertCircle,
-  CheckCircle,
-  User,
-  Calendar,
   BarChart3,
-  Receipt,
+  Calculator,
+  Calendar,
+  CheckCircle,
+  Clock,
   CreditCard,
+  DollarSign,
+  PlusCircle,
+  Receipt,
+  User,
+  XCircle,
 } from 'lucide-react'
-
+import type React from 'react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { formatCurrency } from '../../../../shared/utils/formatCurrency'
+import { Alert, AlertDescription } from '../../../components/ui/alert'
+import { Badge } from '../../../components/ui/badge'
 import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card'
-import { Badge } from '../../../components/ui/badge'
-import { Separator } from '../../../components/ui/separator'
-import { Alert, AlertDescription } from '../../../components/ui/alert'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../../components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -36,6 +44,7 @@ import {
   FormLabel,
   FormMessage,
 } from '../../../components/ui/form'
+import { Input } from '../../../components/ui/input'
 import {
   Select,
   SelectContent,
@@ -43,26 +52,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../../../components/ui/dialog'
+import { Separator } from '../../../components/ui/separator'
 import { Textarea } from '../../../components/ui/textarea'
-
+import { useActiveCashRegisters } from '../../../hooks/use-cash-registers'
 import {
+  useCashSessionSummary,
+  useCloseCashSession,
   useCurrentOpenSession,
   useOpenCashSession,
-  useCloseCashSession,
-  useCashSessionSummary,
   useUpdateSessionNotes,
 } from '../../../hooks/use-cash-sessions'
-import { useActiveCashRegisters } from '../../../hooks/use-cash-registers'
-import { formatCurrency } from '../../../../shared/utils/formatCurrency'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 // Form validation schemas
 const openSessionSchema = z.object({
@@ -160,7 +159,10 @@ export const CashSessionManager: React.FC<CashSessionManagerProps> = ({
       }
 
       // You can add toast notification here if you have a toast system
-      toast.error(errorMessage)
+      sileo.error({
+        title: 'Error al abrir la sesión de caja',
+        description: errorMessage,
+      })
     }
   }
 

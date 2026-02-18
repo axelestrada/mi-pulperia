@@ -45,7 +45,8 @@ export function useCreateCustomer() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (customerData: any) => window.api.customers.create(customerData),
+    mutationFn: (customerData: any) =>
+      window.api.customers.create(customerData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       toast.success('Cliente creado exitosamente')

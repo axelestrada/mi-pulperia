@@ -55,8 +55,13 @@ export function useUpdatePurchaseOrder() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<PurchaseOrderFormData> }) =>
-      purchaseOrderAdapter.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number
+      data: Partial<PurchaseOrderFormData>
+    }) => purchaseOrderAdapter.update(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })
@@ -87,8 +92,13 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: number; status: PurchaseOrder['status'] }) =>
-      purchaseOrderAdapter.updateStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: number
+      status: PurchaseOrder['status']
+    }) => purchaseOrderAdapter.updateStatus(id, status),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })

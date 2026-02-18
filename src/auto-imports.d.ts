@@ -208,6 +208,8 @@ declare global {
   const IconSolarCloseCircleBoldDuotone: typeof import('~icons/solar/close-circle-bold-duotone.tsx').default
   const IconSolarCopyLinear: typeof import('~icons/solar/copy-linear.tsx').default
   const IconSolarDocumentAddLinear: typeof import('~icons/solar/document-add-linear.tsx').default
+  const IconSolarDocumentLinear: typeof import('~icons/solar/document-linear.tsx').default
+  const IconSolarDocumentTextLinear: typeof import('~icons/solar/document-text-linear.tsx').default
   const IconSolarHandMoneyLinear: typeof import('~icons/solar/hand-money-linear.tsx').default
   const IconSolarHistory2Linear: typeof import('~icons/solar/history2-linear.tsx').default
   const IconSolarHistoryLinear: typeof import('~icons/solar/history-linear.tsx').default
@@ -227,6 +229,7 @@ declare global {
   const IconSolarRefreshSquareLinear: typeof import('~icons/solar/refresh-square-linear.tsx').default
   const IconSolarSafe2Linear: typeof import('~icons/solar/safe2-linear.tsx').default
   const IconSolarSaleLinear: typeof import('~icons/solar/sale-linear.tsx').default
+  const IconSolarSaleSquareLinear: typeof import('~icons/solar/sale-square-linear.tsx').default
   const IconSolarScooterLinear: typeof import('~icons/solar/scooter-linear.tsx').default
   const IconSolarSettingsMinimalisticLinear: typeof import('~icons/solar/settings-minimalistic-linear.tsx').default
   const IconSolarSettingsOutline: typeof import('~icons/solar/settings-outline.tsx').default
@@ -238,6 +241,7 @@ declare global {
   const IconSolarSortHorizontalLinear: typeof import('~icons/solar/sort-horizontal-linear.tsx').default
   const IconSolarSortTuning2Linear: typeof import('~icons/solar/sort-tuning2-linear.tsx').default
   const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
+  const IconSolarTicketSaleLinear: typeof import('~icons/solar/ticket-sale-linear.tsx').default
   const IconSolarTrashBinMinimalisticBoldDuotone: typeof import('~icons/solar/trash-bin-minimalistic-bold-duotone.tsx').default
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default
   const IconSolarTuning2Linear: typeof import('~icons/solar/tuning2-linear.tsx').default
@@ -405,6 +409,7 @@ declare global {
   const TypographyP: typeof import('./renderer/components/ui/typography').TypographyP
   const UNIT_CONFIG: typeof import('./renderer/features/products/ui/product-units').UNIT_CONFIG
   const Units: typeof import('./renderer/features/products/ui/product-units').Units
+  const VirtualizedPOSGrid: typeof import('./renderer/features/pos/components/virtualized-pos-grid').VirtualizedPOSGrid
   const adjustmentAdapter: typeof import('./renderer/features/inventory-adjustments/api/adjustment-adapter').adjustmentAdapter
   const badgeVariants: typeof import('./renderer/components/ui/badge').badgeVariants
   const batchSchema: typeof import('./renderer/features/inventory/batches/model/inventory-batch-schema').batchSchema
@@ -453,6 +458,7 @@ declare global {
   const productToForm: typeof import('./renderer/features/products/model/product-mappers').productToForm
   const purchaseOrderAdapter: typeof import('./renderer/features/purchase-orders/api/purchase-order-adapter').purchaseOrderAdapter
   const router: typeof import('./renderer/routes').router
+  const sileo: typeof import('sileo').sileo
   const startTransition: typeof import('react').startTransition
   const supplierAdapter: typeof import('./renderer/features/suppliers/api/supplier-adapter').supplierAdapter
   const toCents: typeof import('./shared/utils/currency').toCents
@@ -493,6 +499,7 @@ declare global {
   const useCustomerCredits: typeof import('./renderer/features/credits/hooks/use-credits').useCustomerCredits
   const useCustomers: typeof import('./renderer/features/customers/hooks/use-customers').useCustomers
   const useCustomersWithBalance: typeof import('./renderer/features/customers/hooks/use-customers').useCustomersWithBalance
+  const useDebounce: typeof import('./shared/utils/debounce').useDebounce
   const useDebugValue: typeof import('react').useDebugValue
   const useDeferredValue: typeof import('react').useDeferredValue
   const useDeleteCategory: typeof import('./renderer/features/categories/hooks/use-delete-category').useDeleteCategory

@@ -57,10 +57,15 @@ export function useCreateCredit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['credits'] })
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Crédito creado exitosamente')
+      sileo.success({
+        title: 'Crédito creado exitosamente',
+      })
     },
-    onError: (error: Error) => {
-      toast.error(`Error al crear crédito: ${error.message}`)
+    onError: error => {
+      sileo.error({
+        title: 'Error al crear crédito',
+        description: parseError(error),
+      })
     },
   })
 }
@@ -75,10 +80,15 @@ export function useUpdateCredit() {
       queryClient.invalidateQueries({ queryKey: ['credits'] })
       queryClient.invalidateQueries({ queryKey: ['credits', id] })
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Crédito actualizado exitosamente')
+      sileo.success({
+        title: 'Crédito actualizado exitosamente',
+      })
     },
-    onError: (error: Error) => {
-      toast.error(`Error al actualizar crédito: ${error.message}`)
+    onError: error => {
+      sileo.error({
+        title: 'Error al actualizar crédito',
+        description: parseError(error),
+      })
     },
   })
 }
@@ -91,10 +101,15 @@ export function useDeleteCredit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['credits'] })
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Crédito eliminado exitosamente')
+      sileo.success({
+        title: 'Crédito eliminado exitosamente',
+      })
     },
-    onError: (error: Error) => {
-      toast.error(`Error al eliminar crédito: ${error.message}`)
+    onError: error => {
+      sileo.error({
+        title: 'Error al eliminar crédito',
+        description: parseError(error),
+      })
     },
   })
 }
@@ -103,16 +118,26 @@ export function useAddCreditPayment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ creditId, paymentData }: { creditId: number; paymentData: any }) =>
-      window.api.credits.addPayment(creditId, paymentData),
+    mutationFn: ({
+      creditId,
+      paymentData,
+    }: {
+      creditId: number
+      paymentData: any
+    }) => window.api.credits.addPayment(creditId, paymentData),
     onSuccess: (_, { creditId }) => {
       queryClient.invalidateQueries({ queryKey: ['credits'] })
       queryClient.invalidateQueries({ queryKey: ['credits', creditId] })
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Pago registrado exitosamente')
+      sileo.success({
+        title: 'Pago registrado exitosamente',
+      })
     },
     onError: (error: Error) => {
-      toast.error(`Error al registrar pago: ${error.message}`)
+      sileo.error({
+        title: 'Error al registrar pago',
+        description: parseError(error),
+      })
     },
   })
 }
@@ -126,10 +151,15 @@ export function useCancelCredit() {
       queryClient.invalidateQueries({ queryKey: ['credits'] })
       queryClient.invalidateQueries({ queryKey: ['credits', id] })
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Crédito cancelado exitosamente')
+      sileo.success({
+        title: 'Crédito cancelado exitosamente',
+      })
     },
     onError: (error: Error) => {
-      toast.error(`Error al cancelar crédito: ${error.message}`)
+      sileo.error({
+        title: 'Error al cancelar crédito',
+        description: parseError(error),
+      })
     },
   })
 }

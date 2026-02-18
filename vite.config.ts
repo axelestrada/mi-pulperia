@@ -1,13 +1,13 @@
 import path from 'node:path'
-import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import electron from 'vite-plugin-electron/simple'
-
-import Icons from 'unplugin-icons/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import IconsResolver from 'unplugin-icons/resolver'
+
+import Icons from 'unplugin-icons/vite'
+import { defineConfig } from 'vite'
+import electron from 'vite-plugin-electron/simple'
 
 export default defineConfig({
   plugins: [
@@ -39,6 +39,7 @@ export default defineConfig({
         {
           '@hookform/resolvers/zod': ['zodResolver'],
         },
+        { sileo: ['sileo'] },
         { sonner: ['toast'] },
       ],
       dirs: [

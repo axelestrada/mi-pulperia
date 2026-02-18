@@ -1,4 +1,4 @@
-import { ProductDTO } from "~/src/main/domains/products/products-model"
+import type { ProductDTO } from '~/src/main/domains/products/products-model'
 
 export const useProductForm = (
   product: ProductDTO | null,
