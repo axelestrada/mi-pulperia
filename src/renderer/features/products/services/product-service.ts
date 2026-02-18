@@ -1,5 +1,8 @@
-import { ProductsListFilters } from "~/src/main/domains/products/products-list-filters"
-import { ProductDTO, productDTOSchema } from "~/src/main/domains/products/products-model"
+import type { ProductsListFilters } from '~/src/main/domains/products/products-list-filters'
+import {
+  type ProductDTO,
+  productDTOSchema,
+} from '~/src/main/domains/products/products-model'
 
 export const productService = {
   async list(filters?: ProductsListFilters) {
@@ -37,5 +40,5 @@ export const productService = {
 
   async toggle(id: ProductDTO['id']) {
     await productAdapter.toggle(id)
-  }
+  },
 }

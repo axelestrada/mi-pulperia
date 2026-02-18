@@ -1,29 +1,28 @@
-import { cn } from '@/lib/utils'
+import type { Selection } from '@heroui/react'
 import {
-  Input,
+  Button,
+  Chip,
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  Chip,
+  DropdownSection,
   DropdownTrigger,
-  Button,
-  Table,
-  TableHeader,
-  TableColumn,
+  Input,
+  Pagination,
   Select,
   SelectItem,
-  TableBody,
-  TableRow,
-  TableCell,
-  Pagination,
-  Tooltip,
   Spinner,
-  DropdownSection,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Tooltip,
   useDisclosure,
 } from '@heroui/react'
-
-import type { Selection } from '@heroui/react'
-import { ProductDTO } from 'domains/products/products-model'
+import type { ProductDTO } from 'domains/products/products-model'
+import { cn } from '@/lib/utils'
 
 type Props = {
   onEdit: (product: ProductDTO) => void
@@ -62,7 +61,7 @@ const statusConfig: Record<
 }
 
 export const ProductsTableContent = ({ onEdit }: Props) => {
-  const [page, setPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [pageSize, setPageSize] = useState(5)
 
@@ -71,7 +70,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
     onOpenChange: setIsPresentationsDialogOpen,
     onOpen,
   } = useDisclosure()
-  
+
   const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(
     null
   )
@@ -84,9 +83,9 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
     [onOpen]
   )
 
-  const { data: products, isLoading } = useProducts({
+  const { data: products, isFetching } = useProducts({
     search,
-    page,
+    page: currentPage,
     pageSize,
   })
 
@@ -115,7 +114,9 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
 
   const totalItems = products?.pagination.totalItems || 0
 
-  const pages = products?.pagination.totalPages || 0
+  const pages = useMemo(() => {
+    return Math.ceil(totalItems / pageSize)
+  }, [totalItems, pageSize])
 
   const renderCell = useCallback(
     (product: ProductDTO, columnKey: React.Key): string | React.ReactNode => {
@@ -319,11 +320,13 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
             isClearable
             className="w-full sm:max-w-72"
             placeholder="Buscar..."
-            startContent={<IconSolarMagniferOutline className="text-default-400" />}
+            startContent={
+              <IconSolarMagniferOutline className="text-default-400" />
+            }
             value={search}
             onValueChange={value => {
               setSearch(value)
-              setPage(1)
+              setCurrentPage(1)
             }}
           />
           <div className="flex gap-3">
@@ -402,25 +405,23 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
     )
   }, [statusOptions, visibleColumns, totalItems, search, pageSize])
 
-  const bottomContent = (
-    <div className="p-2 flex justify-end items-center">
-      <Pagination
-        total={pages}
-        page={page}
-        onChange={setPage}
-        isCompact
-        showControls
-        showShadow
-        color="primary"
-      />
-    </div>
-  )
-
   return (
     <>
       <Table
         isHeaderSticky
-        bottomContent={bottomContent}
+        bottomContent={
+          <div className="p-2 flex justify-end items-center">
+            <Pagination
+              total={pages}
+              page={currentPage}
+              onChange={page => setCurrentPage(page)}
+              isCompact
+              showControls
+              showShadow
+              color="primary"
+            />
+          </div>
+        }
         bottomContentPlacement="outside"
         classNames={{
           wrapper: 'max-h-[382px]',
@@ -441,7 +442,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
         </TableHeader>
         <TableBody
           loadingContent={<Spinner />}
-          loadingState={isLoading ? 'loading' : 'idle'}
+          loadingState={isFetching ? 'loading' : 'idle'}
           emptyContent={'No hay productos'}
           items={products?.data ?? []}
         >

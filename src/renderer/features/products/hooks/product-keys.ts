@@ -1,5 +1,5 @@
-import { ProductsListFilters } from '~/src/main/domains/products/products-list-filters'
-import { ProductDTO } from '~/src/main/domains/products/products-model'
+import type { ProductsListFilters } from '~/src/main/domains/products/products-list-filters'
+import type { ProductDTO } from '~/src/main/domains/products/products-model'
 
 export const productKeys = {
   all: ['products'] as const,
