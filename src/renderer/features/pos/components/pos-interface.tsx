@@ -80,7 +80,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
   onSaleComplete,
 }) => {
   const [searchTerm, setSearchTerm] = useState('')
+  const debounceSearchTerm = useDebounce(searchTerm)
+
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   const navigate = useNavigate()
   const { data: customers } = useActiveCustomersForSelection()
@@ -94,8 +98,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
   // Queries
   const { data: openSession } = useCurrentOpenSession()
-  const { data: presentationsData } = useAvailablePresentations({
-    search: searchTerm,
+  const presentationsData = useAvailablePresentations({
+    search: debounceSearchTerm,
     categoryId: selectedCategory,
     page: 1,
     limit: 30,
@@ -292,6 +296,27 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     }
   }, [addToCart, presentationsData, searchByCode])
 
+  useEffect(() => {
+    const currentLoadMore = loadMoreRef.current
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && presentationsData?.hasNextPage) {
+          presentationsData.fetchNextPage()
+        }
+      },
+      {
+        rootMargin: '100px',
+      }
+    )
+
+    if (currentLoadMore) observer.observe(currentLoadMore)
+
+    return () => {
+      if (currentLoadMore) observer.unobserve(currentLoadMore)
+    }
+  }, [presentationsData])
+
   if (!openSession) {
     return (
       <div className="grid place-items-center h-[calc(100dvh-84px)]">
@@ -339,13 +364,17 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4 overflow-y-auto -mx-4 px-4 py-2">
-          {presentationsData?.data?.map((presentation: POSPresentation) => (
-            <PosItem
-              key={'pos-presentation-' + presentation.id}
-              presentation={presentation}
-              onClick={addToCart}
-            />
-          ))}
+          {presentationsData?.data?.pages.map(page =>
+            page.data.map((presentation: POSPresentation) => (
+              <PosItem
+                key={'pos-presentation-' + presentation.id}
+                presentation={presentation}
+                onClick={addToCart}
+              />
+            ))
+          )}
+
+          <div ref={loadMoreRef} />
         </div>
       </div>
 

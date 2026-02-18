@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 
 export interface POSPresentation {
   id: number
@@ -128,9 +133,23 @@ export const posKeys = {
 
 // Queries
 export const useAvailablePresentations = (filters: POSFilters = {}) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: posKeys.presentationsList(filters),
-    queryFn: () => window.api.pos.getAvailablePresentations(filters),
+    queryFn: async ({ pageParam }) => {
+      console.log('pageParam', pageParam)
+
+      const data = await window.api.pos.getAvailablePresentations({
+        ...filters,
+        page: pageParam,
+      })
+      return data
+    },
+    getNextPageParam: lastPage => {
+      return lastPage.pagination.hasNext
+        ? lastPage.pagination.page + 1
+        : undefined
+    },
+    initialPageParam: 1,
   })
 }
 
