@@ -1,7 +1,7 @@
 import {
   Autocomplete,
   AutocompleteItem,
-  AutocompleteProps,
+  type AutocompleteProps,
 } from '@heroui/react'
 
 type Props = Pick<
@@ -35,7 +35,7 @@ export const CategorySelect = (props: Props) => {
   }))
 
   return (
-    <Autocomplete {...props} items={items}>
+    <Autocomplete {...props} defaultItems={items}>
       {item => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
     </Autocomplete>
   )
