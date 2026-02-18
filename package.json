@@ -56,6 +56,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.69.0",
     "react-router-dom": "^7.8.1",
+    "react-virtualized": "^9.22.6",
     "recharts": "^2.15.4",
     "sharp": "^0.34.5",
     "sonner": "^2.0.7",
@@ -75,6 +76,7 @@
     "@types/node": "^24.3.0",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
+    "@types/react-virtualized": "^9.22.3",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
@@ -121,7 +123,10 @@
     ],
     "win": {
       "icon": "build/icons/win/icon.ico",
-      "target": ["nsis", "zip"]
+      "target": [
+        "nsis",
+        "zip"
+      ]
     },
     "mac": {
       "icon": "build/icons/mac/icon.icns"

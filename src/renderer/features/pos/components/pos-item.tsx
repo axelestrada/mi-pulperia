@@ -1,5 +1,5 @@
-import { CardBody, Card, Image, CardFooter, Chip } from '@heroui/react'
-import { POSPresentation } from 'main/repositories/pos-repository'
+import { Card, CardBody, CardFooter, Chip, Image } from '@heroui/react'
+import type { POSPresentation } from 'main/repositories/pos-repository'
 
 import placeholder from '@/assets/images/placeholder.svg'
 
@@ -37,7 +37,7 @@ export const PosItem = ({ presentation, onClick }: Props) => {
         />
       </CardBody>
       <CardFooter className="text-small text-left flex-col gap-1 items-start h-full flex-1 justify-between">
-        <b>{title}</b>
+        <b className="wrap-break-word line-clamp-2 text-ellipsis">{title}</b>
         <div className="flex justify-between items-center w-full">
           <p className="text-default-500">
             {formatLempira(fromCents(presentation.salePrice))}

@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import React, { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { AutoSizer, Grid } from 'react-virtualized'
 import { z } from 'zod'
 import AvatarMale from '@/assets/images/avatar-male.png'
 import {
@@ -344,9 +345,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-[2fr_1fr] gap-6 max-h-[calc(100dvh-84px)]">
-      <div className="space-y-4 flex-col flex h-[calc(100dvh-84px)]">
-        <div className="grid items-center grid-cols-[1fr_auto] gap-3">
+    <div className="grid grid-cols-[1fr_22rem] gap-6 max-h-[calc(100dvh-84px)]">
+      <div className="flex-col flex h-[calc(100dvh-84px)]">
+        <div className="grid items-center grid-cols-[1fr_auto] gap-3 mb-4">
           <Input
             placeholder="Buscar producto, SKU o código de barras..."
             startContent={<IconSolarMinimalisticMagniferLineDuotone />}
@@ -363,18 +364,56 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4 overflow-y-auto -mx-4 px-4 py-2">
-          {presentationsData?.data?.pages.map(page =>
-            page.data.map((presentation: POSPresentation) => (
-              <PosItem
-                key={'pos-presentation-' + presentation.id}
-                presentation={presentation}
-                onClick={addToCart}
-              />
-            ))
-          )}
+        <div className="flex-1">
+          <AutoSizer>
+            {({ width, height }) => {
+              const allItems =
+                presentationsData?.data?.pages.flatMap(p => p.data) ?? []
 
-          <div ref={loadMoreRef} />
+              const minColumnWidth = 140
+              const columnCount = Math.floor(width / minColumnWidth) || 1
+              const columnWidth = Math.floor(width / columnCount)
+
+              const rowHeight = (rowIndex: number) => {
+                const itemIndex = rowIndex * columnCount
+                const item = allItems[itemIndex]
+                return item?.customHeight ?? 215
+              }
+
+              const rowCount = Math.ceil(allItems.length / columnCount)
+
+              return (
+                <Grid
+                  width={width}
+                  height={height}
+                  columnWidth={columnWidth}
+                  rowHeight={({ index }) => rowHeight(index)}
+                  columnCount={columnCount}
+                  rowCount={rowCount}
+                  overscanRowCount={3}
+                  cellRenderer={({ columnIndex, rowIndex, key, style }) => {
+                    const itemIndex = rowIndex * columnCount + columnIndex
+                    const item = allItems[itemIndex]
+                    if (!item) return null
+
+                    return (
+                      <div key={key} style={{ ...style, padding: 8 }}>
+                        <PosItem presentation={item} onClick={addToCart} />
+                      </div>
+                    )
+                  }}
+                  onSectionRendered={({ rowStopIndex }) => {
+                    if (
+                      rowStopIndex >= rowCount - 1 &&
+                      presentationsData?.hasNextPage
+                    ) {
+                      presentationsData.fetchNextPage()
+                    }
+                  }}
+                />
+              )
+            }}
+          </AutoSizer>
         </div>
       </div>
 
