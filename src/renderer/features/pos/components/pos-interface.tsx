@@ -8,10 +8,17 @@ import {
   Divider,
   Form,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  NumberInput,
   Select,
   type SelectedItems,
   SelectItem,
   Spinner,
+  Textarea,
   useDisclosure,
 } from '@heroui/react'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -73,6 +80,23 @@ const posFormSchema = z.object({
 export type POSFormInput = z.input<typeof posFormSchema>
 export type POSFormData = z.infer<typeof posFormSchema>
 
+const calculateItemTotal = (
+  quantity: number,
+  unitPrice: number,
+  discount = 0,
+  discountType: 'fixed' | 'percentage' = 'fixed'
+) => {
+  const baseTotal = quantity * unitPrice
+  if (!discount || discount <= 0) return baseTotal
+
+  if (discountType === 'percentage') {
+    const percentageDiscount = Math.max(0, Math.min(100, discount))
+    return baseTotal * (1 - percentageDiscount / 100)
+  }
+
+  return Math.max(0, baseTotal - discount)
+}
+
 interface POSInterfaceProps {
   onSaleComplete?: (saleId: number) => void
 }
@@ -96,6 +120,43 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     onClose: onCloseChargeModal,
     onOpenChange: onChargeModalOpenChange,
   } = useDisclosure()
+  const {
+    isOpen: isSaleDiscountModalOpen,
+    onOpen: onOpenSaleDiscountModal,
+    onOpenChange: onSaleDiscountModalOpenChange,
+  } = useDisclosure()
+  const {
+    isOpen: isSaleNotesModalOpen,
+    onOpen: onOpenSaleNotesModal,
+    onOpenChange: onSaleNotesModalOpenChange,
+  } = useDisclosure()
+  const {
+    isOpen: isItemDiscountModalOpen,
+    onOpen: onOpenItemDiscountModal,
+    onClose: onCloseItemDiscountModal,
+    onOpenChange: onItemDiscountModalOpenChange,
+  } = useDisclosure()
+  const {
+    isOpen: isItemNotesModalOpen,
+    onOpen: onOpenItemNotesModal,
+    onClose: onCloseItemNotesModal,
+    onOpenChange: onItemNotesModalOpenChange,
+  } = useDisclosure()
+
+  const [saleDiscount, setSaleDiscount] = useState(0)
+  const [saleDiscountType, setSaleDiscountType] = useState<
+    'fixed' | 'percentage'
+  >('fixed')
+  const [saleNotesDraft, setSaleNotesDraft] = useState('')
+
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
+    null
+  )
+  const [itemDiscountDraft, setItemDiscountDraft] = useState(0)
+  const [itemDiscountTypeDraft, setItemDiscountTypeDraft] = useState<
+    'fixed' | 'percentage'
+  >('fixed')
+  const [itemNotesDraft, setItemNotesDraft] = useState('')
 
   // Queries
   const { data: openSession, isLoading } = useCurrentOpenSession()
@@ -147,25 +208,31 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   const totals = React.useMemo(() => {
     let subtotal = 0
+    let itemDiscountAmount = 0
     let totalItems = 0
 
     items.forEach(item => {
-      let itemTotal = item.quantity * item.unitPrice
-
-      if (item.discount && item.discount > 0) {
-        if (item.discountType === 'percentage') {
-          itemTotal = itemTotal * (1 - item.discount / 100)
-        } else {
-          itemTotal = Math.max(0, itemTotal - item.discount)
-        }
-      }
+      const baseTotal = item.quantity * item.unitPrice
+      const itemTotal = calculateItemTotal(
+        item.quantity,
+        item.unitPrice,
+        item.discount,
+        item.discountType
+      )
 
       subtotal += itemTotal
+      itemDiscountAmount += baseTotal - itemTotal
       totalItems += item.quantity
     })
 
+    const rawGlobalDiscount =
+      saleDiscountType === 'percentage'
+        ? subtotal * (saleDiscount / 100)
+        : saleDiscount
+    const globalDiscount = Math.max(0, Math.min(subtotal, rawGlobalDiscount))
+
     const taxAmount = 0
-    const total = subtotal + taxAmount
+    const total = Math.max(0, subtotal - globalDiscount + taxAmount)
 
     const totalPayments = payments.reduce(
       (sum, payment) => sum + Number(payment.amount || 0),
@@ -181,6 +248,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
     return {
       subtotal: Math.round(subtotal * 100) / 100,
+      discount: Math.round((itemDiscountAmount + globalDiscount) * 100) / 100,
+      globalDiscount: Math.round(globalDiscount * 100) / 100,
       taxAmount: Math.round(taxAmount * 100) / 100,
       total: Math.round(total * 100) / 100,
       totalItems,
@@ -189,7 +258,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
       totalChange: Math.round(totalChange * 100) / 100,
       balance: Math.round((total - totalPayments) * 100) / 100,
     }
-  }, [items, payments])
+  }, [items, payments, saleDiscount, saleDiscountType])
 
   const scrollHeight = cartItemsRef.current?.scrollHeight || 0
 
@@ -238,6 +307,54 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     [appendItem, itemFields, updateItem]
   )
 
+  const openItemDiscountModal = (index: number) => {
+    const item = form.getValues(`items.${index}`)
+    if (!item) return
+
+    setSelectedItemIndex(index)
+    setItemDiscountDraft(item.discount || 0)
+    setItemDiscountTypeDraft(item.discountType || 'fixed')
+    onOpenItemDiscountModal()
+  }
+
+  const openItemNotesModal = (index: number) => {
+    const item = form.getValues(`items.${index}`)
+    if (!item) return
+
+    setSelectedItemIndex(index)
+    setItemNotesDraft(item.notes || '')
+    onOpenItemNotesModal()
+  }
+
+  const saveItemDiscount = () => {
+    if (selectedItemIndex === null) return
+
+    const item = form.getValues(`items.${selectedItemIndex}`)
+    if (!item) return
+
+    updateItem(selectedItemIndex, {
+      ...item,
+      discount: Math.max(0, itemDiscountDraft || 0),
+      discountType: itemDiscountTypeDraft,
+    })
+
+    onCloseItemDiscountModal()
+  }
+
+  const saveItemNotes = () => {
+    if (selectedItemIndex === null) return
+
+    const item = form.getValues(`items.${selectedItemIndex}`)
+    if (!item) return
+
+    updateItem(selectedItemIndex, {
+      ...item,
+      notes: itemNotesDraft.trim(),
+    })
+
+    onCloseItemNotesModal()
+  }
+
   // Submit sale
   const onSubmit = async (data: POSFormData) => {
     if (createSale.isPending) return
@@ -274,7 +391,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
         payments: data.payments,
         subtotal: totals.subtotal,
         taxAmount: totals.taxAmount,
-        discountAmount: 0,
+        discountAmount: totals.globalDiscount,
         total: totals.total,
         notes: data.notes,
       }
@@ -292,6 +409,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
       })
 
       persistedForm.clear()
+      setSaleDiscount(0)
+      setSaleDiscountType('fixed')
+      form.setValue('notes', '')
 
       onCloseChargeModal()
 
@@ -619,13 +739,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           </Select>
         </div>
 
-        <Divider />
+        <Divider className="mb-0" />
 
         <div className="flex-1 flex flex-col w-full">
           <FormProvider {...form}>
-            <Form className="flex flex-col h-[calc(100dvh-220px)] w-full">
+            <Form className="flex flex-col h-[calc(100dvh-200px)] w-full gap-0">
               <div
-                className="flex flex-col mb-2 flex-1 w-full overflow-y-auto h-full"
+                className="flex flex-col flex-1 w-full overflow-y-auto h-full"
                 ref={cartItemsRef}
               >
                 {itemFields.length === 0 ? (
@@ -637,25 +757,43 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div>
                     {itemFields.map((field, index) => {
-                      const itemTotal =
-                        field.quantity * field.unitPrice - (field.discount || 0)
+                      const currentItem = items[index] ?? field
+                      const itemTotal = calculateItemTotal(
+                        currentItem.quantity,
+                        currentItem.unitPrice,
+                        currentItem.discount,
+                        currentItem.discountType
+                      )
+
+                      const currentItemDiscount =
+                        currentItem.discountType === 'percentage'
+                          ? `${currentItem.discount}%`
+                          : formatCurrency(fromCents(currentItem.discount || 0))
 
                       return (
                         <PosCartItem
                           key={field.id}
-                          title={field.title}
-                          image={field.image}
-                          quantity={field.quantity}
-                          unitPrice={field.unitPrice}
+                          title={currentItem.title}
+                          image={currentItem.image}
+                          quantity={currentItem.quantity}
+                          unitPrice={currentItem.unitPrice}
                           itemTotal={itemTotal}
+                          discount={
+                            currentItem.discount
+                              ? currentItemDiscount
+                              : undefined
+                          }
+                          notes={currentItem.notes}
                           onQuantityChange={value => {
                             updateItem(index, {
-                              ...field,
+                              ...currentItem,
                               quantity: value,
                             })
                           }}
+                          onEditDiscount={() => openItemDiscountModal(index)}
+                          onEditNotes={() => openItemNotesModal(index)}
                           onRemove={() => {
                             removeItem(index)
                           }}
@@ -677,12 +815,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                     </p>
                   </div>
 
-                  {/* <div className="flex justify-between text-sm">
-                    <p>Descuento:</p>
-                    <p className="text-default-500">
-                      {formatCurrency(fromCents(totals.discount))}
-                    </p>
-                  </div> */}
+                  {saleDiscount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <p>Descuento:</p>
+                      <p className="text-default-500">
+                        {formatCurrency(fromCents(totals.discount))}
+                      </p>
+                    </div>
+                  )}
 
                   <Divider />
 
@@ -707,6 +847,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                     onClose={onCloseChargeModal}
                     onOpenChange={onChargeModalOpenChange}
                     onOpen={onOpenChargeModal}
+                    onOpenDiscount={onOpenSaleDiscountModal}
+                    onOpenNotes={() => {
+                      setSaleNotesDraft(form.getValues('notes') || '')
+                      onOpenSaleNotesModal()
+                    }}
+                    hasDiscount={saleDiscount > 0}
+                    hasNotes={Boolean((form.watch('notes') || '').trim())}
                   />
 
                   <Button
@@ -724,11 +871,288 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                       })
 
                       persistedForm.clear()
+                      setSaleDiscount(0)
+                      setSaleDiscountType('fixed')
+                      form.setValue('notes', '')
                     }}
                   >
                     Limpiar Carrito
                   </Button>
                 </div>
+
+                <Modal
+                  isOpen={isSaleDiscountModalOpen}
+                  onOpenChange={onSaleDiscountModalOpenChange}
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Descuento de la venta</ModalHeader>
+                        <Form
+                          onSubmit={e => {
+                            e.preventDefault()
+                            onClose()
+                          }}
+                          className="h-auto w-full"
+                        >
+                          <ModalBody className="space-y-4 w-full">
+                            <Select
+                              label="Tipo de descuento"
+                              selectedKeys={[saleDiscountType]}
+                              onSelectionChange={key => {
+                                const value = key.currentKey as
+                                  | 'fixed'
+                                  | 'percentage'
+                                  | null
+
+                                if (value) setSaleDiscountType(value)
+                              }}
+                            >
+                              <SelectItem key="fixed">Monto fijo</SelectItem>
+                              <SelectItem key="percentage">
+                                Porcentaje
+                              </SelectItem>
+                            </Select>
+
+                            <NumberInput
+                              autoFocus
+                              label={
+                                saleDiscountType === 'fixed'
+                                  ? 'Monto del descuento'
+                                  : 'Porcentaje de descuento'
+                              }
+                              minValue={0}
+                              maxValue={
+                                saleDiscountType === 'percentage'
+                                  ? 100
+                                  : fromCents(totals.subtotal)
+                              }
+                              placeholder={
+                                saleDiscountType === 'fixed' ? '0.00' : '0'
+                              }
+                              defaultValue={
+                                fromCents(saleDiscount) === 0
+                                  ? undefined
+                                  : fromCents(saleDiscount)
+                              }
+                              onValueChange={value =>
+                                setSaleDiscount(toCents(value) || 0)
+                              }
+                              startContent={
+                                <span className="text-default-500 text-sm">
+                                  {saleDiscountType === 'fixed' ? 'L' : '%'}
+                                </span>
+                              }
+                            />
+                          </ModalBody>
+                          <ModalFooter className="w-full">
+                            <Button
+                              color="danger"
+                              variant="light"
+                              onPress={onClose}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button color="primary" type="submit">
+                              Aplicar
+                            </Button>
+                          </ModalFooter>
+                        </Form>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+
+                <Modal
+                  isOpen={isSaleNotesModalOpen}
+                  onOpenChange={onSaleNotesModalOpenChange}
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Nota de la venta</ModalHeader>
+                        <Form
+                          className="h-auto w-full"
+                          onSubmit={e => {
+                            e.preventDefault()
+
+                            form.setValue('notes', saleNotesDraft.trim())
+                            onClose()
+                          }}
+                        >
+                          <ModalBody className="w-full">
+                            <Textarea
+                              autoFocus
+                              label="Nota"
+                              placeholder="Escribe una nota para la venta"
+                              value={saleNotesDraft}
+                              onValueChange={setSaleNotesDraft}
+                              minRows={4}
+                            />
+                          </ModalBody>
+                          <ModalFooter className="w-full">
+                            <Button
+                              color="danger"
+                              variant="light"
+                              onPress={onClose}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button color="primary" type="submit">
+                              Guardar
+                            </Button>
+                          </ModalFooter>
+                        </Form>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+
+                <Modal
+                  isOpen={isItemDiscountModalOpen}
+                  onOpenChange={onItemDiscountModalOpenChange}
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Descuento del producto</ModalHeader>
+                        <Form
+                          onSubmit={e => {
+                            e.preventDefault()
+
+                            saveItemDiscount()
+                            onClose()
+                          }}
+                          className="h-auto w-full"
+                        >
+                          <ModalBody className="space-y-4 w-full">
+                            <Select
+                              label="Tipo de descuento"
+                              selectedKeys={[itemDiscountTypeDraft]}
+                              onSelectionChange={key => {
+                                const value = key.currentKey as
+                                  | 'fixed'
+                                  | 'percentage'
+                                  | null
+
+                                if (value) {
+                                  setItemDiscountTypeDraft(value)
+                                  setItemDiscountDraft(0)
+                                }
+                              }}
+                            >
+                              <SelectItem key="fixed">Monto fijo</SelectItem>
+                              <SelectItem key="percentage">
+                                Porcentaje
+                              </SelectItem>
+                            </Select>
+
+                            <NumberInput
+                              autoFocus
+                              label={
+                                itemDiscountTypeDraft === 'fixed'
+                                  ? 'Monto del descuento'
+                                  : 'Porcentaje de descuento'
+                              }
+                              minValue={0}
+                              maxValue={
+                                itemDiscountTypeDraft === 'percentage'
+                                  ? 100
+                                  : undefined
+                              }
+                              placeholder={
+                                saleDiscountType === 'fixed' ? '0.00' : '0'
+                              }
+                              value={
+                                itemDiscountTypeDraft === 'fixed'
+                                  ? fromCents(itemDiscountDraft)
+                                  : itemDiscountDraft
+                              }
+                              defaultValue={
+                                itemDiscountTypeDraft === 'fixed'
+                                  ? fromCents(itemDiscountDraft)
+                                  : itemDiscountDraft
+                              }
+                              onValueChange={value =>
+                                setItemDiscountDraft(
+                                  itemDiscountTypeDraft === 'fixed'
+                                    ? toCents(value)
+                                    : value
+                                )
+                              }
+                              startContent={
+                                <span className="text-default-500 text-sm">
+                                  {itemDiscountTypeDraft === 'fixed'
+                                    ? 'L'
+                                    : '%'}
+                                </span>
+                              }
+                            />
+                          </ModalBody>
+                          <ModalFooter className="w-full">
+                            <Button
+                              color="danger"
+                              variant="light"
+                              onPress={() => {
+                                onClose()
+                                onCloseItemDiscountModal()
+                              }}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button color="primary" type="submit">
+                              Guardar
+                            </Button>
+                          </ModalFooter>
+                        </Form>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+
+                <Modal
+                  isOpen={isItemNotesModalOpen}
+                  onOpenChange={onItemNotesModalOpenChange}
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Nota del producto</ModalHeader>
+                        <ModalBody>
+                          <Textarea
+                            autoFocus
+                            label="Nota"
+                            placeholder="Escribe una nota para este producto"
+                            value={itemNotesDraft}
+                            onValueChange={setItemNotesDraft}
+                            minRows={4}
+                          />
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color="danger"
+                            variant="light"
+                            onPress={() => {
+                              onClose()
+                              onCloseItemNotesModal()
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            color="primary"
+                            onPress={() => {
+                              saveItemNotes()
+                              onClose()
+                            }}
+                          >
+                            Guardar
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
               </div>
             </Form>
           </FormProvider>
