@@ -113,11 +113,11 @@ export const PosChargeModal = ({
                       name={`payments.${index}.method`}
                       render={({ field }) => (
                         <Select
-                          defaultSelectedKeys={['cash']}
+                          defaultSelectedKeys={[field.value]}
                           onSelectionChange={key => {
                             field.onChange(key.currentKey)
                           }}
-                          value={field.value}
+                          selectedKeys={[field.value]}
                         >
                           <SelectItem key="cash">Efectivo</SelectItem>
                           <SelectItem key="credit">Crédito</SelectItem>
@@ -133,14 +133,19 @@ export const PosChargeModal = ({
                           placeholder="0.00"
                           errorMessage={fieldState.error?.message}
                           isInvalid={!!fieldState.error}
-                          value={field.value ? Number(field.value) : undefined}
+                          value={field.value ? Number(field.value) : 0}
                           onChange={e => {
                             const value =
-                              typeof e === 'number' ? e : Number(e.target.value)
+                              typeof e === 'number'
+                                ? ''
+                                : Number(e.target.value)
 
-                            if (isNaN(value)) return
+                            if (Number.isNaN(value)) {
+                              field.onChange('')
+                              return
+                            }
 
-                            field.onChange(value || undefined)
+                            field.onChange(value || '')
                           }}
                           onValueChange={value => {
                             field.onChange(value)
