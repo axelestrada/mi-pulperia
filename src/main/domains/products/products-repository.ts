@@ -230,6 +230,11 @@ export const ProductsRepository = {
         )
       )
       .where(and(...whereConditions))
+      .orderBy(
+        categoriesTable.name,
+        productsTable.name,
+        presentationsTable.name
+      )
       .limit(pageSize)
       .offset(offset)
 
