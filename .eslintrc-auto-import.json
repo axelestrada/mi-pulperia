@@ -169,6 +169,7 @@
     "FormProvider": true,
     "Fragment": true,
     "HelpPage": true,
+    "HtmlMessage": true,
     "INVENTORY_ENTRY_DEFAULTS": true,
     "INavMainItem": true,
     "INavMainSubItem": true,

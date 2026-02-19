@@ -168,6 +168,7 @@ declare global {
   const FormProvider: typeof import('react-hook-form').FormProvider
   const Fragment: typeof import('react').Fragment
   const HelpPage: typeof import('./renderer/pages/help-page').HelpPage
+  const HtmlMessage: typeof import('./renderer/components/html-message').HtmlMessage
   const INVENTORY_ENTRY_DEFAULTS: typeof import('./renderer/features/inventory/model/inventory-entry-constants').INVENTORY_ENTRY_DEFAULTS
   const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
