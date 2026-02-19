@@ -14,15 +14,18 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <main className="text-foreground bg-background">
         <RouterProvider router={router} />
-        <Toaster
-          position="top-center"
-          options={{
-            fill: '#11181C',
-            styles: {
-              description: 'text-default-50',
-            },
-          }}
-        />
+
+        <div className="z-100 fixed top-0 right-0 left-0 bottom-0 pointer-events-none">
+          <Toaster
+            position="top-center"
+            options={{
+              fill: '#11181C',
+              styles: {
+                description: 'text-default-50',
+              },
+            }}
+          />
+        </div>
         <ToastProvider />
       </main>
     </QueryClientProvider>
