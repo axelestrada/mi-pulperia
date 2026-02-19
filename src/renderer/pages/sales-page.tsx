@@ -1,33 +1,38 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import {
-  Calendar,
-  Search,
-  Filter,
+  AlertCircle,
+  Ban,
+  DollarSign,
   Download,
   Eye,
-  Edit,
-  Trash,
-  Receipt,
-  CreditCard,
-  User,
-  DollarSign,
-  TrendingUp,
   FileText,
-  X,
+  Filter,
+  Receipt,
   RefreshCw,
-  Ban,
-  AlertCircle,
+  TrendingUp,
 } from 'lucide-react'
-
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Badge } from '../components/ui/badge'
-import { Separator } from '../components/ui/separator'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { formatCurrency } from '../../shared/utils/formatCurrency'
 import { Alert, AlertDescription } from '../components/ui/alert'
+import { Badge } from '../components/ui/badge'
+import { Button } from '../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu'
 import {
   Form,
   FormControl,
@@ -36,6 +41,7 @@ import {
   FormLabel,
   FormMessage,
 } from '../components/ui/form'
+import { Input } from '../components/ui/input'
 import {
   Select,
   SelectContent,
@@ -43,16 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../components/ui/dialog'
-import { Textarea } from '../components/ui/textarea'
-import { ScrollArea } from '../components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
+import { Separator } from '../components/ui/separator'
 import {
   Table,
   TableBody,
@@ -61,26 +58,17 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table'
+import { Textarea } from '../components/ui/textarea'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../components/ui/dropdown-menu'
-
-import {
-  useSales,
-  useSale,
+  type Sale,
+  type SalesFilters,
   useCancelSale,
   useRefundSale,
+  useSale,
+  useSales,
   useSalesSummary,
   useTopSellingProducts,
-  SalesFilters,
-  Sale,
 } from '../hooks/use-sales'
-import { formatCurrency } from '../../shared/utils/formatCurrency'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 // Form validation schemas
 const filtersSchema = z.object({
@@ -649,12 +637,12 @@ export const SalesPage = () => {
               <div>
                 <h4 className="font-medium mb-2">Artículos</h4>
                 <div className="space-y-2">
-                  {selectedSale.items?.map((item, index) => {
+                  {selectedSale.items?.map(item => {
                     const displayName = `${item.productName} (${item.presentationName})`
 
                     return (
                       <div
-                        key={index}
+                        key={item.id}
                         className="flex justify-between items-center p-2 bg-gray-50 rounded"
                       >
                         <div>
@@ -688,28 +676,27 @@ export const SalesPage = () => {
               <div>
                 <h4 className="font-medium mb-2">Pagos</h4>
                 <div className="space-y-2">
-                  {selectedSale.payments?.map((payment, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center"
-                    >
-                      <span className="capitalize">{payment.method}</span>
-                      <div className="text-right">
-                        <p className="font-medium">
-                          {formatCurrency(fromCents(payment.amount))}
-                        </p>
-                        {payment.amount > selectedSale.total &&
-                          payment.method === 'cash' && (
+                  {selectedSale.payments?.map((payment, index) => {
+                    return (
+                      <div
+                        key={payment.id}
+                        className="flex justify-between items-center"
+                      >
+                        <span className="capitalize">{payment.method}</span>
+                        <div className="text-right">
+                          <p className="font-medium">
+                            {formatCurrency(fromCents(payment.amount))}
+                          </p>
+                          {payment.changeAmount && (
                             <p className="text-xs text-blue-600">
                               Cambio:{' '}
-                              {formatCurrency(
-                                fromCents(payment.amount - selectedSale.total)
-                              )}
+                              {formatCurrency(fromCents(payment.changeAmount))}
                             </p>
                           )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
