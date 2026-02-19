@@ -13,8 +13,9 @@
     "build:frontend": "vite build",
     "build:electron": "npm run build:frontend && electron-builder",
     "release": "npm run build:frontend && electron-builder --publish always",
+    "rebuild": "npx electron-rebuild -f -w better-sqlite3",
     "db:generate": "npx drizzle-kit generate",
-    "postinstall": "npx electron-rebuild -f"
+    "postinstall": "npx electron-rebuild -f -w better-sqlite3"
   },
   "dependencies": {
     "@heroui/react": "^2.8.7",
