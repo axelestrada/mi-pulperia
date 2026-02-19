@@ -1,4 +1,5 @@
 import type { InsertInventoryMovement } from '../db/schema/inventory-movements'
+import { CreditsRepository } from '../repositories/credits-repository'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
 import { POSRepository } from '../repositories/pos-repository'
@@ -218,13 +219,42 @@ export const POSService = {
       input.total
     )
 
+    const totalCreditAmount = payments
+      .filter(payment => payment.method === 'credit')
+      .reduce((acc, payment) => acc + payment.amount, 0)
+
+    let customer: Awaited<ReturnType<typeof CustomersService.getById>> | null =
+      null
+
     if (hasCredits && !input.customerId) {
       throw new Error('No se ha seleccionado un cliente')
     } else if (input.customerId) {
-      const customer = await CustomersService.getById(input.customerId)
+      customer = await CustomersService.getById(input.customerId)
 
       if (!customer) {
         throw new Error('El cliente no existe')
+      }
+    }
+
+    if (totalCreditAmount > 0) {
+      if (!customer) {
+        throw new Error('No se ha seleccionado un cliente')
+      }
+
+      const canExtendCredit = await CustomersService.canExtendCredit(
+        customer.id,
+        totalCreditAmount
+      )
+
+      if (!canExtendCredit) {
+        const availableCredit = Math.max(
+          0,
+          customer.creditLimit - customer.currentBalance
+        )
+
+        throw new Error(
+          `El cliente no tiene crédito disponible suficiente. Disponible: ${availableCredit / 100}, solicitado: ${totalCreditAmount / 100}`
+        )
       }
     }
 
@@ -271,6 +301,29 @@ export const POSService = {
     // Create the sale and associated records in a transaction
     const sale = await SalesRepository.create(saleData)
 
+    if (totalCreditAmount > 0 && customer) {
+      const creditNumber = await CreditsRepository.generateCreditNumber()
+
+      await CreditsRepository.create({
+        credit: {
+          creditNumber,
+          customerId: customer.id,
+          saleId: sale.id,
+          type: 'sale_credit',
+          amount: totalCreditAmount,
+          originalAmount: totalCreditAmount,
+          paidAmount: 0,
+          remainingAmount: totalCreditAmount,
+          status: 'active',
+          description: `Crédito generado por venta ${sale.saleNumber}`,
+          notes: input.notes?.trim() || undefined,
+          createdBy: 'POS',
+        },
+      })
+
+      await CustomersService.addToBalance(customer.id, totalCreditAmount)
+    }
+
     // Create inventory movements for each item
     for (const validation of itemValidations) {
       const { presentation, allocation } = validation
@@ -281,7 +334,7 @@ export const POSService = {
           productId: presentation.productId,
           batchId: batchAllocation.batchId,
           type: 'OUT',
-          quantity: -batchAllocation.quantity, // Negative for outgoing
+          quantity: -batchAllocation.quantity,
           reason: 'Sale',
           referenceType: 'sale',
           referenceId: sale.id,

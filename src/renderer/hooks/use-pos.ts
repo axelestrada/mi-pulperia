@@ -1,9 +1,13 @@
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { cashSessionsKeys } from './use-cash-sessions'
+import { customersKeys } from './use-customers'
+import { salesKeys } from './use-sales'
 
 export interface POSPresentation {
   id: number
@@ -150,6 +154,7 @@ export const useAvailablePresentations = (filters: POSFilters = {}) => {
         : undefined
     },
     initialPageParam: 1,
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -236,12 +241,12 @@ export const useCreatePOSSale = () => {
     mutationFn: (input: CreatePOSSaleInput) =>
       window.electron.ipcRenderer.invoke('pos:createSale', input),
     onSuccess: () => {
-      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: posKeys.presentations() })
       queryClient.invalidateQueries({ queryKey: posKeys.recentSales() })
       queryClient.invalidateQueries({ queryKey: posKeys.lowStock() })
-      queryClient.invalidateQueries({ queryKey: ['cashSessions'] })
-      queryClient.invalidateQueries({ queryKey: ['sales'] })
+      queryClient.invalidateQueries({ queryKey: cashSessionsKeys.all })
+      queryClient.invalidateQueries({ queryKey: salesKeys.all })
+      queryClient.invalidateQueries({ queryKey: customersKeys.all })
     },
   })
 }
