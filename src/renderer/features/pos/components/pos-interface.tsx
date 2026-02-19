@@ -85,6 +85,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const cartItemsRef = useRef<HTMLDivElement | null>(null)
+  const mainRef = useRef<HTMLDivElement | null>(null)
 
   const navigate = useNavigate()
   const { data: customers } = useActiveCustomersForSelection()
@@ -320,14 +321,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     const onBarcodeScanned = async (code: string) => {
       const presentation = await searchByCode.mutateAsync(code)
 
-      if (presentation) {
-        addToCart(presentation)
-      } else {
+      if (presentation) addToCart(presentation)
+      else {
         sileo.error({
           title: 'Producto no encontrado',
           description: (
             <span>
-              El producto con el código de barras {code} no fue encontrado
+              El producto con el código <b>{code}</b> no fue encontrado
             </span>
           ),
         })
@@ -335,32 +335,72 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     }
 
     let buffer = ''
-    let lastKeyTime = Date.now()
+    let scanStartTime = 0
+    let lastKeyTime = 0
+    const ignoredKeys = new Set([
+      'Shift',
+      'Control',
+      'Alt',
+      'Meta',
+      'CapsLock',
+      'NumLock',
+      'ScrollLock',
+      'Tab',
+    ])
 
     const onKeyDown = (e: KeyboardEvent) => {
       const now = Date.now()
+      const delta = now - lastKeyTime
 
-      if (now - lastKeyTime > 50) buffer = ''
+      if (ignoredKeys.has(e.key)) return
 
-      lastKeyTime = now
-
-      if (e.key === 'Enter') {
-        if (buffer.length > 3) {
-          onBarcodeScanned(buffer)
-        }
+      if (delta > 100) {
         buffer = ''
+        scanStartTime = 0
+      }
+
+      if (e.key.length === 1) {
+        if (!scanStartTime) scanStartTime = now
+        buffer += e.key
+        lastKeyTime = now
         return
       }
 
-      buffer += e.key
+      if (e.key === 'Enter') {
+        const totalDuration = scanStartTime ? now - scanStartTime : Infinity
+        const avgInterval =
+          buffer.length > 1
+            ? totalDuration / (buffer.length - 1)
+            : totalDuration
+        const looksLikeScan =
+          buffer.length >= 4 && totalDuration <= 1600 && avgInterval <= 120
+
+        if (looksLikeScan) {
+          e.preventDefault()
+          e.stopPropagation()
+          e.stopImmediatePropagation?.()
+
+          const code = buffer
+          buffer = ''
+          scanStartTime = 0
+          lastKeyTime = 0
+          void onBarcodeScanned(code)
+          return
+        }
+
+        buffer = ''
+        scanStartTime = 0
+        lastKeyTime = 0
+        return
+      }
     }
 
-    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keydown', onKeyDown, { capture: true })
 
     return () => {
-      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keydown', onKeyDown, { capture: true })
     }
-  }, [addToCart, presentationsData, searchByCode])
+  }, [addToCart, searchByCode])
 
   useEffect(() => {
     if (cartItemsRef.current) {
@@ -427,7 +467,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   }
 
   return (
-    <div className="grid grid-cols-[1fr_22rem] gap-6 max-h-[calc(100dvh-84px)]">
+    <div
+      className="grid grid-cols-[1fr_22rem] gap-6 max-h-[calc(100dvh-84px)]"
+      ref={mainRef}
+    >
       <div className="flex-col flex h-[calc(100dvh-84px)]">
         <div className="grid items-center grid-cols-[1fr_auto] gap-3 mb-4">
           <Input
@@ -454,7 +497,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
               const minColumnWidth = 140
               const columnCount = Math.floor(width / minColumnWidth) || 1
-              const columnWidth = Math.floor(width / columnCount)
+              const columnWidth = Math.floor(width / columnCount) - 2
 
               const rowHeight = (rowIndex: number) => {
                 const itemIndex = rowIndex * columnCount
