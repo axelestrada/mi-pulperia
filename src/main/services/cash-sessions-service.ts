@@ -1,6 +1,12 @@
-import { InsertCashSession, SelectCashSession } from '../db/schema/cash-sessions'
-import { CashSessionsRepository, CashSessionsFilters } from '../repositories/cash-sessions-repository'
+import {
+  InsertCashSession,
+  type SelectCashSession,
+} from '../db/schema/cash-sessions'
 import { CashRegistersRepository } from '../repositories/cash-registers-repository'
+import {
+  type CashSessionsFilters,
+  CashSessionsRepository,
+} from '../repositories/cash-sessions-repository'
 import { SalesRepository } from '../repositories/sales-repository'
 
 export const CashSessionsService = {
@@ -41,7 +47,9 @@ export const CashSessionsService = {
     }
 
     // Check if cash register exists and is active
-    const cashRegister = await CashRegistersRepository.findById(input.cashRegisterId)
+    const cashRegister = await CashRegistersRepository.findById(
+      input.cashRegisterId
+    )
     if (!cashRegister) {
       throw new Error('Cash register not found')
     }
@@ -51,7 +59,9 @@ export const CashSessionsService = {
     }
 
     // Check if there's already an open session for this cash register
-    const existingSession = await CashSessionsRepository.findOpenSession(input.cashRegisterId)
+    const existingSession = await CashSessionsRepository.findOpenSession(
+      input.cashRegisterId
+    )
     if (existingSession) {
       throw new Error('There is already an open session for this cash register')
     }
@@ -97,7 +107,8 @@ export const CashSessionsService = {
 
     // Calculate expected amount based on sales
     const salesSummary = await SalesRepository.getSalesForSession(id)
-    const expectedAmount = session.openingAmount + (salesSummary.summary?.totalAmount || 0)
+    const expectedAmount =
+      session.openingAmount + (salesSummary.summary?.totalAmount || 0)
 
     return CashSessionsRepository.close(
       id,
@@ -159,7 +170,9 @@ export const CashSessionsService = {
     const openSession = await CashSessionsRepository.findAnyOpenSession()
 
     if (!openSession) {
-      throw new Error('No cash session is currently open. Please open a cash session before making sales.')
+      throw new Error(
+        'No hay una caja abierta. Por favor, abre una sesión de caja antes de realizar una venta.'
+      )
     }
 
     return openSession
@@ -200,11 +213,18 @@ export const CashSessionsService = {
     }
 
     const totalSessions = sessions.length
-    const totalDifference = sessions.reduce((sum, session) => sum + (session.difference || 0), 0)
+    const totalDifference = sessions.reduce(
+      (sum, session) => sum + (session.difference || 0),
+      0
+    )
     const averageDifference = totalDifference / totalSessions
 
-    const sessionsWithShortages = sessions.filter(session => (session.difference || 0) < 0).length
-    const sessionsWithOverages = sessions.filter(session => (session.difference || 0) > 0).length
+    const sessionsWithShortages = sessions.filter(
+      session => (session.difference || 0) < 0
+    ).length
+    const sessionsWithOverages = sessions.filter(
+      session => (session.difference || 0) > 0
+    ).length
 
     // Calculate average session duration
     const durations = sessions
@@ -215,9 +235,11 @@ export const CashSessionsService = {
         return closed.getTime() - opened.getTime()
       })
 
-    const averageSessionDuration = durations.length > 0
-      ? durations.reduce((sum, duration) => sum + duration, 0) / durations.length
-      : 0
+    const averageSessionDuration =
+      durations.length > 0
+        ? durations.reduce((sum, duration) => sum + duration, 0) /
+          durations.length
+        : 0
 
     return {
       totalSessions,
