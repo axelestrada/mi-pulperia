@@ -77,15 +77,14 @@ interface POSInterfaceProps {
   onSaleComplete?: (saleId: number) => void
 }
 
-export const POSInterface: React.FC<POSInterfaceProps> = ({
-  onSaleComplete,
-}) => {
+export const POSInterface: React.FC<POSInterfaceProps> = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const debounceSearchTerm = useDebounce(searchTerm)
 
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const cartItemsRef = useRef<HTMLDivElement | null>(null)
 
   const navigate = useNavigate()
   const { data: customers } = useActiveCustomersForSelection()
@@ -122,10 +121,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     },
   })
 
-  useFormPersist('POS_FORM', {
+  const persistedForm = useFormPersist('POS_FORM', {
     watch: form.watch,
     setValue: form.setValue,
     storage: window.localStorage,
+    exclude: ['payments'],
   })
 
   const customerId = form.watch('customerId')
@@ -190,26 +190,25 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
     }
   }, [items, payments])
 
-  // Add presentation to cart
+  const scrollHeight = cartItemsRef.current?.scrollHeight || 0
+
   const addToCart = useCallback(
     (presentation: POSPresentation, quantity: number = 1) => {
-      // Check if item already exists
       const existingIndex = itemFields.findIndex(
         field => field.presentationId === presentation.id
       )
 
+      const title = presentation.isBase
+        ? presentation.productName
+        : `${presentation.productName} (${presentation.name})`
+
       if (existingIndex >= 0) {
-        // Update existing item
         const existingItem = itemFields[existingIndex]
         updateItem(existingIndex, {
           ...existingItem,
           quantity: existingItem.quantity + quantity,
         })
       } else {
-        const title = presentation.isBase
-          ? presentation.productName
-          : `${presentation.productName} (${presentation.name})`
-
         appendItem({
           presentationId: presentation.id,
           quantity,
@@ -221,6 +220,19 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
           notes: '',
         })
       }
+
+      sileo.success({
+        title: 'Producto agregado al carrito',
+        description: (
+          <span>
+            Producto <b>{title}</b> agregado al carrito exitosamente.
+          </span>
+        ),
+        autopilot: {
+          expand: 0,
+          collapse: 1500,
+        },
+      })
     },
     [appendItem, itemFields, updateItem]
   )
@@ -238,9 +250,25 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       return
     }
 
+    const customerId = data.customerId || undefined
+
+    const hasCredits = data.payments.some(
+      payment => payment.method === 'credit'
+    )
+
+    if (hasCredits && !customerId) {
+      sileo.error({
+        title: 'No se ha seleccionado un cliente.',
+        description:
+          'Por favor, selecciona un cliente antes de realizar una venta a crédito.',
+      })
+
+      throw new Error('No se ha seleccionado un cliente.')
+    }
+
     try {
       const saleInput: CreatePOSSaleInput = {
-        customerId: data.customerId,
+        customerId: customerId,
         items: data.items,
         payments: data.payments,
         subtotal: totals.subtotal,
@@ -254,24 +282,36 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
       form.reset({
         items: [],
-        payments: [],
+        payments: [
+          {
+            method: 'cash',
+            amount: 0,
+          },
+        ],
       })
+
+      persistedForm.clear()
 
       onCloseChargeModal()
 
-      console.log(result)
+      const saleNumber = result.saleDetails?.saleNumber
+      const customerName = result.saleDetails?.customer?.name || 'Cliente Final'
 
       sileo.success({
         title: 'Venta realizada exitosamente.',
-        description: `Venta #${result.saleDetails?.saleNumber} realizada exitosamente para el cliente ${result.saleDetails?.customer?.name || 'Cliente Final'}.`,
+        description: (
+          <span>
+            Venta <b>#{saleNumber}</b> realizada exitosamente para el cliente{' '}
+            <b>{customerName}</b>.
+          </span>
+        ),
       })
-      onSaleComplete?.(result.sale?.id || result.id)
     } catch (error) {
       console.error('Error creating sale:', error)
 
       sileo.error({
-        title: 'Error al crear la venta.',
-        description: parseError(error),
+        title: 'No se puede realizar la venta.',
+        description: <HtmlMessage html={parseError(error)} />,
       })
     }
   }
@@ -282,10 +322,15 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
 
       if (presentation) {
         addToCart(presentation)
-
-        toast.success('Producto agregado: ' + presentation.productName)
       } else {
-        toast.error('Producto no encontrado para el código de barras: ' + code)
+        sileo.error({
+          title: 'Producto no encontrado',
+          description: (
+            <span>
+              El producto con el código de barras {code} no fue encontrado
+            </span>
+          ),
+        })
       }
     }
 
@@ -316,6 +361,15 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
       window.removeEventListener('keydown', onKeyDown)
     }
   }, [addToCart, presentationsData, searchByCode])
+
+  useEffect(() => {
+    if (cartItemsRef.current) {
+      cartItemsRef.current.scrollTo({
+        top: scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }, [scrollHeight])
 
   useEffect(() => {
     const currentLoadMore = loadMoreRef.current
@@ -527,7 +581,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
         <div className="flex-1 flex flex-col w-full">
           <FormProvider {...form}>
             <Form className="flex flex-col h-[calc(100dvh-220px)] w-full">
-              <div className="flex flex-col mb-4 flex-1 w-full overflow-y-auto h-full">
+              <div
+                className="flex flex-col mb-2 flex-1 w-full overflow-y-auto h-full"
+                ref={cartItemsRef}
+              >
                 {itemFields.length === 0 ? (
                   <div className="text-center py-8 flex-1 flex items-center justify-center flex-col">
                     <IconSolarCartCrossLineDuotone className="size-12 mb-2" />
@@ -577,6 +634,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
                     </p>
                   </div>
 
+                  {/* <div className="flex justify-between text-sm">
+                    <p>Descuento:</p>
+                    <p className="text-default-500">
+                      {formatCurrency(fromCents(totals.discount))}
+                    </p>
+                  </div> */}
+
                   <Divider />
 
                   <div className="flex justify-between font-bold">
@@ -606,7 +670,17 @@ export const POSInterface: React.FC<POSInterfaceProps> = ({
                     variant="light"
                     fullWidth
                     onPress={() => {
-                      form.reset({ items: [], payments: [] })
+                      form.reset({
+                        items: [],
+                        payments: [
+                          {
+                            method: 'cash',
+                            amount: 0,
+                          },
+                        ],
+                      })
+
+                      persistedForm.clear()
                     }}
                   >
                     Limpiar Carrito

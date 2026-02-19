@@ -1,13 +1,13 @@
+import type { InsertInventoryMovement } from '../db/schema/inventory-movements'
+import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
+import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
 import { POSRepository } from '../repositories/pos-repository'
 import {
+  type CreateSaleData,
   SalesRepository,
-  CreateSaleData,
 } from '../repositories/sales-repository'
-import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
-import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { CashSessionsService } from './cash-sessions-service'
 import { CustomersService } from './customers-service'
-import { InsertInventoryMovement } from '../db/schema/inventory-movements'
 
 export interface POSSaleItem {
   presentationId: number
@@ -21,6 +21,8 @@ export interface POSSaleItem {
 export interface POSPayment {
   method: 'cash' | 'credit'
   amount: number
+  receivedAmount?: number
+  changeAmount?: number
   referenceNumber?: string
   authorizationCode?: string
   details?: string
@@ -71,42 +73,45 @@ export const POSService = {
 
   async validateSaleItems(items: POSSaleItem[]) {
     if (!items || items.length === 0) {
-      throw new Error('Sale must have at least one item')
+      throw new Error('La venta debe tener al menos un producto')
     }
 
     const validationResults = []
 
     for (const item of items) {
       if (!Number.isInteger(item.presentationId)) {
-        throw new Error('Invalid presentation id')
+        throw new Error('ID de producto no válido')
       }
 
       if (item.quantity <= 0) {
-        throw new Error('Item quantity must be positive')
+        throw new Error('La cantidad debe ser mayor a 0')
       }
 
       if (item.unitPrice < 0) {
-        throw new Error('Item price cannot be negative')
+        throw new Error('El precio del producto no puede ser negativo')
       }
 
-      // Get presentation with batches to validate availability
       const presentation = await POSRepository.getPresentationWithBatches(
         item.presentationId
       )
       if (!presentation) {
         throw new Error(
-          `Presentation with id ${item.presentationId} not found or not available`
+          `El producto con ID ${item.presentationId} no está disponible`
         )
       }
 
-      // Check if we have enough stock using FEFO
       const allocation = await POSRepository.getFEFOAllocation(
         presentation.productId,
         item.quantity
       )
+
+      const displayName = presentation.isBase
+        ? presentation.productName
+        : `${presentation.productName} (${presentation.name})`
+
       if (!allocation.isFullyAllocated) {
         throw new Error(
-          `Insufficient stock for ${presentation.name}. Available: ${allocation.totalAllocated}, Requested: ${item.quantity}`
+          `No hay suficiente stock para <b>${displayName}</b>. </br>Disponible: <b>${allocation.totalAllocated}</b> </br>Requerido: <b>${item.quantity}</b>`
         )
       }
 
@@ -122,76 +127,109 @@ export const POSService = {
 
   async validatePayments(payments: POSPayment[], total: number) {
     if (!payments || payments.length === 0) {
-      throw new Error('Sale must have at least one payment method')
+      throw new Error('La venta debe tener al menos un pago')
     }
 
-    let totalPaymentAmount = 0
-    let totalCashReceived = 0
+    const hasCredits = payments.some(payment => payment.method === 'credit')
 
-    for (const payment of payments) {
-      if (payment.amount <= 0) {
-        throw new Error('Payment amount must be positive')
-      }
+    const totalCashPayments = payments.filter(
+      payment => payment.method === 'cash'
+    )
 
-      if (!['cash', 'credit'].includes(payment.method)) {
-        throw new Error('Invalid payment method')
-      }
+    if (totalCashPayments.length > 1) {
+      throw new Error('La venta solo puede tener un pago en efectivo')
+    }
 
-      totalPaymentAmount += payment.amount
+    const totalNonCashReceived = payments
+      .filter(payment => payment.method !== 'cash')
+      .reduce((acc, payment) => acc + payment.amount, 0)
 
-      // Validate cash payments
-      if (payment.method === 'cash') {
-        totalCashReceived += payment.amount
-      }
+    if (totalNonCashReceived > total) {
+      throw new Error(
+        'El monto total de pagos no puede ser mayor al total de la venta'
+      )
+    }
+
+    const remainingAmount = total - totalNonCashReceived
+
+    const totalCashReceived = Math.min(
+      remainingAmount,
+      totalCashPayments[0]?.amount || 0
+    )
+
+    const totalPaymentAmount = totalCashReceived + totalNonCashReceived
+
+    if (totalPaymentAmount < 0) {
+      throw new Error('El monto total de pagos no puede ser negativo')
     }
 
     if (totalPaymentAmount < total) {
-      throw new Error('Total payment amount is less than the sale total')
+      throw new Error('El monto total de pagos es menor al total de la venta')
+    }
+
+    if (totalPaymentAmount > total) {
+      throw new Error('El monto total de pagos es mayor al total de la venta')
     }
 
     return {
       totalPaymentAmount,
       totalCashReceived,
+      payments: payments
+        .map(payment => {
+          if (payment.method === 'cash') {
+            return {
+              ...payment,
+              changeAmount: payment.amount - totalCashReceived,
+              receivedAmount: totalCashReceived,
+            }
+          }
+
+          return payment
+        })
+        .filter(payment => payment.amount > 0),
+      hasCredits,
       isValid: true,
     }
   },
 
   async createSale(input: CreatePOSSaleInput) {
-    // Validate that a cash session is open
     const openSession = await CashSessionsService.validateCanMakeSale()
 
-    // Validate customer if provided
-    if (input.customerId) {
-      await CustomersService.getById(input.customerId)
-    }
-
-    // Validate sale totals
     if (input.subtotal < 0) {
-      throw new Error('Subtotal cannot be negative')
+      throw new Error('El subtotal no puede ser negativo')
     }
 
     if (input.total <= 0) {
-      throw new Error('Total must be positive')
+      throw new Error('El total debe ser mayor que cero')
     }
 
     if (input.taxAmount && input.taxAmount < 0) {
-      throw new Error('Tax amount cannot be negative')
+      throw new Error('El impuesto no puede ser negativo')
     }
 
     if (input.discountAmount && input.discountAmount < 0) {
-      throw new Error('Discount amount cannot be negative')
+      throw new Error('El descuento no puede ser negativo')
     }
 
-    // Validate items and get FEFO allocation
     const itemValidations = await this.validateSaleItems(input.items)
 
-    // Validate payments
-    await this.validatePayments(input.payments, input.total)
+    const { hasCredits, payments } = await this.validatePayments(
+      input.payments,
+      input.total
+    )
 
-    // Generate sale number
+    if (hasCredits && !input.customerId) {
+      throw new Error('No se ha seleccionado un cliente')
+    } else if (input.customerId) {
+      const customer = await CustomersService.getById(input.customerId)
+
+      if (!customer) {
+        throw new Error('El cliente no existe')
+      }
+    }
+
     const saleNumber = await SalesRepository.generateSaleNumber()
 
-    // Prepare sale data
     const saleData: CreateSaleData = {
       sale: {
         saleNumber,
@@ -205,7 +243,7 @@ export const POSService = {
         notes: input.notes?.trim() || undefined,
       },
       items: [],
-      payments: input.payments,
+      payments,
     }
 
     // Process items with FEFO allocation
