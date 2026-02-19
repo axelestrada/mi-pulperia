@@ -143,6 +143,7 @@ export const PosChargeModal = ({
                         name={`payments.${index}.amount`}
                         render={({ field, fieldState }) => (
                           <NumberInput
+                            autoFocus
                             placeholder="0.00"
                             errorMessage={fieldState.error?.message}
                             isInvalid={!!fieldState.error}

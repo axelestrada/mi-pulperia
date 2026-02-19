@@ -50,6 +50,7 @@ const saleItemSchema = z.object({
   image: z.string().optional().nullable(),
   title: z.string().min(1, 'Required'),
   unitPrice: z.number().min(0, 'Cannot be negative'),
+  baseUnit: z.string(),
   discount: z.number().min(0, 'Cannot be negative').optional(),
   discountType: z.enum(['fixed', 'percentage']).optional(),
   notes: z.string().optional(),
@@ -87,14 +88,28 @@ const calculateItemTotal = (
   discountType: 'fixed' | 'percentage' = 'fixed'
 ) => {
   const baseTotal = quantity * unitPrice
-  if (!discount || discount <= 0) return baseTotal
+  const normalizedDiscount = Math.max(0, discount || 0)
 
-  if (discountType === 'percentage') {
-    const percentageDiscount = Math.max(0, Math.min(100, discount))
-    return baseTotal * (1 - percentageDiscount / 100)
+  let discountedTotal = baseTotal
+
+  if (normalizedDiscount > 0) {
+    if (discountType === 'percentage') {
+      const percentageDiscount = Math.max(0, Math.min(100, normalizedDiscount))
+      discountedTotal = baseTotal * (1 - percentageDiscount / 100)
+    } else {
+      discountedTotal = Math.max(0, baseTotal - normalizedDiscount)
+    }
   }
 
-  return Math.max(0, baseTotal - discount)
+  return Math.max(0, toCents(Math.ceil(fromCents(discountedTotal))))
+}
+
+const normalizeDiscountValue = (
+  value: number | undefined,
+  discountType: 'fixed' | 'percentage'
+) => {
+  if (!value || value <= 0) return 0
+  return discountType === 'fixed' ? toCents(value) : value
 }
 
 interface POSInterfaceProps {
@@ -221,7 +236,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
       )
 
       subtotal += itemTotal
-      itemDiscountAmount += baseTotal - itemTotal
+      itemDiscountAmount += Math.max(0, baseTotal - itemTotal)
       totalItems += item.quantity
     })
 
@@ -235,32 +250,30 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     const total = Math.max(0, subtotal - globalDiscount + taxAmount)
 
     const totalPayments = payments.reduce(
-      (sum, payment) => sum + Number(payment.amount || 0),
+      (sum, payment) => sum + toCents(Number(payment.amount || 0)),
       0
     )
     const totalCash = payments
       .filter(p => p.method === 'cash')
-      .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+      .reduce((sum, p) => sum + toCents(Number(p.amount || 0)), 0)
 
     const totalChange = payments
       .filter(p => p.method !== 'cash')
-      .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+      .reduce((sum, p) => sum + toCents(Number(p.amount || 0)), 0)
 
     return {
-      subtotal: Math.round(subtotal * 100) / 100,
-      discount: Math.round((itemDiscountAmount + globalDiscount) * 100) / 100,
-      globalDiscount: Math.round(globalDiscount * 100) / 100,
-      taxAmount: Math.round(taxAmount * 100) / 100,
-      total: Math.round(total * 100) / 100,
+      subtotal: Math.round(subtotal),
+      discount: Math.round(itemDiscountAmount + globalDiscount),
+      globalDiscount: Math.round(globalDiscount),
+      taxAmount: Math.round(taxAmount),
+      total: Math.round(total),
       totalItems,
-      totalPayments: Math.round(totalPayments * 100) / 100,
-      totalCash: Math.round(totalCash * 100) / 100,
-      totalChange: Math.round(totalChange * 100) / 100,
-      balance: Math.round((total - totalPayments) * 100) / 100,
+      totalPayments: Math.round(totalPayments),
+      totalCash: Math.round(totalCash),
+      totalChange: Math.round(totalChange),
+      balance: Math.round(total - totalPayments),
     }
   }, [items, payments, saleDiscount, saleDiscountType])
-
-  const scrollHeight = cartItemsRef.current?.scrollHeight || 0
 
   const addToCart = useCallback(
     (presentation: POSPresentation, quantity: number = 1) => {
@@ -288,6 +301,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           discount: 0,
           discountType: 'fixed',
           notes: '',
+          baseUnit: presentation.unit,
         })
       }
 
@@ -523,15 +537,6 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   }, [addToCart, searchByCode])
 
   useEffect(() => {
-    if (cartItemsRef.current) {
-      cartItemsRef.current.scrollTo({
-        top: scrollHeight,
-        behavior: 'smooth',
-      })
-    }
-  }, [scrollHeight])
-
-  useEffect(() => {
     const currentLoadMore = loadMoreRef.current
 
     const observer = new IntersectionObserver(
@@ -745,7 +750,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           <FormProvider {...form}>
             <Form className="flex flex-col h-[calc(100dvh-200px)] w-full gap-0">
               <div
-                className="flex flex-col flex-1 w-full overflow-y-auto h-full"
+                className="flex flex-col flex-1 w-full overflow-y-auto h-full pb-2"
                 ref={cartItemsRef}
               >
                 {itemFields.length === 0 ? (
@@ -777,6 +782,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                           key={field.id}
                           title={currentItem.title}
                           image={currentItem.image}
+                          baseUnit={currentItem.baseUnit}
                           quantity={currentItem.quantity}
                           unitPrice={currentItem.unitPrice}
                           itemTotal={itemTotal}
@@ -815,7 +821,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                     </p>
                   </div>
 
-                  {saleDiscount > 0 && (
+                  {totals.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <p>Descuento:</p>
                       <p className="text-default-500">
@@ -905,7 +911,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                                   | 'percentage'
                                   | null
 
-                                if (value) setSaleDiscountType(value)
+                                if (value) {
+                                  setSaleDiscountType(value)
+                                  setSaleDiscount(0)
+                                }
                               }}
                             >
                               <SelectItem key="fixed">Monto fijo</SelectItem>
@@ -930,13 +939,18 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                               placeholder={
                                 saleDiscountType === 'fixed' ? '0.00' : '0'
                               }
-                              defaultValue={
-                                fromCents(saleDiscount) === 0
-                                  ? undefined
-                                  : fromCents(saleDiscount)
+                              value={
+                                saleDiscountType === 'fixed'
+                                  ? fromCents(saleDiscount)
+                                  : saleDiscount
                               }
                               onValueChange={value =>
-                                setSaleDiscount(toCents(value) || 0)
+                                setSaleDiscount(
+                                  normalizeDiscountValue(
+                                    value,
+                                    saleDiscountType
+                                  )
+                                )
                               }
                               startContent={
                                 <span className="text-default-500 text-sm">
@@ -1061,23 +1075,19 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                                   : undefined
                               }
                               placeholder={
-                                saleDiscountType === 'fixed' ? '0.00' : '0'
+                                itemDiscountTypeDraft === 'fixed' ? '0.00' : '0'
                               }
                               value={
                                 itemDiscountTypeDraft === 'fixed'
                                   ? fromCents(itemDiscountDraft)
                                   : itemDiscountDraft
                               }
-                              defaultValue={
-                                itemDiscountTypeDraft === 'fixed'
-                                  ? fromCents(itemDiscountDraft)
-                                  : itemDiscountDraft
-                              }
                               onValueChange={value =>
                                 setItemDiscountDraft(
-                                  itemDiscountTypeDraft === 'fixed'
-                                    ? toCents(value)
-                                    : value
+                                  normalizeDiscountValue(
+                                    value,
+                                    itemDiscountTypeDraft
+                                  )
                                 )
                               }
                               startContent={

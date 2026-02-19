@@ -9,6 +9,7 @@ type Props = {
   quantity: number
   itemTotal: number
   unitPrice: number
+  baseUnit: string
   discount?: string
   notes?: string
   onQuantityChange: (quantity: number) => void
@@ -25,6 +26,7 @@ export const PosCartItem = ({
   itemTotal,
   discount,
   notes,
+  baseUnit,
   onQuantityChange,
   onEditDiscount,
   onEditNotes,
@@ -64,6 +66,8 @@ export const PosCartItem = ({
                   className="sm:max-w-14"
                   size="sm"
                   variant="bordered"
+                  min={0}
+                  step={baseUnit === 'unit' ? 1 : 0.1}
                   value={quantity}
                   onValueChange={onQuantityChange}
                 />

@@ -140,8 +140,6 @@ export const useAvailablePresentations = (filters: POSFilters = {}) => {
   return useInfiniteQuery({
     queryKey: posKeys.presentationsList(filters),
     queryFn: async ({ pageParam }) => {
-      console.log('pageParam', pageParam)
-
       const data = await window.api.pos.getAvailablePresentations({
         ...filters,
         page: pageParam,

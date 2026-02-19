@@ -1,10 +1,10 @@
-import {
+import type {
   InsertCashRegister,
   SelectCashRegister,
 } from '../db/schema/cash-registers'
 import {
+  type CashRegistersFilters,
   CashRegistersRepository,
-  CashRegistersFilters,
 } from '../repositories/cash-registers-repository'
 
 export const CashRegistersService = {
@@ -110,7 +110,6 @@ export const CashRegistersService = {
         isActive: true,
       })
 
-      console.log('Default cash register created:', defaultRegister)
       return defaultRegister
     }
 

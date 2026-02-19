@@ -1,14 +1,12 @@
-import { db } from 'main/db'
 import { eq } from 'drizzle-orm'
+import { db } from 'main/db'
+import type { SelectInventoryBatch } from 'main/db/schema/inventory-batches'
 
-import {
+import { inventoryMovementsTable } from 'main/db/schema/inventory-movements'
+import type {
   CreateInventoryMovementDTO,
   InventoryMovementFilters,
 } from './inventory-model'
-
-import { inventoryMovementsTable } from 'main/db/schema/inventory-movements'
-
-import { SelectInventoryBatch } from 'main/db/schema/inventory-batches'
 
 export const inventoryMovementsRepository = {
   createMovement: async (data: CreateInventoryMovementDTO) => {

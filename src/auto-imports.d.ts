@@ -225,11 +225,15 @@ declare global {
   const IconSolarMoneyBagLinear: typeof import('~icons/solar/money-bag-linear.tsx').default
   const IconSolarPauseCircleLineDuotone: typeof import('~icons/solar/pause-circle-line-duotone.tsx').default
   const IconSolarPauseLineDuotone: typeof import('~icons/solar/pause-line-duotone.tsx').default
+  const IconSolarPen2LineDuotone: typeof import('~icons/solar/pen2-line-duotone.tsx').default
+  const IconSolarPenLineDuotone: typeof import('~icons/solar/pen-line-duotone.tsx').default
+  const IconSolarPenLinear: typeof import('~icons/solar/pen-linear.tsx').default
   const IconSolarPenNewSquareBoldDuotone: typeof import('~icons/solar/pen-new-square-bold-duotone.tsx').default
   const IconSolarPresentationGraphLinear: typeof import('~icons/solar/presentation-graph-linear.tsx').default
   const IconSolarRefreshSquareLinear: typeof import('~icons/solar/refresh-square-linear.tsx').default
   const IconSolarSafe2Linear: typeof import('~icons/solar/safe2-linear.tsx').default
   const IconSolarSaleLinear: typeof import('~icons/solar/sale-linear.tsx').default
+  const IconSolarSaleSquareLineDuotone: typeof import('~icons/solar/sale-square-line-duotone.tsx').default
   const IconSolarSaleSquareLinear: typeof import('~icons/solar/sale-square-linear.tsx').default
   const IconSolarScooterLinear: typeof import('~icons/solar/scooter-linear.tsx').default
   const IconSolarSettingsMinimalisticLinear: typeof import('~icons/solar/settings-minimalistic-linear.tsx').default
@@ -242,6 +246,7 @@ declare global {
   const IconSolarSortHorizontalLinear: typeof import('~icons/solar/sort-horizontal-linear.tsx').default
   const IconSolarSortTuning2Linear: typeof import('~icons/solar/sort-tuning2-linear.tsx').default
   const IconSolarSunOutline: typeof import('~icons/solar/sun-outline.tsx').default
+  const IconSolarTicketSaleLineDuotone: typeof import('~icons/solar/ticket-sale-line-duotone.tsx').default
   const IconSolarTicketSaleLinear: typeof import('~icons/solar/ticket-sale-linear.tsx').default
   const IconSolarTrashBinMinimalisticBoldDuotone: typeof import('~icons/solar/trash-bin-minimalistic-bold-duotone.tsx').default
   const IconSolarTrashBinMinimalisticLineDuotone: typeof import('~icons/solar/trash-bin-minimalistic-line-duotone.tsx').default

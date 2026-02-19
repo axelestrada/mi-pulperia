@@ -1,13 +1,11 @@
-
-import {
+import { inventoryBatchesRepository } from './inventory-batches-repository'
+import type {
   AddStockDTO,
   AdjustStockDTO,
   ConsumeProductDTO,
   InventoryBatchFilters,
   InventoryMovementFilters,
 } from './inventory-model'
-
-import { inventoryBatchesRepository } from './inventory-batches-repository'
 import { inventoryMovementsRepository } from './inventory-movements-repository'
 
 export const inventoryService = {
@@ -28,8 +26,6 @@ export const inventoryService = {
     if (unitCost < 0) {
       throw new Error('El costo no puede ser negativo.')
     }
-
-    console.log('batchCode', batchCode)
 
     const [batch] = await inventoryBatchesRepository.createBatch({
       productId,

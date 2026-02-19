@@ -1,15 +1,15 @@
-import { useState } from 'react'
 import {
+  BarChart3,
+  Calendar,
+  DollarSign,
   Download,
   Filter,
-  Calendar,
-  BarChart3,
-  TrendingUp,
-  DollarSign,
   Package,
+  TrendingUp,
   Users,
 } from 'lucide-react'
-
+import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 
 const reportTypes = [
   {

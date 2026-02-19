@@ -1,9 +1,8 @@
+import { CreditCard, DollarSign, PlusIcon, Search, Users } from 'lucide-react'
 import { useState } from 'react'
-import { PlusIcon, Search, CreditCard, DollarSign, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Card,
   CardContent,
@@ -11,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/ui/page-header'
 import {
   Select,
   SelectContent,
@@ -20,12 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { PageHeader } from '@/components/ui/page-header'
-
-import { CustomersTable } from '../features/customers/ui/customers-table'
-import { CustomerFormDialog } from '../features/customers/ui/customer-form-dialog'
-import { useCustomers } from '../features/customers/hooks/use-customers'
 import { useCredits } from '../features/credits/hooks/use-credits'
+import { useCustomers } from '../features/customers/hooks/use-customers'
+import { CustomerFormDialog } from '../features/customers/ui/customer-form-dialog'
+import { CustomersTable } from '../features/customers/ui/customers-table'
 
 interface Customer {
   id: number
@@ -73,8 +71,6 @@ export const CustomersPage = () => {
   })
 
   const customers = data?.data || []
-
-  console.log(customers)
 
   // Load credits data
   const {
