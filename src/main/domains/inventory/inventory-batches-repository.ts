@@ -1,13 +1,12 @@
-import { db } from 'main/db'
 import { and, asc, eq, getTableColumns, gt, lt, sql } from 'drizzle-orm'
+import { db } from 'main/db'
 
 import {
   inventoryBatchesTable,
-  SelectInventoryBatch,
+  type SelectInventoryBatch,
 } from 'main/db/schema/inventory-batches'
-
-import { CreateBatchDTO, InventoryBatchFilters } from './inventory-model'
 import { productsTable } from 'main/db/schema/products'
+import type { CreateBatchDTO, InventoryBatchFilters } from './inventory-model'
 
 export const inventoryBatchesRepository = {
   createBatch: async (data: CreateBatchDTO) => {
@@ -136,6 +135,7 @@ export const inventoryBatchesRepository = {
       .select({
         ...getTableColumns(inventoryBatchesTable),
         productName: productsTable.name,
+        unitPrecision: productsTable.unitPrecision,
       })
       .from(inventoryBatchesTable)
       .leftJoin(

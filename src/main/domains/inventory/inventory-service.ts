@@ -22,6 +22,9 @@ export const inventoryService = {
     if (quantity <= 0) {
       throw new Error('La cantidad debe ser mayor que cero.')
     }
+    if (!Number.isInteger(quantity)) {
+      throw new Error('La cantidad debe enviarse en enteros (unitPrecision).')
+    }
 
     if (unitCost < 0) {
       throw new Error('El costo no puede ser negativo.')
@@ -58,6 +61,9 @@ export const inventoryService = {
     if (quantityDelta === 0) {
       throw new Error('La cantidad no puede ser cero.')
     }
+    if (!Number.isInteger(quantityDelta)) {
+      throw new Error('La cantidad debe enviarse en enteros (unitPrecision).')
+    }
     await inventoryBatchesRepository.adjustAvailable(batchId, quantityDelta)
 
     await inventoryMovementsRepository.createMovement({
@@ -80,6 +86,9 @@ export const inventoryService = {
   }: ConsumeProductDTO) => {
     if (quantity <= 0) {
       throw new Error('La cantidad a consumir debe ser mayor que cero.')
+    }
+    if (!Number.isInteger(quantity)) {
+      throw new Error('La cantidad debe enviarse en enteros (unitPrecision).')
     }
     const batches =
       await inventoryBatchesRepository.findAvailableByProduct(productId)

@@ -59,7 +59,7 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
             <InputGroup>
               <Input
                 placeholder="0"
-                inputMode="numeric"
+                inputMode="decimal"
                 {...field}
                 value={field.value ?? ''}
               />
