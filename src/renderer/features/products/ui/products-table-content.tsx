@@ -46,7 +46,11 @@ const columns = [
   { name: 'CATEGORIA', uid: 'category' },
   { name: 'UNIDAD', uid: 'baseUnit' },
   { name: 'PRESENTACIONES', uid: 'presentations' },
-  { name: 'STOCK', uid: 'stock' },
+  {
+    name: 'STOCK',
+    uid: 'stock',
+    tooltip: 'Stock total calculado en la unidad base',
+  },
   { name: 'ESTADO', uid: 'status' },
   { name: 'ACCIONES', uid: 'actions' },
 ]
@@ -208,7 +212,9 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
                   }
                   variant="flat"
                 >
-                  {product.stock}
+                  {fromUnitPrecision(product.stock, product.unitPrecision)}
+                  {product.baseUnit !== 'unit' &&
+                    ` ${UNIT_CONFIG[product.baseUnit].label}`}
                 </Chip>
               </Tooltip>
 
@@ -436,7 +442,14 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
               key={column.uid}
               align={column.uid === 'actions' ? 'center' : 'start'}
             >
-              {column.name}
+              <div className="flex items-center gap-2">
+                {column.name}
+                {column.tooltip && (
+                  <Tooltip content={column.tooltip} color="foreground">
+                    <IconSolarInfoCircleLinear className="text-default-400" />
+                  </Tooltip>
+                )}
+              </div>
             </TableColumn>
           )}
         </TableHeader>

@@ -69,7 +69,7 @@ export const ProductsService = {
       unit: product.baseUnit,
       unitPrecision: product.unitPrecision,
       factorType: 'fixed',
-      factor: 1,
+      factor: product.unitPrecision,
       salePrice: input.salePrice,
     })
   },
@@ -83,10 +83,17 @@ export const ProductsService = {
       throw new Error('El nombre del producto es obligatorio')
     }
 
+    const unitConfig = UNIT_CONFIG[input.baseUnit]
+    if (!unitConfig) {
+      throw new Error('Unidad base invÃ¡lida')
+    }
+
     await ProductsRepository.update(id, {
       name: input.name,
       description: input.description,
       categoryId: input.categoryId,
+      baseUnit: input.baseUnit,
+      unitPrecision: unitConfig.unitPrecision,
       minStock: input.minStock,
     })
 
@@ -94,6 +101,9 @@ export const ProductsService = {
       image: input.image,
       sku: input.sku,
       barcode: input.barcode,
+      unit: input.baseUnit,
+      unitPrecision: unitConfig.unitPrecision,
+      factor: unitConfig.unitPrecision,
       salePrice: input.salePrice,
     })
   },

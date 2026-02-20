@@ -84,6 +84,7 @@ export type UpdateProductDTO = {
   name: string
   description: string | null
   categoryId: number
+  baseUnit: 'unit' | 'lb' | 'liter'
   minStock: number
   salePrice: number
   sku: string | null

@@ -6,11 +6,13 @@ import {
   SelectItem,
   Tooltip,
 } from '@heroui/react'
+import { getQuantityStep } from '../../../../shared/utils/quantity'
 
 export const ProductFormFields = () => {
   const { control, watch } = useFormContext<ProductFormData>()
 
   const baseUnit = watch('baseUnit')
+  const minStockStep = getQuantityStep(UNIT_CONFIG[baseUnit].unitPrecision)
 
   const productsUnits = [
     {
@@ -148,6 +150,8 @@ export const ProductFormFields = () => {
               label="Stock mínimo"
               labelPlacement="outside-top"
               placeholder="5"
+              step={minStockStep}
+              minValue={0}
               endContent={
                 <div className="pointer-events-none flex items-center">
                   <span className="text-default-400 text-small">

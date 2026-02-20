@@ -1,4 +1,5 @@
 import { ProductDTO } from '~/src/main/domains/products/products-model'
+import { fromUnitPrecision } from '../../../../shared/utils/quantity'
 
 export const productToForm = (product: ProductDTO): Partial<ProductFormInput> => {
   const basePresentation = product.presentations.find(
@@ -15,6 +16,6 @@ export const productToForm = (product: ProductDTO): Partial<ProductFormInput> =>
     categoryId: product.category.id || undefined,
     baseUnit: product.baseUnit,
     salePrice: fromCents(basePresentation?.salePrice || 0),
-    minStock: product.minStock,
+    minStock: fromUnitPrecision(product.minStock, product.unitPrecision),
   }
 }
