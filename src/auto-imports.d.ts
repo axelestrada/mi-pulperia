@@ -437,6 +437,8 @@ declare global {
   const formatLempira: typeof import('./shared/utils/formatCurrency').formatLempira
   const forwardRef: typeof import('react').forwardRef
   const fromCents: typeof import('./shared/utils/currency').fromCents
+  const fromUnitPrecision: typeof import('./shared/utils/quantity').fromUnitPrecision
+  const getQuantityStep: typeof import('./shared/utils/quantity').getQuantityStep
   const hero: typeof import('./renderer/hero').default
   const imageAdapter: typeof import('./renderer/features/images/api/image-adapter').imageAdapter
   const imageService: typeof import('./renderer/features/images/services/image-service').imageService
@@ -448,6 +450,7 @@ declare global {
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
   const movementSchema: typeof import('./renderer/features/inventory/model/inventory-movement-schema').movementSchema
+  const normalizeUnitPrecision: typeof import('./shared/utils/quantity').normalizeUnitPrecision
   const parseCurrency: typeof import('./shared/utils/formatCurrency').parseCurrency
   const parseError: typeof import('./shared/errors/parse-error').parseError
   const posInterface: typeof import('./renderer/features/pos/components/pos-interface').default
@@ -468,6 +471,7 @@ declare global {
   const startTransition: typeof import('react').startTransition
   const supplierAdapter: typeof import('./renderer/features/suppliers/api/supplier-adapter').supplierAdapter
   const toCents: typeof import('./shared/utils/currency').toCents
+  const toUnitPrecision: typeof import('./shared/utils/quantity').toUnitPrecision
   const toast: typeof import('sonner').toast
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
