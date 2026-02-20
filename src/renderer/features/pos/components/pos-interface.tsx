@@ -128,6 +128,19 @@ const normalizeDiscountValue = (
   return discountType === 'fixed' ? toCents(value) : value
 }
 
+const POS_PAUSED_SALES_KEY = 'POS_PAUSED_SALES'
+
+type PausedPOSSale = {
+  id: string
+  createdAt: string
+  customerId?: number
+  items: POSFormInput['items']
+  payments: POSFormInput['payments']
+  notes?: string
+  saleDiscount: number
+  saleDiscountType: 'fixed' | 'percentage'
+}
+
 interface POSInterfaceProps {
   onSaleComplete?: (saleId: number) => void
 }
@@ -159,6 +172,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     onOpenChange: onSaleDiscountModalOpenChange,
   } = useDisclosure()
   const {
+    isOpen: isPausedSalesModalOpen,
+    onOpen: onOpenPausedSalesModal,
+    onOpenChange: onPausedSalesModalOpenChange,
+  } = useDisclosure()
+  const {
     isOpen: isSaleNotesModalOpen,
     onOpen: onOpenSaleNotesModal,
     onOpenChange: onSaleNotesModalOpenChange,
@@ -181,6 +199,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     'fixed' | 'percentage'
   >('fixed')
   const [saleNotesDraft, setSaleNotesDraft] = useState('')
+  const [pausedSales, setPausedSales] = useState<PausedPOSSale[]>([])
 
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
     null
@@ -234,6 +253,48 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     control: form.control,
     name: 'items',
   })
+
+  const persistPausedSales = useCallback((sales: PausedPOSSale[]) => {
+    setPausedSales(sales)
+    window.localStorage.setItem(POS_PAUSED_SALES_KEY, JSON.stringify(sales))
+  }, [])
+
+  useEffect(() => {
+    try {
+      const rawPausedSales = window.localStorage.getItem(POS_PAUSED_SALES_KEY)
+      if (!rawPausedSales) return
+
+      const parsedPausedSales = JSON.parse(rawPausedSales)
+      if (!Array.isArray(parsedPausedSales)) return
+
+      const validPausedSales = parsedPausedSales.filter(
+        sale =>
+          sale && Array.isArray(sale.items) && Array.isArray(sale.payments)
+      ) as PausedPOSSale[]
+
+      setPausedSales(validPausedSales)
+    } catch (error) {
+      console.error('Error reading paused sales:', error)
+      window.localStorage.removeItem(POS_PAUSED_SALES_KEY)
+    }
+  }, [])
+
+  const clearCurrentSale = useCallback(() => {
+    form.reset({
+      items: [],
+      payments: [
+        {
+          method: 'cash',
+          amount: 0,
+        },
+      ],
+    })
+
+    persistedForm.clear()
+    setSaleDiscount(0)
+    setSaleDiscountType('fixed')
+    form.setValue('notes', '')
+  }, [form, persistedForm])
 
   useEffect(() => {
     const currentItemCount = itemFields.length
@@ -354,21 +415,124 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           notes: '',
         })
       }
-
-      sileo.success({
-        title: 'Producto agregado al carrito',
-        description: (
-          <span>
-            Producto <b>{title}</b> agregado al carrito exitosamente.
-          </span>
-        ),
-        autopilot: {
-          expand: 0,
-          collapse: 1500,
-        },
-      })
     },
     [appendItem, itemFields, updateItem]
+  )
+
+  const calculatePausedSaleTotal = useCallback((sale: PausedPOSSale) => {
+    const subtotal = sale.items.reduce((sum, item) => {
+      return (
+        sum +
+        calculateItemTotal(
+          item.quantity,
+          item.unitPrecision,
+          item.unitPrice,
+          item.discount,
+          item.discountType
+        )
+      )
+    }, 0)
+
+    const rawDiscount =
+      sale.saleDiscountType === 'percentage'
+        ? subtotal * (sale.saleDiscount / 100)
+        : sale.saleDiscount
+    const discountAmount = Math.max(0, Math.min(subtotal, rawDiscount))
+    return Math.max(0, subtotal - discountAmount)
+  }, [])
+
+  const getPausedSaleItemsCount = useCallback((sale: PausedPOSSale) => {
+    return sale.items.reduce((sum, item) => {
+      return sum + fromUnitPrecision(item.quantity, item.unitPrecision)
+    }, 0)
+  }, [])
+
+  const getCustomerNameById = useCallback(
+    (id?: number) => {
+      if (!id) return 'Cliente Final'
+      return customers?.find(customer => customer.id === id)?.name || `#${id}`
+    },
+    [customers]
+  )
+
+  const pauseCurrentSale = useCallback(() => {
+    const currentItems = form.getValues('items')
+    if (!currentItems.length) {
+      sileo.error({
+        title: 'No hay productos para pausar.',
+        description: 'Agrega al menos un producto antes de pausar la venta.',
+      })
+      return
+    }
+
+    const currentSale: PausedPOSSale = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      customerId: form.getValues('customerId'),
+      items: currentItems,
+      payments: form.getValues('payments') || [],
+      notes: form.getValues('notes') || '',
+      saleDiscount,
+      saleDiscountType,
+    }
+
+    persistPausedSales([currentSale, ...pausedSales])
+    clearCurrentSale()
+
+    sileo.success({
+      title: 'Venta pausada exitosamente.',
+      description: 'La venta fue guardada en la lista de ventas pausadas.',
+    })
+  }, [
+    clearCurrentSale,
+    form,
+    pausedSales,
+    persistPausedSales,
+    saleDiscount,
+    saleDiscountType,
+  ])
+
+  const removePausedSale = useCallback(
+    (saleId: string) => {
+      const nextPausedSales = pausedSales.filter(sale => sale.id !== saleId)
+      persistPausedSales(nextPausedSales)
+    },
+    [pausedSales, persistPausedSales]
+  )
+
+  const resumePausedSale = useCallback(
+    (saleId: string) => {
+      const pausedSale = pausedSales.find(sale => sale.id === saleId)
+      if (!pausedSale) return
+
+      form.reset({
+        customerId: pausedSale.customerId,
+        items: pausedSale.items,
+        payments:
+          pausedSale.payments?.length > 0
+            ? pausedSale.payments
+            : [
+                {
+                  method: 'cash',
+                  amount: 0,
+                },
+              ],
+        notes: pausedSale.notes || '',
+      })
+
+      setSaleDiscount(pausedSale.saleDiscount || 0)
+      setSaleDiscountType(pausedSale.saleDiscountType || 'fixed')
+
+      const nextPausedSales = pausedSales.filter(sale => sale.id !== saleId)
+      persistPausedSales(nextPausedSales)
+
+      sileo.success({
+        title: 'Venta reanudada.',
+        description:
+          'La venta fue cargada al carrito y eliminada de ventas pausadas.',
+      })
+    },
+    [form, pausedSales, persistPausedSales]
   )
 
   const openItemDiscountModal = (index: number) => {
@@ -469,20 +633,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
       const result = await createSale.mutateAsync(saleInput)
 
-      form.reset({
-        items: [],
-        payments: [
-          {
-            method: 'cash',
-            amount: 0,
-          },
-        ],
-      })
-
-      persistedForm.clear()
-      setSaleDiscount(0)
-      setSaleDiscountType('fixed')
-      form.setValue('notes', '')
+      clearCurrentSale()
 
       onCloseChargeModal()
 
@@ -732,11 +883,16 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="bordered">
+            <Button variant="bordered" onPress={onOpenPausedSalesModal}>
               <IconSolarPauseCircleLineDuotone className="size-5" />
-              Pausadas
+              Pausadas ({pausedSales.length})
             </Button>
-            <Button isIconOnly variant="bordered">
+            <Button
+              isIconOnly
+              variant="bordered"
+              onPress={pauseCurrentSale}
+              isDisabled={itemFields.length === 0}
+            >
               <IconSolarPauseLineDuotone className="size-4" />
             </Button>
           </div>
@@ -920,29 +1076,105 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                     hasNotes={Boolean((form.watch('notes') || '').trim())}
                   />
 
-                  <Button
-                    variant="light"
-                    fullWidth
-                    onPress={() => {
-                      form.reset({
-                        items: [],
-                        payments: [
-                          {
-                            method: 'cash',
-                            amount: 0,
-                          },
-                        ],
-                      })
-
-                      persistedForm.clear()
-                      setSaleDiscount(0)
-                      setSaleDiscountType('fixed')
-                      form.setValue('notes', '')
-                    }}
-                  >
+                  <Button variant="light" fullWidth onPress={clearCurrentSale}>
                     Limpiar Carrito
                   </Button>
                 </div>
+
+                <Modal
+                  isOpen={isPausedSalesModalOpen}
+                  onOpenChange={onPausedSalesModalOpenChange}
+                  scrollBehavior="inside"
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Ventas pausadas</ModalHeader>
+                        <ModalBody>
+                          {pausedSales.length === 0 ? (
+                            <p className="text-sm text-default-500">
+                              No hay ventas pausadas.
+                            </p>
+                          ) : (
+                            <div className="space-y-3">
+                              {pausedSales.map((pausedSale, index) => (
+                                <Card key={pausedSale.id} isBlurred>
+                                  <CardBody className="space-y-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div>
+                                        <p className="font-semibold text-sm">
+                                          Venta pausada #
+                                          {pausedSales.length - index}
+                                        </p>
+                                        <p className="text-xs text-default-500">
+                                          {new Date(
+                                            pausedSale.createdAt
+                                          ).toLocaleString()}
+                                        </p>
+                                      </div>
+                                      <p className="font-semibold text-sm">
+                                        {formatCurrency(
+                                          fromCents(
+                                            calculatePausedSaleTotal(pausedSale)
+                                          )
+                                        )}
+                                      </p>
+                                    </div>
+
+                                    <div className="text-xs text-default-500 space-y-1">
+                                      <p>
+                                        Cliente:{' '}
+                                        <span className="text-default-700">
+                                          {getCustomerNameById(
+                                            pausedSale.customerId
+                                          )}
+                                        </span>
+                                      </p>
+                                      <p>
+                                        Articulos:{' '}
+                                        <span className="text-default-700">
+                                          {getPausedSaleItemsCount(pausedSale)}
+                                        </span>
+                                      </p>
+                                    </div>
+
+                                    <div className="flex justify-end gap-2">
+                                      <Button
+                                        size="sm"
+                                        color="danger"
+                                        variant="light"
+                                        onPress={() =>
+                                          removePausedSale(pausedSale.id)
+                                        }
+                                      >
+                                        Eliminar
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        color="primary"
+                                        onPress={() => {
+                                          resumePausedSale(pausedSale.id)
+                                          onClose()
+                                        }}
+                                      >
+                                        Reanudar
+                                      </Button>
+                                    </div>
+                                  </CardBody>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button variant="light" onPress={onClose}>
+                            Cerrar
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
 
                 <Modal
                   isOpen={isSaleDiscountModalOpen}
