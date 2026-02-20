@@ -1,6 +1,16 @@
+import { fromUnitPrecision } from '../../../../shared/utils/quantity'
+
 export const presentationToForm = (
   presentation: Presentation
 ): PresentationFormInput => {
+  const factorValue =
+    presentation.factorType === 'fixed'
+      ? fromUnitPrecision(
+          presentation.factor ?? presentation.unitPrecision,
+          presentation.unitPrecision
+        )
+      : undefined
+
   if (presentation.factorType === 'fixed') {
     return {
       id: presentation.id,
@@ -14,7 +24,7 @@ export const presentationToForm = (
       salePrice: presentation.salePrice / 100,
       status: presentation.status,
       factorType: 'fixed',
-      factor: presentation.factor ?? 1,
+      factor: factorValue ?? 1,
     }
   }
 

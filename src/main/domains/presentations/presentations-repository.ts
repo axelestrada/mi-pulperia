@@ -85,6 +85,16 @@ export const PresentationsRepository = {
       )
   },
 
+  async findById(id: number) {
+    return db
+      .select()
+      .from(presentationsTable)
+      .where(
+        and(eq(presentationsTable.id, id), eq(presentationsTable.deleted, false))
+      )
+      .get()
+  },
+
   async create(data: InsertPresentation) {
     const [row] = await db.insert(presentationsTable).values(data).returning()
 

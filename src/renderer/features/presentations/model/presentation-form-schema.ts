@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { UNIT_CONFIG } from '../../../../main/domains/products/products-units'
+import { toUnitPrecision } from '../../../../shared/utils/quantity'
 
 const baseSchema = {
   id: z.number().optional(),
@@ -30,7 +32,7 @@ export const presentationFormSchema = z
       factorType: z.literal('fixed'),
       factor: z.coerce
         .number({ error: 'Ingrese el factor' })
-        .min(1, 'El factor debe ser mayor o igual a 1'),
+        .positive('El factor debe ser mayor a 0'),
     }),
 
     z.object({
@@ -41,7 +43,10 @@ export const presentationFormSchema = z
   ])
   .transform(data => ({
     ...data,
-    factor: data.factorType === 'variable' ? null : data.factor,
+    factor:
+      data.factorType === 'variable'
+        ? null
+        : toUnitPrecision(data.factor, UNIT_CONFIG[data.unit].unitPrecision),
   }))
 
 export type PresentationFormInput = z.input<typeof presentationFormSchema>

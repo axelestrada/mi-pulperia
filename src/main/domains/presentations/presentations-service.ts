@@ -9,6 +9,7 @@ import { PresentationsRepository } from './presentations-repository'
 import { PaginatedResult } from 'shared/types/pagination'
 
 import { UNIT_CONFIG } from 'main/domains/products/products-units'
+import { toUnitPrecision } from '../../../shared/utils/quantity'
 
 export const PresentationsService = {
   async list(
@@ -48,7 +49,18 @@ export const PresentationsService = {
 
     const row = await PresentationsRepository.create({
       ...input,
-      factor: input.factorType === 'fixed' ? input.factor : null,
+      factor:
+        input.isBase
+          ? unitConfig.unitPrecision
+          : input.factorType === 'fixed'
+          ? Math.max(
+              1,
+              Number.isInteger(input.factor || 0)
+                ? (input.factor as number)
+                : toUnitPrecision(input.factor || 0, unitConfig.unitPrecision)
+            )
+          : null,
+      factorType: input.isBase ? 'fixed' : input.factorType,
       unitPrecision: unitConfig.unitPrecision,
     })
 
@@ -56,7 +68,41 @@ export const PresentationsService = {
   },
 
   async update(id: number, input: UpdatePresentationDTO) {
-    const row = await PresentationsRepository.update(id, input)
+    const current = await PresentationsRepository.findById(id)
+    if (!current) {
+      throw new Error('PresentaciÃ³n no encontrada')
+    }
+
+    const nextUnit = input.unit ?? current.unit
+    const unitConfig = UNIT_CONFIG[nextUnit]
+
+    if (!unitConfig) {
+      throw new Error('Unidad invÃ¡lida')
+    }
+
+    const nextFactorType = input.factorType ?? current.factorType
+    const normalizedFactor =
+      nextFactorType === 'fixed'
+        ? current.isBase
+          ? unitConfig.unitPrecision
+          : Math.max(
+              1,
+              Number.isInteger(input.factor ?? current.factor ?? 0)
+                ? Number(input.factor ?? current.factor)
+                : toUnitPrecision(
+                    Number(input.factor ?? current.factor),
+                    unitConfig.unitPrecision
+                  )
+            )
+        : null
+
+    const row = await PresentationsRepository.update(id, {
+      ...input,
+      unit: nextUnit,
+      unitPrecision: unitConfig.unitPrecision,
+      factorType: current.isBase ? 'fixed' : nextFactorType,
+      factor: normalizedFactor,
+    })
 
     return toPresentationDTO(row)
   },

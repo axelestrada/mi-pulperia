@@ -1,6 +1,6 @@
-import { ProductDTO } from '~/src/main/domains/products/products-model'
-
-import { Input, Textarea, NumberInput, Select, SelectItem } from '@heroui/react'
+import { Input, NumberInput, Select, SelectItem, Textarea } from '@heroui/react'
+import type { ProductDTO } from '~/src/main/domains/products/products-model'
+import { getQuantityStep } from '../../../../shared/utils/quantity'
 
 type Props = {
   product: ProductDTO
@@ -12,6 +12,8 @@ export const PresentationFormFields = ({ product }: Props) => {
     useFormContext<PresentationFormInput>()
 
   const factorType = watch('factorType')
+  const selectedUnit = watch('unit')
+  const factorStep = getQuantityStep(UNIT_CONFIG[selectedUnit].unitPrecision)
 
   const productsUnits = [
     {
@@ -203,6 +205,8 @@ export const PresentationFormFields = ({ product }: Props) => {
               isRequired
               labelPlacement="outside-top"
               placeholder={factorType === 'fixed' ? '12' : 'n'}
+              step={factorStep}
+              minValue={factorStep}
               startContent={
                 <div className="pointer-events-none flex items-center">
                   <span className="text-default-400 text-small">x</span>
