@@ -141,6 +141,16 @@ type PausedPOSSale = {
   saleDiscountType: 'fixed' | 'percentage'
 }
 
+type ConfirmDialogOptions = {
+  title: string
+  message: string
+  confirmText?: string
+  cancelText?: string
+  confirmColor?: 'primary' | 'danger'
+}
+
+type ResumeConflictChoice = 'replace' | 'combine' | 'cancel'
+
 interface POSInterfaceProps {
   onSaleComplete?: (saleId: number) => void
 }
@@ -200,6 +210,27 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   >('fixed')
   const [saleNotesDraft, setSaleNotesDraft] = useState('')
   const [pausedSales, setPausedSales] = useState<PausedPOSSale[]>([])
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText: string
+    cancelText: string
+    confirmColor: 'primary' | 'danger'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirmar',
+    cancelText: 'Cancelar',
+    confirmColor: 'primary',
+  })
+  const [resumeConflictDialogOpen, setResumeConflictDialogOpen] =
+    useState(false)
+  const confirmResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
+  const resumeConflictResolverRef = useRef<
+    ((choice: ResumeConflictChoice) => void) | null
+  >(null)
 
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
     null
@@ -500,28 +531,163 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     [pausedSales, persistPausedSales]
   )
 
-  const resumePausedSale = useCallback(
-    (saleId: string) => {
-      const pausedSale = pausedSales.find(sale => sale.id === saleId)
-      if (!pausedSale) return
+  const confirmAction = useCallback((options: ConfirmDialogOptions) => {
+    return new Promise<boolean>(resolve => {
+      confirmResolverRef.current = resolve
+      setConfirmDialog({
+        isOpen: true,
+        title: options.title,
+        message: options.message,
+        confirmText: options.confirmText || 'Confirmar',
+        cancelText: options.cancelText || 'Cancelar',
+        confirmColor: options.confirmColor || 'primary',
+      })
+    })
+  }, [])
 
-      form.reset({
-        customerId: pausedSale.customerId,
-        items: pausedSale.items,
-        payments:
-          pausedSale.payments?.length > 0
-            ? pausedSale.payments
-            : [
-                {
-                  method: 'cash',
-                  amount: 0,
-                },
-              ],
-        notes: pausedSale.notes || '',
+  const closeConfirmDialog = useCallback((confirmed: boolean) => {
+    setConfirmDialog(previous => ({ ...previous, isOpen: false }))
+    confirmResolverRef.current?.(confirmed)
+    confirmResolverRef.current = null
+  }, [])
+
+  const confirmClearCurrentSale = useCallback(async () => {
+    const hasActiveSale = (form.getValues('items') || []).length > 0
+    if (!hasActiveSale) {
+      clearCurrentSale()
+      return
+    }
+
+    const confirmed = await confirmAction({
+      title: 'Limpiar carrito',
+      message:
+        'Esta accion eliminara los productos del carrito actual. Deseas continuar?',
+      confirmText: 'Si, limpiar',
+      cancelText: 'No',
+      confirmColor: 'danger',
+    })
+
+    if (!confirmed) return
+    clearCurrentSale()
+  }, [clearCurrentSale, confirmAction, form])
+
+  const confirmRemovePausedSale = useCallback(
+    async (saleId: string) => {
+      const confirmed = await confirmAction({
+        title: 'Eliminar venta pausada',
+        message:
+          'Esta accion eliminara la venta pausada seleccionada. Deseas continuar?',
+        confirmText: 'Si, eliminar',
+        cancelText: 'No',
+        confirmColor: 'danger',
       })
 
-      setSaleDiscount(pausedSale.saleDiscount || 0)
-      setSaleDiscountType(pausedSale.saleDiscountType || 'fixed')
+      if (!confirmed) return
+      removePausedSale(saleId)
+    },
+    [confirmAction, removePausedSale]
+  )
+
+  const askResumeConflictChoice = useCallback(() => {
+    return new Promise<ResumeConflictChoice>(resolve => {
+      resumeConflictResolverRef.current = resolve
+      setResumeConflictDialogOpen(true)
+    })
+  }, [])
+
+  const closeResumeConflictDialog = useCallback(
+    (choice: ResumeConflictChoice) => {
+      setResumeConflictDialogOpen(false)
+      resumeConflictResolverRef.current?.(choice)
+      resumeConflictResolverRef.current = null
+    },
+    []
+  )
+
+  const resumePausedSale = useCallback(
+    async (saleId: string) => {
+      const pausedSale = pausedSales.find(sale => sale.id === saleId)
+      if (!pausedSale) return false
+
+      const activeItems = form.getValues('items') || []
+      const hasActiveSale = activeItems.length > 0
+
+      let choice: ResumeConflictChoice = 'replace'
+
+      if (hasActiveSale) {
+        choice = await askResumeConflictChoice()
+        if (choice === 'cancel') return false
+      }
+
+      if (choice === 'combine') {
+        const currentCustomerId = form.getValues('customerId')
+        const currentNotes = form.getValues('notes') || ''
+        const mergedNotes = [currentNotes, pausedSale.notes || '']
+          .map(note => note.trim())
+          .filter(Boolean)
+          .join('\n')
+
+        const mergedItems = activeItems.map(item => ({ ...item }))
+
+        pausedSale.items.forEach(pausedItem => {
+          const existingIndex = mergedItems.findIndex(
+            item => item.presentationId === pausedItem.presentationId
+          )
+
+          if (existingIndex < 0) {
+            mergedItems.push({ ...pausedItem })
+            return
+          }
+
+          const existingItem = mergedItems[existingIndex]
+          mergedItems[existingIndex] = {
+            ...existingItem,
+            quantity: existingItem.quantity + pausedItem.quantity,
+            notes: [existingItem.notes, pausedItem.notes]
+              .map(note => (note || '').trim())
+              .filter(Boolean)
+              .join(' | '),
+          }
+        })
+
+        form.reset({
+          customerId: currentCustomerId || pausedSale.customerId,
+          items: mergedItems,
+          payments: [
+            {
+              method: 'cash',
+              amount: 0,
+            },
+          ],
+          notes: mergedNotes,
+        })
+
+        if (saleDiscount > 0) {
+          setSaleDiscount(saleDiscount)
+          setSaleDiscountType(saleDiscountType)
+        } else {
+          setSaleDiscount(pausedSale.saleDiscount || 0)
+          setSaleDiscountType(pausedSale.saleDiscountType || 'fixed')
+        }
+      } else {
+        form.reset({
+          customerId: pausedSale.customerId,
+          items: pausedSale.items,
+          payments:
+            pausedSale.payments?.length > 0
+              ? pausedSale.payments
+              : [
+                  {
+                    method: 'cash',
+                    amount: 0,
+                  },
+                ],
+          notes: pausedSale.notes || '',
+        })
+
+        setSaleDiscount(pausedSale.saleDiscount || 0)
+        setSaleDiscountType(pausedSale.saleDiscountType || 'fixed')
+      }
 
       const nextPausedSales = pausedSales.filter(sale => sale.id !== saleId)
       persistPausedSales(nextPausedSales)
@@ -529,10 +695,20 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
       sileo.success({
         title: 'Venta reanudada.',
         description:
-          'La venta fue cargada al carrito y eliminada de ventas pausadas.',
+          choice === 'combine'
+            ? 'La venta pausada se combino con la venta actual y fue eliminada de ventas pausadas.'
+            : 'La venta fue cargada al carrito y eliminada de ventas pausadas.',
       })
+      return true
     },
-    [form, pausedSales, persistPausedSales]
+    [
+      askResumeConflictChoice,
+      form,
+      pausedSales,
+      persistPausedSales,
+      saleDiscount,
+      saleDiscountType,
+    ]
   )
 
   const openItemDiscountModal = (index: number) => {
@@ -1076,7 +1252,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                     hasNotes={Boolean((form.watch('notes') || '').trim())}
                   />
 
-                  <Button variant="light" fullWidth onPress={clearCurrentSale}>
+                  <Button
+                    variant="light"
+                    fullWidth
+                    onPress={confirmClearCurrentSale}
+                  >
                     Limpiar Carrito
                   </Button>
                 </div>
@@ -1144,7 +1324,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                                         color="danger"
                                         variant="light"
                                         onPress={() =>
-                                          removePausedSale(pausedSale.id)
+                                          void confirmRemovePausedSale(
+                                            pausedSale.id
+                                          )
                                         }
                                       >
                                         Eliminar
@@ -1152,9 +1334,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                                       <Button
                                         size="sm"
                                         color="primary"
-                                        onPress={() => {
-                                          resumePausedSale(pausedSale.id)
-                                          onClose()
+                                        onPress={async () => {
+                                          const resumed = await resumePausedSale(
+                                            pausedSale.id
+                                          )
+                                          if (resumed) onClose()
                                         }}
                                       >
                                         Reanudar
@@ -1173,6 +1357,75 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                         </ModalFooter>
                       </>
                     )}
+                  </ModalContent>
+                </Modal>
+
+                <Modal
+                  isOpen={resumeConflictDialogOpen}
+                  onOpenChange={open => {
+                    if (!open) closeResumeConflictDialog('cancel')
+                  }}
+                  size="md"
+                >
+                  <ModalContent>
+                    <ModalHeader>Ya hay una venta activa</ModalHeader>
+                    <ModalBody>
+                      <p className="text-sm text-default-600">
+                        Deseas reemplazar la venta actual por la pausada o
+                        combinarlas?
+                      </p>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button
+                        variant="light"
+                        onPress={() => closeResumeConflictDialog('cancel')}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        variant="bordered"
+                        onPress={() => closeResumeConflictDialog('combine')}
+                      >
+                        Combinar
+                      </Button>
+                      <Button
+                        color="primary"
+                        onPress={() => closeResumeConflictDialog('replace')}
+                      >
+                        Reemplazar
+                      </Button>
+                    </ModalFooter>
+                  </ModalContent>
+                </Modal>
+
+                <Modal
+                  isOpen={confirmDialog.isOpen}
+                  onOpenChange={open => {
+                    if (!open) closeConfirmDialog(false)
+                  }}
+                  size="xs"
+                >
+                  <ModalContent>
+                    <ModalHeader>{confirmDialog.title}</ModalHeader>
+                    <ModalBody>
+                      <p className="text-sm text-default-600">
+                        {confirmDialog.message}
+                      </p>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button
+                        variant="light"
+                        onPress={() => closeConfirmDialog(false)}
+                      >
+                        {confirmDialog.cancelText}
+                      </Button>
+                      <Button
+                        color={confirmDialog.confirmColor}
+                        onPress={() => closeConfirmDialog(true)}
+                      >
+                        {confirmDialog.confirmText}
+                      </Button>
+                    </ModalFooter>
                   </ModalContent>
                 </Modal>
 
