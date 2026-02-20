@@ -2,13 +2,16 @@ import { Card, CardBody, CardFooter, Chip, Image } from '@heroui/react'
 import type { POSPresentation } from 'main/repositories/pos-repository'
 
 import placeholder from '@/assets/images/placeholder.svg'
+import { cn } from '@/lib/utils'
 
 type Props = {
   presentation: POSPresentation
   onClick: (presentation: POSPresentation) => void
+  onSelect?: (presentation: POSPresentation) => void
+  isActive?: boolean
 }
 
-export const PosItem = ({ presentation, onClick }: Props) => {
+export const PosItem = ({ presentation, onClick, onSelect, isActive }: Props) => {
   const { data: image } = useImagePath(presentation.image)
 
   const title = presentation.isBase
@@ -19,8 +22,13 @@ export const PosItem = ({ presentation, onClick }: Props) => {
     <Card
       isPressable
       shadow="sm"
-      onPress={() => onClick(presentation)}
-      className="h-max min-h-full"
+      onPress={() => {
+        onSelect?.(presentation)
+        onClick(presentation)
+      }}
+      className={cn('h-max min-h-full', {
+        'ring-2 ring-primary': isActive,
+      })}
       classNames={{
         body: 'flex-none',
       }}

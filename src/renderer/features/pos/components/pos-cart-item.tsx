@@ -21,6 +21,8 @@ type Props = {
   onEditDiscount: () => void
   onEditNotes: () => void
   onRemove: () => void
+  isActive?: boolean
+  onSelect?: () => void
 }
 
 export const PosCartItem = ({
@@ -36,13 +38,31 @@ export const PosCartItem = ({
   onEditDiscount,
   onEditNotes,
   onRemove,
+  isActive,
+  onSelect,
 }: Props) => {
   const { data: imagePath } = useImagePath(image)
   const quantityStep = getQuantityStep(unitPrecision)
   const displayQuantity = fromUnitPrecision(quantity, unitPrecision)
 
   return (
-    <div className="group relative rounded-medium p-1 overflow-hidden hover:bg-default-50 transition-colors">
+    <div
+      className={cn(
+        'group relative rounded-medium p-1 overflow-hidden hover:bg-default-50 transition-colors',
+        {
+          'bg-primary-50 ring-1 ring-primary': isActive,
+        }
+      )}
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect?.()
+        }
+      }}
+    >
       <div className="flex gap-3 items-center">
         <Image
           isBlurred
@@ -148,4 +168,3 @@ export const PosCartItem = ({
     </div>
   )
 }
-

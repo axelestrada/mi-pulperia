@@ -554,6 +554,7 @@ declare global {
   const useOutlet: typeof import('react-router-dom').useOutlet
   const useOutletContext: typeof import('react-router-dom').useOutletContext
   const useOverdueCredits: typeof import('./renderer/features/credits/hooks/use-credits').useOverdueCredits
+  const usePOSShortcuts: typeof import('./renderer/features/pos/hooks/use-pos-shortcuts').usePOSShortcuts
   const useParams: typeof import('react-router-dom').useParams
   const usePartialCredits: typeof import('./renderer/features/credits/hooks/use-credits').usePartialCredits
   const usePosPresentations: typeof import('./renderer/features/presentations/hooks/use-pos-presentations').usePosPresentations
@@ -635,6 +636,9 @@ declare global {
   // @ts-ignore
   export type { POSFormInput, POSFormData } from './renderer/features/pos/components/pos-interface'
   import('./renderer/features/pos/components/pos-interface')
+  // @ts-ignore
+  export type { PaymentShortcutMethod } from './renderer/features/pos/hooks/use-pos-shortcuts'
+  import('./renderer/features/pos/hooks/use-pos-shortcuts')
   // @ts-ignore
   export type { PresentationFormInput, PresentationFormData, PresentationFormMode } from './renderer/features/presentations/model/presentation-form-schema'
   import('./renderer/features/presentations/model/presentation-form-schema')

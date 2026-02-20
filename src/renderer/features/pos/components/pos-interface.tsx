@@ -45,6 +45,10 @@ import {
   useCreatePOSSale,
   useSearchByCode,
 } from '../../../hooks/use-pos'
+import {
+  type PaymentShortcutMethod,
+  usePOSShortcuts,
+} from '../hooks/use-pos-shortcuts'
 import { PosChargeModal } from './pos-charge-modal'
 
 // Form validation schemas
@@ -164,6 +168,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const cartItemsRef = useRef<HTMLDivElement | null>(null)
   const mainRef = useRef<HTMLDivElement | null>(null)
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
+  const codeInputRef = useRef<HTMLInputElement | null>(null)
   const previousItemCountRef = useRef(0)
   const hasInitializedCartScrollRef = useRef(false)
 
@@ -210,6 +216,12 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   >('fixed')
   const [saleNotesDraft, setSaleNotesDraft] = useState('')
   const [pausedSales, setPausedSales] = useState<PausedPOSSale[]>([])
+  const [selectedPresentationId, setSelectedPresentationId] = useState<
+    number | null
+  >(null)
+  const [activeCartItemIndex, setActiveCartItemIndex] = useState<number | null>(
+    null
+  )
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean
     title: string
@@ -249,6 +261,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     page: 1,
     limit: 30,
   })
+  const allPresentations = React.useMemo(
+    () => presentationsData?.data?.pages.flatMap(page => page.data) ?? [],
+    [presentationsData?.data?.pages]
+  )
 
   const createSale = useCreatePOSSale()
   const searchByCode = useSearchByCode()
@@ -349,6 +365,35 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     previousItemCountRef.current = currentItemCount
   }, [itemFields.length])
 
+  useEffect(() => {
+    if (allPresentations.length === 0) {
+      setSelectedPresentationId(null)
+      return
+    }
+
+    const hasSelectedPresentation = allPresentations.some(
+      presentation => presentation.id === selectedPresentationId
+    )
+
+    if (!hasSelectedPresentation) {
+      setSelectedPresentationId(allPresentations[0].id)
+    }
+  }, [allPresentations, selectedPresentationId])
+
+  useEffect(() => {
+    if (itemFields.length === 0) {
+      setActiveCartItemIndex(null)
+      return
+    }
+
+    if (
+      activeCartItemIndex === null ||
+      activeCartItemIndex >= itemFields.length
+    ) {
+      setActiveCartItemIndex(itemFields.length - 1)
+    }
+  }, [activeCartItemIndex, itemFields.length])
+
   // Calculate totals
   const items = form.watch('items')
   const payments = form.watch('payments')
@@ -433,6 +478,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           ...existingItem,
           quantity: existingItem.quantity + precisionQuantity,
         })
+        setActiveCartItemIndex(existingIndex)
       } else {
         appendItem({
           presentationId: presentation.id,
@@ -445,10 +491,77 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           discountType: 'fixed',
           notes: '',
         })
+        setActiveCartItemIndex(itemFields.length)
       }
+
+      setSelectedPresentationId(presentation.id)
     },
     [appendItem, itemFields, updateItem]
   )
+
+  const searchAndAddByCode = useCallback(
+    async (rawCode: string) => {
+      const code = rawCode.trim()
+      if (!code) return false
+
+      const presentation = await searchByCode.mutateAsync(code)
+
+      if (presentation) {
+        addToCart(presentation)
+        return true
+      }
+
+      sileo.error({
+        title: 'Producto no encontrado',
+        description: (
+          <span>
+            El producto con el codigo <b>{code}</b> no fue encontrado
+          </span>
+        ),
+      })
+      return false
+    },
+    [addToCart, searchByCode]
+  )
+
+  const addSelectedPresentationToCart = useCallback(() => {
+    const selectedPresentation =
+      allPresentations.find(item => item.id === selectedPresentationId) ??
+      allPresentations[0]
+
+    if (!selectedPresentation) return
+    setSelectedPresentationId(selectedPresentation.id)
+    addToCart(selectedPresentation)
+  }, [addToCart, allPresentations, selectedPresentationId])
+
+  const increaseActiveItemQuantity = useCallback(() => {
+    if (activeCartItemIndex === null) return
+    const currentItem = form.getValues(`items.${activeCartItemIndex}`)
+    if (!currentItem) return
+    const quantityStep = toUnitPrecision(1, currentItem.unitPrecision)
+
+    updateItem(activeCartItemIndex, {
+      ...currentItem,
+      quantity: currentItem.quantity + quantityStep,
+    })
+  }, [activeCartItemIndex, form, updateItem])
+
+  const decreaseActiveItemQuantity = useCallback(() => {
+    if (activeCartItemIndex === null) return
+    const currentItem = form.getValues(`items.${activeCartItemIndex}`)
+    if (!currentItem) return
+    const quantityStep = toUnitPrecision(1, currentItem.unitPrecision)
+
+    updateItem(activeCartItemIndex, {
+      ...currentItem,
+      quantity: Math.max(quantityStep, currentItem.quantity - quantityStep),
+    })
+  }, [activeCartItemIndex, form, updateItem])
+
+  const removeActiveCartItem = useCallback(() => {
+    if (activeCartItemIndex === null) return
+    removeItem(activeCartItemIndex)
+  }, [activeCartItemIndex, removeItem])
 
   const calculatePausedSaleTotal = useCallback((sale: PausedPOSSale) => {
     const subtotal = sale.items.reduce((sum, item) => {
@@ -711,6 +824,56 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     ]
   )
 
+  const resumeLatestPausedSale = useCallback(async () => {
+    const latestPausedSale = pausedSales[0]
+
+    if (!latestPausedSale) {
+      sileo.error({
+        title: 'No hay ventas pausadas.',
+        description: 'Guarda una venta pausada para poder reanudarla.',
+      })
+      return
+    }
+
+    await resumePausedSale(latestPausedSale.id)
+  }, [pausedSales, resumePausedSale])
+
+  const setPaymentMethodByShortcut = useCallback(
+    (method: PaymentShortcutMethod) => {
+      const mappedMethod = method === 'cash' ? 'cash' : 'credit'
+      const currentPayments = form.getValues('payments') || []
+      const amountForCash = fromCents(totals.total)
+      const nextPayments =
+        currentPayments.length > 0
+          ? currentPayments.map((payment, index) => {
+              if (index !== 0) return payment
+              return {
+                ...payment,
+                method: mappedMethod,
+                amount:
+                  mappedMethod === 'cash' ? amountForCash : payment.amount,
+              }
+            })
+          : [
+              {
+                method: mappedMethod,
+                amount: mappedMethod === 'cash' ? amountForCash : 0,
+              },
+            ]
+
+      form.setValue('payments', nextPayments)
+
+      if (method !== 'cash') {
+        sileo.success({
+          title:
+            method === 'card' ? 'Pago con tarjeta' : 'Pago por transferencia',
+          description: 'Se registrara como pago a credito en esta version.',
+        })
+      }
+    },
+    [form, totals.total]
+  )
+
   const openItemDiscountModal = (index: number) => {
     const item = form.getValues(`items.${index}`)
     if (!item) return
@@ -835,23 +998,31 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     }
   }
 
+  usePOSShortcuts({
+    isChargeModalOpen,
+    focusSearch: () => searchInputRef.current?.querySelector('input')?.focus(),
+    focusCodeInput: () => codeInputRef.current?.querySelector('input')?.focus(),
+    addSelectedProduct: addSelectedPresentationToCart,
+    increaseActiveItemQuantity,
+    decreaseActiveItemQuantity,
+    removeActiveItem: removeActiveCartItem,
+    clearCartWithConfirmation: () => {
+      void confirmClearCurrentSale()
+    },
+    openChargeModal: onOpenChargeModal,
+    selectPaymentMethod: setPaymentMethodByShortcut,
+    confirmSale: () => {
+      void form.handleSubmit(onSubmit)()
+    },
+    openDiscountModal: onOpenSaleDiscountModal,
+    resumeSavedSale: () => {
+      void resumeLatestPausedSale()
+    },
+    pauseCurrentSale,
+    goToCashSession: () => navigate('/cash'),
+  })
+
   useEffect(() => {
-    const onBarcodeScanned = async (code: string) => {
-      const presentation = await searchByCode.mutateAsync(code)
-
-      if (presentation) addToCart(presentation)
-      else {
-        sileo.error({
-          title: 'Producto no encontrado',
-          description: (
-            <span>
-              El producto con el código <b>{code}</b> no fue encontrado
-            </span>
-          ),
-        })
-      }
-    }
-
     let buffer = ''
     let scanStartTime = 0
     let lastKeyTime = 0
@@ -902,7 +1073,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           buffer = ''
           scanStartTime = 0
           lastKeyTime = 0
-          void onBarcodeScanned(code)
+          void searchAndAddByCode(code)
           return
         }
 
@@ -918,7 +1089,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     return () => {
       window.removeEventListener('keydown', onKeyDown, { capture: true })
     }
-  }, [addToCart, searchByCode])
+  }, [searchAndAddByCode])
 
   useEffect(() => {
     const currentLoadMore = loadMoreRef.current
@@ -981,9 +1152,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
       ref={mainRef}
     >
       <div className="flex-col flex h-[calc(100dvh-84px)]">
-        <div className="grid items-center grid-cols-[1fr_auto] gap-3 mb-4">
+        <div className="grid items-center grid-cols-[1fr_18rem_auto] gap-3 mb-4">
           <Input
-            placeholder="Buscar producto, SKU o código de barras..."
+            ref={searchInputRef}
+            placeholder="Buscar producto, SKU o codigo de barras..."
             startContent={<IconSolarMinimalisticMagniferLineDuotone />}
             value={searchTerm}
             onValueChange={setSearchTerm}
@@ -993,7 +1165,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           <CategorySelect
             fullWidth={false}
             value={selectedCategory}
-            placeholder="Todas las categorías"
+            placeholder="Todas las categorias"
             onSelectionChange={key => setSelectedCategory(Number(key))}
           />
         </div>
@@ -1001,20 +1173,17 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
         <div className="flex-1">
           <AutoSizer>
             {({ width, height }) => {
-              const allItems =
-                presentationsData?.data?.pages.flatMap(p => p.data) ?? []
-
               const minColumnWidth = 140
               const columnCount = Math.floor(width / minColumnWidth) || 1
               const columnWidth = Math.floor(width / columnCount) - 2
 
               const rowHeight = (rowIndex: number) => {
                 const itemIndex = rowIndex * columnCount
-                const item = allItems[itemIndex]
+                const item = allPresentations[itemIndex]
                 return item?.customHeight ?? 215
               }
 
-              const rowCount = Math.ceil(allItems.length / columnCount)
+              const rowCount = Math.ceil(allPresentations.length / columnCount)
 
               return (
                 <Grid
@@ -1027,12 +1196,18 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                   overscanRowCount={3}
                   cellRenderer={({ columnIndex, rowIndex, key, style }) => {
                     const itemIndex = rowIndex * columnCount + columnIndex
-                    const item = allItems[itemIndex]
+                    const item = allPresentations[itemIndex]
                     if (!item) return null
 
                     return (
                       <div key={key} style={{ ...style, padding: 8 }}>
-                        <PosItem presentation={item} onClick={addToCart} />
+                        <PosItem
+                          presentation={item}
+                          onClick={addToCart}
+                          onSelect={presentation =>
+                            setSelectedPresentationId(presentation.id)
+                          }
+                        />
                       </div>
                     )
                   }}
@@ -1182,7 +1357,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                               : undefined
                           }
                           notes={currentItem.notes}
+                          onSelect={() => setActiveCartItemIndex(index)}
                           onQuantityChange={value => {
+                            setActiveCartItemIndex(index)
                             updateItem(index, {
                               ...currentItem,
                               quantity: Math.max(1, Math.round(value)),
@@ -1191,6 +1368,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                           onEditDiscount={() => openItemDiscountModal(index)}
                           onEditNotes={() => openItemNotesModal(index)}
                           onRemove={() => {
+                            setActiveCartItemIndex(index)
                             removeItem(index)
                           }}
                         />
@@ -1335,9 +1513,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                                         size="sm"
                                         color="primary"
                                         onPress={async () => {
-                                          const resumed = await resumePausedSale(
-                                            pausedSale.id
-                                          )
+                                          const resumed =
+                                            await resumePausedSale(
+                                              pausedSale.id
+                                            )
                                           if (resumed) onClose()
                                         }}
                                       >
