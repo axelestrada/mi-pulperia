@@ -81,7 +81,11 @@ export interface SaleWithDetails extends SelectSale {
     id: number
     presentationId: number
     presentationName: string
+    presentationUnit: 'unit' | 'lb' | 'liter'
+    presentationFactor: number | null
     productName: string
+    productBaseUnit: 'unit' | 'lb' | 'liter'
+    productBaseUnitPrecision: number
     batchId: number
     quantity: number
     unitPrice: number
@@ -260,7 +264,11 @@ export const SalesRepository = {
         id: saleItemsTable.id,
         presentationId: saleItemsTable.presentationId,
         presentationName: presentationsTable.name,
+        presentationUnit: presentationsTable.unit,
+        presentationFactor: presentationsTable.factor,
         productName: productsTable.name,
+        productBaseUnit: productsTable.baseUnit,
+        productBaseUnitPrecision: productsTable.unitPrecision,
         batchId: saleItemsTable.batchId,
         quantity: saleItemsTable.quantity,
         unitPrice: saleItemsTable.unitPrice,

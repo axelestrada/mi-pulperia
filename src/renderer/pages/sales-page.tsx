@@ -59,6 +59,7 @@ import {
   TableRow,
 } from '../components/ui/table'
 import { Textarea } from '../components/ui/textarea'
+import { UNIT_CONFIG } from '../features/products/ui/product-units'
 import {
   type Sale,
   type SalesFilters,
@@ -89,6 +90,11 @@ const cancelSaleSchema = z.object({
 const refundSaleSchema = z.object({
   reason: z.string().min(1, 'Debe especificar una razón'),
 })
+
+const formatQuantity = (value: number) => {
+  const formatted = value.toFixed(3)
+  return formatted.replace(/\.?0+$/, '')
+}
 
 type FiltersFormData = z.infer<typeof filtersSchema>
 type CancelSaleFormData = z.infer<typeof cancelSaleSchema>
@@ -155,7 +161,7 @@ export const SalesPage = () => {
   const refundSale = useRefundSale()
 
   // Handlers
-  const onApplyFilters = (data: FiltersFormData) => {
+  const onApplyFilters = () => {
     setCurrentPage(1)
     // Filters are applied automatically through the form watch
   }
@@ -616,9 +622,13 @@ export const SalesPage = () => {
                 <div>
                   <p className="text-sm font-medium">Fecha</p>
                   <p>
-                    {format(new Date(selectedSale.createdAt), 'PPp', {
-                      locale: es,
-                    })}
+                    {format(
+                      new Date(selectedSale.createdAt),
+                      'dd MMM yyyy hh:mm aa',
+                      {
+                        locale: es,
+                      }
+                    )}
                   </p>
                 </div>
                 <div>
@@ -639,6 +649,13 @@ export const SalesPage = () => {
                 <div className="space-y-2">
                   {selectedSale.items?.map(item => {
                     const displayName = `${item.productName} (${item.presentationName})`
+                    const factor = item.presentationFactor || 1
+                    const presentationQuantity = item.quantity / factor
+                    const presentationUnitLabel =
+                      UNIT_CONFIG[item.presentationUnit]?.label || 'ud'
+                    const inventoryUnitLabel =
+                      UNIT_CONFIG[item.productBaseUnit]?.label || 'ud'
+                    const showInventoryBreakdown = factor !== 1
 
                     return (
                       <div
@@ -650,8 +667,26 @@ export const SalesPage = () => {
                             {displayName}
                           </p>
                           <p className="text-xs">
-                            {item.quantity} ×{' '}
-                            {formatCurrency(fromCents(item.unitPrice))}
+                            {showInventoryBreakdown ? (
+                              <>
+                                {formatQuantity(presentationQuantity)}
+                                {presentationUnitLabel} x{' '}
+                                {formatCurrency(fromCents(item.unitPrice))} x{' '}
+                                {formatQuantity(
+                                  fromUnitPrecision(
+                                    item.quantity,
+                                    item.productBaseUnitPrecision
+                                  )
+                                )}
+                                {inventoryUnitLabel} del inventario
+                              </>
+                            ) : (
+                              <>
+                                {formatQuantity(item.quantity)}
+                                {inventoryUnitLabel} x{' '}
+                                {formatCurrency(fromCents(item.unitPrice))}
+                              </>
+                            )}
                           </p>
                         </div>
                         <div className="text-right">
@@ -676,7 +711,7 @@ export const SalesPage = () => {
               <div>
                 <h4 className="font-medium mb-2">Pagos</h4>
                 <div className="space-y-2">
-                  {selectedSale.payments?.map((payment, index) => {
+                  {selectedSale.payments?.map(payment => {
                     return (
                       <div
                         key={payment.id}

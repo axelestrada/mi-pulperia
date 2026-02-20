@@ -31,7 +31,11 @@ export interface Sale {
     id: number
     presentationId: number
     presentationName: string
+    presentationUnit: 'unit' | 'lb' | 'liter'
+    presentationFactor: number | null
     productName: string
+    productBaseUnit: 'unit' | 'lb' | 'liter'
+    productBaseUnitPrecision: number
     batchId: number
     quantity: number
     unitPrice: number

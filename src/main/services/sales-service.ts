@@ -1,11 +1,15 @@
-import { InsertSale, SelectSale } from '../db/schema/sales'
-import { SalesRepository, SalesFilters, CreateSaleData } from '../repositories/sales-repository'
+import type { InsertInventoryMovement } from '../db/schema/inventory-movements'
+import { InsertSale, type SelectSale } from '../db/schema/sales'
+import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
+import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
+import { POSRepository } from '../repositories/pos-repository'
+import {
+  type CreateSaleData,
+  type SalesFilters,
+  SalesRepository,
+} from '../repositories/sales-repository'
 import { CashSessionsService } from './cash-sessions-service'
 import { CustomersService } from './customers-service'
-import { POSRepository } from '../repositories/pos-repository'
-import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
-import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
-import { InsertInventoryMovement } from '../db/schema/inventory-movements'
 
 export const SalesService = {
   async list(filters: SalesFilters = {}) {
@@ -93,7 +97,11 @@ export const SalesService = {
         throw new Error('Payment amount must be positive')
       }
 
-      if (!['cash', 'credit', 'debit', 'transfer', 'check'].includes(payment.method)) {
+      if (
+        !['cash', 'credit', 'debit', 'transfer', 'check'].includes(
+          payment.method
+        )
+      ) {
         throw new Error('Invalid payment method')
       }
 
@@ -101,8 +109,13 @@ export const SalesService = {
 
       // Validate cash payments
       if (payment.method === 'cash') {
-        if (!payment.receivedAmount || payment.receivedAmount < payment.amount) {
-          throw new Error('Received cash amount must be at least the payment amount')
+        if (
+          !payment.receivedAmount ||
+          payment.receivedAmount < payment.amount
+        ) {
+          throw new Error(
+            'Received cash amount must be at least the payment amount'
+          )
         }
 
         const expectedChange = payment.receivedAmount - payment.amount
@@ -114,7 +127,9 @@ export const SalesService = {
       // Validate card/transfer payments
       if (['credit', 'debit', 'transfer'].includes(payment.method)) {
         if (!payment.referenceNumber?.trim()) {
-          throw new Error(`Reference number is required for ${payment.method} payments`)
+          throw new Error(
+            `Reference number is required for ${payment.method} payments`
+          )
         }
       }
     }
@@ -138,7 +153,8 @@ export const SalesService = {
     for (const item of data.items) {
       // Create inventory movement
       const movementData: InsertInventoryMovement = {
-        productId: (await InventoryBatchesRepository.findById(item.batchId))!.productId,
+        productId: (await InventoryBatchesRepository.findById(item.batchId))!
+          .productId,
         batchId: item.batchId,
         type: 'OUT',
         quantity: -item.quantity, // Negative for outgoing
@@ -150,7 +166,10 @@ export const SalesService = {
       await InventoryMovementsRepository.create(movementData)
 
       // Update batch quantity
-      await InventoryBatchesRepository.updateQuantity(item.batchId, -item.quantity)
+      await InventoryBatchesRepository.updateQuantity(
+        item.batchId,
+        -item.quantity
+      )
     }
 
     return {
@@ -238,7 +257,9 @@ export const SalesService = {
     }
 
     if (sale.status === 'completed') {
-      throw new Error('Cannot delete completed sales. Use cancel or refund instead.')
+      throw new Error(
+        'Cannot delete completed sales. Use cancel or refund instead.'
+      )
     }
 
     return SalesRepository.delete(id)
@@ -319,10 +340,13 @@ export const SalesService = {
     const averageSaleAmount = totalRevenue / totalSales
 
     // Group by status
-    const salesByStatus = sales.reduce((acc, sale) => {
-      acc[sale.status] = (acc[sale.status] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    const salesByStatus = sales.reduce(
+      (acc, sale) => {
+        acc[sale.status] = (acc[sale.status] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
     return {
       totalSales,
@@ -346,7 +370,12 @@ export const SalesService = {
 
   // Helper method to calculate totals
   calculateSaleTotals(
-    items: Array<{ quantity: number; unitPrice: number; discount?: number; discountType?: 'fixed' | 'percentage' }>,
+    items: Array<{
+      quantity: number
+      unitPrice: number
+      discount?: number
+      discountType?: 'fixed' | 'percentage'
+    }>,
     taxRate: number = 0
   ) {
     if (!items || items.length === 0) {
@@ -389,10 +418,15 @@ export const SalesService = {
   },
 
   // Helper method to validate and calculate change
-  calculateChange(payments: Array<{ method: string; amount: number; receivedAmount?: number }>) {
+  calculateChange(
+    payments: Array<{ method: string; amount: number; receivedAmount?: number }>
+  ) {
     const cashPayments = payments.filter(p => p.method === 'cash')
 
-    const totalCashReceived = cashPayments.reduce((sum, p) => sum + (p.receivedAmount || 0), 0)
+    const totalCashReceived = cashPayments.reduce(
+      (sum, p) => sum + (p.receivedAmount || 0),
+      0
+    )
     const totalCashAmount = cashPayments.reduce((sum, p) => sum + p.amount, 0)
 
     return Math.max(0, totalCashReceived - totalCashAmount)
