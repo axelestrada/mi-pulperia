@@ -2,14 +2,19 @@ import { Button, Image, NumberInput, Tooltip } from '@heroui/react'
 
 import placeholder from '@/assets/images/placeholder.svg'
 import { cn } from '@/lib/utils'
+import {
+  fromUnitPrecision,
+  getQuantityStep,
+  toUnitPrecision,
+} from '../../../../shared/utils/quantity'
 
 type Props = {
   title: string
   image?: string | null
   quantity: number
+  unitPrecision: number
   itemTotal: number
   unitPrice: number
-  baseUnit: string
   discount?: string
   notes?: string
   onQuantityChange: (quantity: number) => void
@@ -22,17 +27,20 @@ export const PosCartItem = ({
   title,
   image,
   quantity,
+  unitPrecision,
   unitPrice,
   itemTotal,
   discount,
   notes,
-  baseUnit,
   onQuantityChange,
   onEditDiscount,
   onEditNotes,
   onRemove,
 }: Props) => {
   const { data: imagePath } = useImagePath(image)
+  const quantityStep = getQuantityStep(unitPrecision)
+  const displayQuantity = fromUnitPrecision(quantity, unitPrecision)
+
   return (
     <div className="group relative rounded-medium p-1 overflow-hidden hover:bg-default-50 transition-colors">
       <div className="flex gap-3 items-center">
@@ -63,13 +71,15 @@ export const PosCartItem = ({
             <div className="flex justify-between items-end">
               <div className="flex gap-2">
                 <NumberInput
-                  className="sm:max-w-14"
+                  className="sm:max-w-16"
                   size="sm"
                   variant="bordered"
-                  min={0}
-                  step={baseUnit === 'unit' ? 1 : 0.1}
-                  value={quantity}
-                  onValueChange={onQuantityChange}
+                  min={quantityStep}
+                  step={quantityStep}
+                  value={displayQuantity}
+                  onValueChange={value =>
+                    onQuantityChange(toUnitPrecision(value || 0, unitPrecision))
+                  }
                 />
 
                 <div className="flex items-center gap-1">

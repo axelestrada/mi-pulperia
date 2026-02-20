@@ -1,3 +1,7 @@
+import {
+  fromUnitPrecision,
+  normalizeUnitPrecision,
+} from '../../shared/utils/quantity'
 import type { InsertInventoryMovement } from '../db/schema/inventory-movements'
 import { CreditsRepository } from '../repositories/credits-repository'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
@@ -39,6 +43,11 @@ export interface CreatePOSSaleInput {
   discountAmount?: number
   total: number
   notes?: string
+}
+
+const roundUpToLempiraCents = (value: number) => {
+  if (!Number.isFinite(value)) return 0
+  return Math.ceil(Math.max(0, value) / 100) * 100
 }
 
 export const POSService = {
@@ -87,6 +96,9 @@ export const POSService = {
       if (item.quantity <= 0) {
         throw new Error('La cantidad debe ser mayor a 0')
       }
+      if (!Number.isInteger(item.quantity)) {
+        throw new Error('La cantidad debe viajar en enteros por unitPrecision')
+      }
 
       if (item.unitPrice < 0) {
         throw new Error('El precio del producto no puede ser negativo')
@@ -101,9 +113,30 @@ export const POSService = {
         )
       }
 
+      const presentationPrecision = normalizeUnitPrecision(
+        presentation.unitPrecision
+      )
+      const baseFactorRaw =
+        presentation.factorType === 'fixed'
+          ? Math.max(1, presentation.factor ?? presentationPrecision)
+          : presentationPrecision
+      const baseFactor =
+        presentation.isBase && baseFactorRaw < presentationPrecision
+          ? presentationPrecision
+          : baseFactorRaw
+      const requiredInventoryQuantity = Math.round(
+        (item.quantity * baseFactor) / presentationPrecision
+      )
+
+      if (requiredInventoryQuantity <= 0) {
+        throw new Error(
+          'La cantidad convertida a inventario debe ser mayor a 0'
+        )
+      }
+
       const allocation = await POSRepository.getFEFOAllocation(
         presentation.productId,
-        item.quantity
+        requiredInventoryQuantity
       )
 
       const displayName = presentation.isBase
@@ -112,13 +145,14 @@ export const POSService = {
 
       if (!allocation.isFullyAllocated) {
         throw new Error(
-          `No hay suficiente stock para <b>${displayName}</b>. </br>Disponible: <b>${allocation.totalAllocated}</b> </br>Requerido: <b>${item.quantity}</b>`
+          `No hay suficiente stock para <b>${displayName}</b>. </br>Disponible: <b>${allocation.totalAllocated}</b> </br>Requerido: <b>${requiredInventoryQuantity}</b>`
         )
       }
 
       validationResults.push({
         item,
         presentation,
+        requiredInventoryQuantity,
         allocation,
       })
     }
@@ -276,20 +310,44 @@ export const POSService = {
       payments,
     }
 
-    // Process items with FEFO allocation
     for (const validation of itemValidations) {
-      const { item, allocation } = validation
+      const { item, allocation, presentation, requiredInventoryQuantity } =
+        validation
+      const displayQuantity = fromUnitPrecision(
+        item.quantity,
+        presentation.unitPrecision
+      )
+      const shouldRoundUp =
+        normalizeUnitPrecision(presentation.unitPrecision) !== 1
+      const roundedUnitPrice = shouldRoundUp
+        ? roundUpToLempiraCents(item.unitPrice)
+        : item.unitPrice
+      const totalItemPrice = shouldRoundUp
+        ? roundUpToLempiraCents(roundedUnitPrice * displayQuantity)
+        : Math.round(roundedUnitPrice * displayQuantity)
+      let remainingItemPrice = totalItemPrice
 
       // For each batch in the allocation, create a sale item
-      for (const batchAllocation of allocation.allocation) {
-        const itemTotalPrice =
-          Math.round(item.unitPrice * batchAllocation.quantity * 100) / 100
+      for (let index = 0; index < allocation.allocation.length; index++) {
+        const batchAllocation = allocation.allocation[index]
+        const isLastBatch = index === allocation.allocation.length - 1
+        const itemTotalPriceRaw = isLastBatch
+          ? remainingItemPrice
+          : Math.round(
+              (totalItemPrice * batchAllocation.quantity) /
+                requiredInventoryQuantity
+            )
+        const itemTotalPrice = shouldRoundUp
+          ? roundUpToLempiraCents(itemTotalPriceRaw)
+          : itemTotalPriceRaw
+
+        remainingItemPrice = Math.max(0, remainingItemPrice - itemTotalPrice)
 
         saleData.items.push({
           presentationId: item.presentationId,
           batchId: batchAllocation.batchId,
           quantity: batchAllocation.quantity,
-          unitPrice: item.unitPrice,
+          unitPrice: roundedUnitPrice,
           totalPrice: itemTotalPrice,
           discount: item.discount || 0,
           discountType: item.discountType,
@@ -370,7 +428,14 @@ export const POSService = {
     let totalItems = 0
 
     for (const item of items) {
-      let itemTotal = item.quantity * item.unitPrice
+      const presentation = await POSRepository.getPresentationWithBatches(
+        item.presentationId
+      )
+      const itemQuantity = presentation
+        ? fromUnitPrecision(item.quantity, presentation.unitPrecision)
+        : item.quantity
+
+      let itemTotal = itemQuantity * item.unitPrice
 
       // Apply discount if present
       if (item.discount && item.discount > 0) {
@@ -382,7 +447,7 @@ export const POSService = {
       }
 
       subtotal += itemTotal
-      totalItems += item.quantity
+      totalItems += itemQuantity
     }
 
     const taxAmount = subtotal * (taxRate / 100)

@@ -33,6 +33,10 @@ import {
   useActiveCustomersForSelection,
 } from '@/hooks/use-customers'
 import { formatCurrency } from '../../../../shared/utils/formatCurrency'
+import {
+  fromUnitPrecision,
+  toUnitPrecision,
+} from '../../../../shared/utils/quantity'
 import { useCurrentOpenSession } from '../../../hooks/use-cash-sessions'
 import {
   type CreatePOSSaleInput,
@@ -46,11 +50,14 @@ import { PosChargeModal } from './pos-charge-modal'
 // Form validation schemas
 const saleItemSchema = z.object({
   presentationId: z.number().min(1, 'Required'),
-  quantity: z.number().min(0.01, 'Must be at least 0.01'),
+  quantity: z
+    .number()
+    .min(0.000001, 'Must be at least 1')
+    .transform(v => Math.max(1, Math.round(v))),
+  unitPrecision: z.number().int().min(1, 'Required').catch(1),
   image: z.string().optional().nullable(),
   title: z.string().min(1, 'Required'),
   unitPrice: z.number().min(0, 'Cannot be negative'),
-  baseUnit: z.string(),
   discount: z.number().min(0, 'Cannot be negative').optional(),
   discountType: z.enum(['fixed', 'percentage']).optional(),
   notes: z.string().optional(),
@@ -83,11 +90,13 @@ export type POSFormData = z.infer<typeof posFormSchema>
 
 const calculateItemTotal = (
   quantity: number,
+  unitPrecision: number,
   unitPrice: number,
   discount = 0,
   discountType: 'fixed' | 'percentage' = 'fixed'
 ) => {
-  const baseTotal = quantity * unitPrice
+  const displayQuantity = fromUnitPrecision(quantity, unitPrecision)
+  const baseTotal = displayQuantity * unitPrice
   const normalizedDiscount = Math.max(0, discount || 0)
 
   let discountedTotal = baseTotal
@@ -101,7 +110,14 @@ const calculateItemTotal = (
     }
   }
 
-  return Math.max(0, toCents(Math.ceil(fromCents(discountedTotal))))
+  return Math.max(
+    0,
+    toCents(
+      unitPrecision === 1
+        ? fromCents(discountedTotal)
+        : Math.ceil(fromCents(discountedTotal))
+    )
+  )
 }
 
 const normalizeDiscountValue = (
@@ -125,6 +141,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const cartItemsRef = useRef<HTMLDivElement | null>(null)
   const mainRef = useRef<HTMLDivElement | null>(null)
+  const previousItemCountRef = useRef(0)
+  const hasInitializedCartScrollRef = useRef(false)
 
   const navigate = useNavigate()
   const { data: customers } = useActiveCustomersForSelection()
@@ -217,6 +235,28 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     name: 'items',
   })
 
+  useEffect(() => {
+    const currentItemCount = itemFields.length
+
+    if (!hasInitializedCartScrollRef.current) {
+      previousItemCountRef.current = currentItemCount
+      hasInitializedCartScrollRef.current = true
+      return
+    }
+
+    if (
+      currentItemCount !== previousItemCountRef.current &&
+      cartItemsRef.current
+    ) {
+      cartItemsRef.current.scrollTo({
+        top: cartItemsRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+
+    previousItemCountRef.current = currentItemCount
+  }, [itemFields.length])
+
   // Calculate totals
   const items = form.watch('items')
   const payments = form.watch('payments')
@@ -227,9 +267,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     let totalItems = 0
 
     items.forEach(item => {
-      const baseTotal = item.quantity * item.unitPrice
+      const displayQuantity = fromUnitPrecision(
+        item.quantity,
+        item.unitPrecision
+      )
+      const baseTotal = displayQuantity * item.unitPrice
       const itemTotal = calculateItemTotal(
         item.quantity,
+        item.unitPrecision,
         item.unitPrice,
         item.discount,
         item.discountType
@@ -237,7 +282,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
       subtotal += itemTotal
       itemDiscountAmount += Math.max(0, baseTotal - itemTotal)
-      totalItems += item.quantity
+      totalItems += displayQuantity
     })
 
     const rawGlobalDiscount =
@@ -277,6 +322,11 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   const addToCart = useCallback(
     (presentation: POSPresentation, quantity: number = 1) => {
+      const precisionQuantity = toUnitPrecision(
+        quantity,
+        presentation.unitPrecision
+      )
+
       const existingIndex = itemFields.findIndex(
         field => field.presentationId === presentation.id
       )
@@ -289,19 +339,19 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
         const existingItem = itemFields[existingIndex]
         updateItem(existingIndex, {
           ...existingItem,
-          quantity: existingItem.quantity + quantity,
+          quantity: existingItem.quantity + precisionQuantity,
         })
       } else {
         appendItem({
           presentationId: presentation.id,
-          quantity,
+          quantity: precisionQuantity,
+          unitPrecision: presentation.unitPrecision,
           title,
           image: presentation.image,
           unitPrice: presentation.salePrice,
           discount: 0,
           discountType: 'fixed',
           notes: '',
-          baseUnit: presentation.unit,
         })
       }
 
@@ -401,7 +451,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     try {
       const saleInput: CreatePOSSaleInput = {
         customerId: customerId,
-        items: data.items,
+        items: data.items.map(item => ({
+          presentationId: item.presentationId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: item.discount,
+          discountType: item.discountType,
+          notes: item.notes,
+        })),
         payments: data.payments,
         subtotal: totals.subtotal,
         taxAmount: totals.taxAmount,
@@ -767,6 +824,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                       const currentItem = items[index] ?? field
                       const itemTotal = calculateItemTotal(
                         currentItem.quantity,
+                        currentItem.unitPrecision,
                         currentItem.unitPrice,
                         currentItem.discount,
                         currentItem.discountType
@@ -782,8 +840,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                           key={field.id}
                           title={currentItem.title}
                           image={currentItem.image}
-                          baseUnit={currentItem.baseUnit}
                           quantity={currentItem.quantity}
+                          unitPrecision={currentItem.unitPrecision}
                           unitPrice={currentItem.unitPrice}
                           itemTotal={itemTotal}
                           discount={
@@ -795,7 +853,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                           onQuantityChange={value => {
                             updateItem(index, {
                               ...currentItem,
-                              quantity: value,
+                              quantity: Math.max(1, Math.round(value)),
                             })
                           }}
                           onEditDiscount={() => openItemDiscountModal(index)}

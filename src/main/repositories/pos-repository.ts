@@ -199,14 +199,17 @@ export const POSRepository = {
             asc(inventoryBatchesTable.receivedAt)
           )
 
+        const availableQuantity = Math.max(
+          0,
+          (presentation.availableQuantity || 0) / (presentation.factor || 1)
+        )
+
         return {
           ...presentation,
-          availableQuantity: Math.floor(
-            Math.max(
-              0,
-              (presentation.availableQuantity || 0) / (presentation.factor || 1)
-            )
-          ),
+          availableQuantity:
+            presentation.unitPrecision === 1
+              ? Math.floor(availableQuantity)
+              : availableQuantity,
           batches: batches.map(batch => ({
             ...batch,
             expirationDate: batch.expirationDate
