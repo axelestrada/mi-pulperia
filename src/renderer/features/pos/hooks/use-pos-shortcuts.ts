@@ -35,7 +35,7 @@ const isEditableTarget = (target: EventTarget | null) => {
 
 export const usePOSShortcuts = ({
   enabled = true,
-  isChargeModalOpen,
+
   focusSearch,
   focusCodeInput,
   addSelectedProduct,
@@ -185,7 +185,7 @@ export const usePOSShortcuts = ({
     focusSearch,
     goToCashSession,
     increaseActiveItemQuantity,
-    isChargeModalOpen,
+
     openChargeModal,
     openDiscountModal,
     pauseCurrentSale,
