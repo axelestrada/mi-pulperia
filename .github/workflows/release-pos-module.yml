@@ -1,4 +1,4 @@
-name: Release (pos-module)
+name: Release (pos-module) - Windows
 
 on:
   push:
@@ -13,13 +13,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build & Publish (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+  release_windows:
+    name: Build & Publish (Windows)
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -58,8 +54,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git tag -a "${TAG}" -m "Release ${TAG}"
-
-          # Push tag using your GH_TOKEN (same token electron-builder uses)
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin "${TAG}"
 
