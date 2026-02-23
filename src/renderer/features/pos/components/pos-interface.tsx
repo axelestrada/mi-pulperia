@@ -170,6 +170,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   const mainRef = useRef<HTMLDivElement | null>(null)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const codeInputRef = useRef<HTMLInputElement | null>(null)
+  const confirmOkButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousItemCountRef = useRef(0)
   const hasInitializedCartScrollRef = useRef(false)
 
@@ -716,6 +717,67 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     },
     []
   )
+
+  useEffect(() => {
+    if (!confirmDialog.isOpen) return
+
+    const frame = window.requestAnimationFrame(() => {
+      confirmOkButtonRef.current?.focus()
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [confirmDialog.isOpen])
+
+  useEffect(() => {
+    if (!confirmDialog.isOpen && !resumeConflictDialogOpen) return
+
+    const onDialogKeyDown = (event: KeyboardEvent) => {
+      const key = event.key
+
+      if (key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+
+        if (confirmDialog.isOpen) {
+          closeConfirmDialog(false)
+          return
+        }
+
+        if (resumeConflictDialogOpen) {
+          closeResumeConflictDialog('cancel')
+        }
+        return
+      }
+
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      if (!/^[1-9]$/.test(key)) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (confirmDialog.isOpen) {
+        if (key === '1') closeConfirmDialog(false)
+        if (key === '2') closeConfirmDialog(true)
+        return
+      }
+
+      if (resumeConflictDialogOpen) {
+        if (key === '1') closeResumeConflictDialog('cancel')
+        if (key === '2') closeResumeConflictDialog('combine')
+        if (key === '3') closeResumeConflictDialog('replace')
+      }
+    }
+
+    window.addEventListener('keydown', onDialogKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', onDialogKeyDown, true)
+    }
+  }, [
+    closeConfirmDialog,
+    closeResumeConflictDialog,
+    confirmDialog.isOpen,
+    resumeConflictDialogOpen,
+  ])
 
   const resumePausedSale = useCallback(
     async (saleId: string) => {
@@ -1582,7 +1644,6 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                   onOpenChange={open => {
                     if (!open) closeConfirmDialog(false)
                   }}
-                  size="xs"
                 >
                   <ModalContent>
                     <ModalHeader>{confirmDialog.title}</ModalHeader>
@@ -1599,6 +1660,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                         {confirmDialog.cancelText}
                       </Button>
                       <Button
+                        autoFocus
+                        ref={confirmOkButtonRef}
                         color={confirmDialog.confirmColor}
                         onPress={() => closeConfirmDialog(true)}
                       >

@@ -35,7 +35,6 @@ const isEditableTarget = (target: EventTarget | null) => {
 
 export const usePOSShortcuts = ({
   enabled = true,
-
   focusSearch,
   focusCodeInput,
   addSelectedProduct,
@@ -88,13 +87,6 @@ export const usePOSShortcuts = ({
         event.preventDefault()
         openChargeModal()
         selectPaymentMethod('card')
-        return
-      }
-
-      if (event.key === 'F7') {
-        event.preventDefault()
-        openChargeModal()
-        selectPaymentMethod('transfer')
         return
       }
 
