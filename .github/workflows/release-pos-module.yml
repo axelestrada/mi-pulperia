@@ -1,15 +1,15 @@
-name: Release (pos-module) - Windows
+name: Release (main) - Windows
 
 on:
   push:
-    branches: [pos-module]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-pos-module
+  group: release-main
   cancel-in-progress: false
 
 jobs:
