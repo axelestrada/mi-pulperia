@@ -2,6 +2,8 @@
 1
 
 import type { ReactElement } from 'react'
+import { SidebarGroup, SidebarMenu } from '../ui/sidebar'
+import { NavMainItem } from './nav-main-item'
 
 export type INavMainSubItem = {
   title: string

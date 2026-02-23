@@ -1,4 +1,4 @@
-import { Button } from '@heroui/react'
+import { PageHeader } from '@/components/ui/page-header'
 
 type Props = {
   onCreate: () => void

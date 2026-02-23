@@ -1,6 +1,7 @@
 import type * as React from 'react'
 
-import { Sidebar } from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
+import { NavMain } from './nav-main'
 
 const data = {
   user: {

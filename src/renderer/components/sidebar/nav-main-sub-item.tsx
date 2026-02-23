@@ -1,6 +1,6 @@
-import { Button, Kbd } from '@heroui/react'
 import { useMatch } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import type { INavMainSubItem } from './nav-main'
 
 type Props = {
   item: INavMainSubItem
@@ -89,3 +89,4 @@ export const NavMainSubItem = ({ item }: Props) => {
     </Button>
   )
 }
+

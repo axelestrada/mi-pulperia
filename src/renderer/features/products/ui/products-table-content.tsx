@@ -8,7 +8,6 @@ import {
   DropdownSection,
   DropdownTrigger,
   Input,
-  Pagination,
   Select,
   SelectItem,
   Spinner,
@@ -22,6 +21,7 @@ import {
   useDisclosure,
 } from '@heroui/react'
 import type { ProductDTO } from 'domains/products/products-model'
+import { MeasurementUnitBadge } from '@/components/badges/measurement-unit-badge'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -116,11 +116,7 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
     )
   }, [visibleColumns])
 
-  const totalItems = products?.pagination.totalItems || 0
-
-  const pages = useMemo(() => {
-    return Math.ceil(totalItems / pageSize)
-  }, [totalItems, pageSize])
+  const totalItems: number = products?.pagination?.totalItems || 0
 
   const renderCell = useCallback(
     (product: ProductDTO, columnKey: React.Key): string | React.ReactNode => {
@@ -416,17 +412,11 @@ export const ProductsTableContent = ({ onEdit }: Props) => {
       <Table
         isHeaderSticky
         bottomContent={
-          <div className="p-2 flex justify-end items-center">
-            <Pagination
-              total={pages}
-              page={currentPage}
-              onChange={page => setCurrentPage(page)}
-              isCompact
-              showControls
-              showShadow
-              color="primary"
-            />
-          </div>
+          <TablePagination
+            total={totalItems}
+            page={currentPage}
+            onChange={setCurrentPage}
+          />
         }
         bottomContentPlacement="outside"
         classNames={{

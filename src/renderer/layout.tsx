@@ -1,6 +1,11 @@
-import { Divider, Button, Badge, Input } from '@heroui/react'
 import { useMatches } from 'react-router-dom'
 import { getRouteTitle } from 'shared/router/getRouteTitle'
+import { AppSidebar } from './components/sidebar/app-sidebar'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from './components/ui/sidebar'
 
 export const Layout = () => {
   const title = getRouteTitle(useMatches()) ?? 'Mi Pulpería'
@@ -16,15 +21,9 @@ export const Layout = () => {
 
             <Divider orientation="vertical" className="h-5" />
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <p className="text-default-500">{title}</p>
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+            <Breadcrumbs>
+              <BreadcrumbItem>{title}</BreadcrumbItem>
+            </Breadcrumbs>
           </div>
 
           <div className="flex items-center gap-2 px-4">

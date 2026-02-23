@@ -1,5 +1,13 @@
 import { Button, Kbd } from '@heroui/react'
 import { cn } from '@/lib/utils'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../ui/collapsible'
+import { SidebarMenuItem } from '../ui/sidebar'
+import type { INavMainItem } from './nav-main'
+import { NavMainSubItem } from './nav-main-sub-item'
 
 type Props = {
   item: INavMainItem
@@ -34,22 +42,31 @@ export const NavMainItem = ({ item }: Props) => {
 
     if (!key) return
 
-    const requiresCtrl = shortcutParts.includes('ctrl') || shortcutParts.includes('control')
+    const requiresCtrl =
+      shortcutParts.includes('ctrl') || shortcutParts.includes('control')
     const requiresMeta =
       shortcutParts.includes('meta') ||
       shortcutParts.includes('cmd') ||
       shortcutParts.includes('command')
-    const requiresAlt = shortcutParts.includes('alt') || shortcutParts.includes('option')
+    const requiresAlt =
+      shortcutParts.includes('alt') || shortcutParts.includes('option')
     const requiresShift = shortcutParts.includes('shift')
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const normalizedKey = event.key.toLowerCase()
 
       if (normalizedKey !== key) return
-      if ((requiresCtrl && !event.ctrlKey) || (!requiresCtrl && event.ctrlKey)) return
-      if ((requiresMeta && !event.metaKey) || (!requiresMeta && event.metaKey)) return
-      if ((requiresAlt && !event.altKey) || (!requiresAlt && event.altKey)) return
-      if ((requiresShift && !event.shiftKey) || (!requiresShift && event.shiftKey)) return
+      if ((requiresCtrl && !event.ctrlKey) || (!requiresCtrl && event.ctrlKey))
+        return
+      if ((requiresMeta && !event.metaKey) || (!requiresMeta && event.metaKey))
+        return
+      if ((requiresAlt && !event.altKey) || (!requiresAlt && event.altKey))
+        return
+      if (
+        (requiresShift && !event.shiftKey) ||
+        (!requiresShift && event.shiftKey)
+      )
+        return
 
       event.preventDefault()
       handleNavigate()
@@ -105,7 +122,7 @@ export const NavMainItem = ({ item }: Props) => {
             </CollapsibleTrigger>
           )}
         </Button>
-        {item.items?.length ? (
+        {items.length > 0 ? (
           <CollapsibleContent>
             <div className="pl-4 pt-1">
               {item.items?.map(subItem => (
