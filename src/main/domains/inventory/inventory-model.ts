@@ -44,6 +44,7 @@ export type InventoryBatchFilters = {
   supplierId?: number
   batchId?: number
   batchCode?: string
+  searchTerm?: string
 
   hasStock?: boolean
   expired?: boolean
@@ -59,16 +60,22 @@ export type InventoryMovementFilters = {
   type?: 'IN' | 'OUT' | 'ADJUST'
   dateFrom?: string
   dateTo?: string
+  page?: number
+  pageSize?: number
 }
 
 export type InventoryBatchDTO = {
   id: number
   productId: number
   productName: string
-  batchCode: string
+  unitPrecision: number
+  supplierId: number | null
+  batchCode: string | null
   expirationDate: string | null
-  quantity: number
+  quantityInitial: number
+  quantityAvailable: number
   unitCost: number
+  receivedAt: string
   createdAt: string
 }
 
@@ -80,7 +87,8 @@ export type InventoryMovementDTO = {
   type: 'IN' | 'OUT' | 'ADJUST'
   quantity: number
   unitCost: number
-  referenceType?: string
-  referenceId?: number
+  reason: string
+  referenceType: string | null
+  referenceId: number | null
   createdAt: string
 }

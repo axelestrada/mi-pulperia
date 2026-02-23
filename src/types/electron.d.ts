@@ -192,7 +192,7 @@ import {
   ProductDTO,
   UpdateProductDTO,
 } from 'main/domains/products/products-model'
-import { PaginatedResult } from 'main/domains/common/pagination'
+import { PaginatedResult } from 'shared/types/pagination'
 import {
   NewPresentationDTO,
   PresentationDTO,
@@ -256,10 +256,10 @@ declare global {
         getAvailableStock: (productId: Product['id']) => Promise<number>
         listBatches: (
           filters: InventoryBatchFilters
-        ) => Promise<InventoryBatchDTO[]>
+        ) => Promise<PaginatedResult<InventoryBatchDTO>>
         listMovements: (
           filters: InventoryMovementFilters
-        ) => Promise<InventoryMovementDTO[]>
+        ) => Promise<PaginatedResult<InventoryMovementDTO>>
       }
       customers: {
         list: (filters: CustomersFilters) => Promise<any>

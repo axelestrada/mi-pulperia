@@ -56,6 +56,8 @@ declare global {
   const HeroUIProvider: typeof import('@heroui/react').HeroUIProvider
   const INVENTORY_BATCH_COLUMNS: typeof import('./renderer/features/inventory/batches/model/inventory-batches-columns').INVENTORY_BATCH_COLUMNS
   const INVENTORY_ENTRY_DEFAULTS: typeof import('./renderer/features/inventory/model/inventory-entry-constants').INVENTORY_ENTRY_DEFAULTS
+  const INVENTORY_MOVEMENT_COLUMNS: typeof import('./renderer/features/inventory/movements/model/movement-columns').INVENTORY_MOVEMENT_COLUMNS
+  const IconLucideCalendar: typeof import('~icons/lucide/calendar.tsx').default
   const IconLucideCheck: typeof import('~icons/lucide/check.tsx').default
   const IconLucideChevronLeft: typeof import('~icons/lucide/chevron-left.tsx').default
   const IconLucideChevronRight: typeof import('~icons/lucide/chevron-right.tsx').default
@@ -73,6 +75,7 @@ declare global {
   const IconLucideTrash2: typeof import('~icons/lucide/trash2.tsx').default
   const IconLucideX: typeof import('~icons/lucide/x.tsx').default
   const IconSolarAddCircleLineDuotone: typeof import('~icons/solar/add-circle-line-duotone.tsx').default
+  const IconSolarArrowLeftLinear: typeof import('~icons/solar/arrow-left-linear.tsx').default
   const IconSolarArrowRightDownLinear: typeof import('~icons/solar/arrow-right-down-linear.tsx').default
   const IconSolarArrowRightLinear: typeof import('~icons/solar/arrow-right-linear.tsx').default
   const IconSolarArrowRightUpLinear: typeof import('~icons/solar/arrow-right-up-linear.tsx').default
@@ -108,6 +111,9 @@ declare global {
   const IconSolarPenNewSquareBoldDuotone: typeof import('~icons/solar/pen-new-square-bold-duotone.tsx').default
   const IconSolarPresentationGraphLinear: typeof import('~icons/solar/presentation-graph-linear.tsx').default
   const IconSolarRefreshSquareLinear: typeof import('~icons/solar/refresh-square-linear.tsx').default
+  const IconSolarRoundArrowDownLinear: typeof import('~icons/solar/round-arrow-down-linear.tsx').default
+  const IconSolarRoundArrowUpLinear: typeof import('~icons/solar/round-arrow-up-linear.tsx').default
+  const IconSolarRoundSortVerticalLinear: typeof import('~icons/solar/round-sort-vertical-linear.tsx').default
   const IconSolarSafe2Linear: typeof import('~icons/solar/safe2-linear.tsx').default
   const IconSolarSaleLinear: typeof import('~icons/solar/sale-linear.tsx').default
   const IconSolarScooterLinear: typeof import('~icons/solar/scooter-linear.tsx').default
@@ -138,6 +144,7 @@ declare global {
   const InventoryEntryFormHeader: typeof import('./renderer/features/inventory/ui/inventory-entry-form-header').InventoryEntryFormHeader
   const InventoryEntryFormRow: typeof import('./renderer/features/inventory/ui/inventory-entry-form-row').InventoryEntryFormRow
   const InventoryEntryPage: typeof import('./renderer/pages/inventory-entry-page').InventoryEntryPage
+  const InventoryMovementsTable: typeof import('./renderer/features/inventory/movements/ui/inventory-movements-table').InventoryMovementsTable
   const InventoryPage: typeof import('./renderer/pages/inventory-page').InventoryPage
   const Kbd: typeof import('@heroui/react').Kbd
   const Layout: typeof import('./renderer/layout').Layout
@@ -422,6 +429,9 @@ declare global {
   // @ts-ignore
   export type { InventoryMovement } from './renderer/features/inventory/model/inventory-movement-schema'
   import('./renderer/features/inventory/model/inventory-movement-schema')
+  // @ts-ignore
+  export type { InventoryMovementColumnKey, MovementColumnDef } from './renderer/features/inventory/movements/model/movement-columns'
+  import('./renderer/features/inventory/movements/model/movement-columns')
   // @ts-ignore
   export type { POSFormInput, POSFormData } from './renderer/features/pos/components/pos-interface'
   import('./renderer/features/pos/components/pos-interface')

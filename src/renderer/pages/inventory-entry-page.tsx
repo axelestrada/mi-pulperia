@@ -1,6 +1,8 @@
+import { PageHeader } from '@/components/ui/page-header'
+
 export const InventoryEntryPage = () => {
   return (
-    <div>
+    <>
       <PageHeader
         backButton
         title="Nueva Entrada de Inventario"
@@ -8,6 +10,6 @@ export const InventoryEntryPage = () => {
       />
 
       <InventoryEntryForm />
-    </div>
+    </>
   )
 }

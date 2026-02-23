@@ -18,12 +18,18 @@ export const inventoryService = {
   },
 
   async listBatches(filters: InventoryBatchFilters) {
-    const data = await inventoryAdapter.listBatches(filters)
-    return batchSchema.array().parse(data)
+    const result = await inventoryAdapter.listBatches(filters)
+    return {
+      ...result,
+      data: batchSchema.array().parse(result.data),
+    }
   },
 
   async listMovements(filters: InventoryMovementFilters) {
-    const data = await inventoryAdapter.listMovements(filters)
-    return movementSchema.array().parse(data)
+    const result = await inventoryAdapter.listMovements(filters)
+    return {
+      ...result,
+      data: movementSchema.array().parse(result.data),
+    }
   },
 }

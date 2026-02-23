@@ -1,6 +1,6 @@
 import { useDisclosure } from '@heroui/react'
 
-import { ProductDTO } from '~/src/main/domains/products/products-model'
+import type { ProductDTO } from '~/src/main/domains/products/products-model'
 
 export const ProductsPage = () => {
   const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure()

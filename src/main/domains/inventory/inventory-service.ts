@@ -1,9 +1,12 @@
+import { PaginatedResult } from 'shared/types/pagination'
 import { inventoryBatchesRepository } from './inventory-batches-repository'
 import type {
   AddStockDTO,
   AdjustStockDTO,
   ConsumeProductDTO,
+  InventoryBatchDTO,
   InventoryBatchFilters,
+  InventoryMovementDTO,
   InventoryMovementFilters,
 } from './inventory-model'
 import { inventoryMovementsRepository } from './inventory-movements-repository'
@@ -128,11 +131,41 @@ export const inventoryService = {
     return inventoryBatchesRepository.getTotalAvailableByProduct(productId)
   },
 
-  listBatches(filters: InventoryBatchFilters) {
-    return inventoryBatchesRepository.findBatches(filters)
+  async listBatches(
+    filters: InventoryBatchFilters
+  ): Promise<PaginatedResult<InventoryBatchDTO>> {
+    const { rows, total, page, pageSize } =
+      await inventoryBatchesRepository.findBatches(filters)
+
+    const data: InventoryBatchDTO[] = rows.map(row => ({
+      id: row.id,
+      productId: row.productId,
+      productName: row.productName ?? '',
+      unitPrecision: row.unitPrecision ?? 0,
+      supplierId: row.supplierId,
+      batchCode: row.batchCode,
+      expirationDate: row.expirationDate
+        ? row.expirationDate.toISOString()
+        : null,
+      quantityInitial: row.quantityInitial,
+      quantityAvailable: row.quantityAvailable,
+      unitCost: row.unitCost,
+      receivedAt: row.receivedAt.toISOString(),
+      createdAt: row.createdAt.toISOString(),
+    }))
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    }
   },
 
-  listMovements(filters: InventoryMovementFilters) {
+  async listMovements(
+    filters: InventoryMovementFilters
+  ): Promise<PaginatedResult<InventoryMovementDTO>> {
     return inventoryMovementsRepository.findMovements(filters)
   },
 }

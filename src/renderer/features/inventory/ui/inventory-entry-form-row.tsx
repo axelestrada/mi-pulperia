@@ -1,3 +1,12 @@
+import { DatePickerField } from '@/components/date-picker-field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group'
+
 type Props = {
   index: number
   onRemove: () => void
@@ -75,15 +84,15 @@ export const InventoryEntryFormRow = ({ index, onRemove }: Props) => {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>Costo Unitario</FieldLabel>
-           <InputGroup>
-           <InputGroupAddon>L</InputGroupAddon>
-            <InputGroupInput
-              placeholder="0.00"
-              inputMode="numeric"
-              {...field}
-              value={field.value ?? ''}
-            />
-           </InputGroup>
+            <InputGroup>
+              <InputGroupAddon>L</InputGroupAddon>
+              <InputGroupInput
+                placeholder="0.00"
+                inputMode="numeric"
+                {...field}
+                value={field.value ?? ''}
+              />
+            </InputGroup>
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}

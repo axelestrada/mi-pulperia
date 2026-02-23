@@ -1,4 +1,15 @@
-import { and, asc, eq, getTableColumns, gt, lt, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  eq,
+  getTableColumns,
+  gt,
+  like,
+  lt,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { db } from 'main/db'
 
 import {
@@ -69,12 +80,13 @@ export const inventoryBatchesRepository = {
     return total ?? 0
   },
 
-  findBatches(filters: InventoryBatchFilters) {
+  async findBatches(filters: InventoryBatchFilters) {
     const {
       productId,
       supplierId,
       batchId,
       batchCode,
+      searchTerm,
       hasStock,
       expired,
       expiresBefore,
@@ -99,6 +111,16 @@ export const inventoryBatchesRepository = {
 
     if (batchCode) {
       conditions.push(eq(inventoryBatchesTable.batchCode, batchCode))
+    }
+
+    if (searchTerm?.trim()) {
+      const term = `%${searchTerm.trim()}%`
+      conditions.push(
+        or(
+          like(productsTable.name, term),
+          like(inventoryBatchesTable.batchCode, term)
+        )!
+      )
     }
 
     if (hasStock === true) {
@@ -129,27 +151,40 @@ export const inventoryBatchesRepository = {
       conditions.push(gt(inventoryBatchesTable.expirationDate, expiresAfter))
     }
 
+    const whereClause =
+      conditions.length > 0 ? and(...conditions) : undefined
     const offset = (page - 1) * pageSize
 
-    const query = db
-      .select({
-        ...getTableColumns(inventoryBatchesTable),
-        productName: productsTable.name,
-        unitPrecision: productsTable.unitPrecision,
-      })
-      .from(inventoryBatchesTable)
-      .leftJoin(
-        productsTable,
-        eq(inventoryBatchesTable.productId, productsTable.id)
-      )
-      .where(conditions.length ? and(...conditions) : undefined)
-      .orderBy(
-        sql`${inventoryBatchesTable.expirationDate} IS NULL`,
-        asc(inventoryBatchesTable.expirationDate)
-      )
-      .limit(pageSize)
-      .offset(offset)
+    const [rows, countResult] = await Promise.all([
+      db
+        .select({
+          ...getTableColumns(inventoryBatchesTable),
+          productName: productsTable.name,
+          unitPrecision: productsTable.unitPrecision,
+        })
+        .from(inventoryBatchesTable)
+        .leftJoin(
+          productsTable,
+          eq(inventoryBatchesTable.productId, productsTable.id)
+        )
+        .where(whereClause)
+        .orderBy(
+          sql`${inventoryBatchesTable.expirationDate} IS NULL`,
+          asc(inventoryBatchesTable.expirationDate)
+        )
+        .limit(pageSize)
+        .offset(offset),
+      db
+        .select({ count: count() })
+        .from(inventoryBatchesTable)
+        .leftJoin(
+          productsTable,
+          eq(inventoryBatchesTable.productId, productsTable.id)
+        )
+        .where(whereClause),
+    ])
 
-    return query
+    const total = countResult[0]?.count ?? 0
+    return { rows, total, page, pageSize }
   },
 }

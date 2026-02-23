@@ -12,6 +12,7 @@ export type ColumnDef<K extends string> = {
   name: string
   uid: K
   align?: 'start' | 'center' | 'end'
+  tooltip?: string
 }
 
 export const INVENTORY_BATCH_COLUMNS: ColumnDef<InventoryBatchColumnKey>[] = [

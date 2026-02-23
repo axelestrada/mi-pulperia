@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/page-header'
 
 export const InventoryPage = () => {
@@ -8,6 +9,8 @@ export const InventoryPage = () => {
         description="Control de lotes y movimientos."
         actions={
           <Button
+            as={Link}
+            to="/inventory-entry"
             startContent={<IconLucidePlus />}
             color="default"
             variant="shadow"
@@ -18,7 +21,7 @@ export const InventoryPage = () => {
         }
       />
 
-      <Tabs>
+      <Tabs className="mb-2">
         <Tab
           key="batches"
           title={
@@ -27,7 +30,7 @@ export const InventoryPage = () => {
             </div>
           }
         >
-          <InventoryBatchesTable filters={{}} />
+          <InventoryBatchesTable />
         </Tab>
 
         <Tab
@@ -38,7 +41,7 @@ export const InventoryPage = () => {
             </div>
           }
         >
-          <ComingSoon />
+          <InventoryMovementsTable />
         </Tab>
       </Tabs>
     </>

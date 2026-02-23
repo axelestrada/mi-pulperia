@@ -1,3 +1,6 @@
+import { Calendar } from './ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+
 function formatDate(date?: Date) {
   if (!date) return ''
   return date.toLocaleDateString('en-US', {
@@ -11,7 +14,7 @@ function isValidDate(date: Date | undefined) {
   if (!date) {
     return false
   }
-  return !isNaN(date.getTime())
+  return !Number.isNaN(date.getTime())
 }
 
 type Props = {
@@ -19,7 +22,7 @@ type Props = {
 }
 
 export const DatePickerField = ({ onChange }: Props) => {
-  const [date, setDate ] = useState(new Date())
+  const [date, setDate] = useState(new Date())
   const [month, setMonth] = useState(new Date())
 
   const [open, setOpen] = useState(false)
@@ -34,7 +37,7 @@ export const DatePickerField = ({ onChange }: Props) => {
         className="bg-background pr-10"
         onChange={e => {
           const date = new Date(e.target.value)
-          
+
           setValue(e.target.value)
 
           if (isValidDate(date)) {

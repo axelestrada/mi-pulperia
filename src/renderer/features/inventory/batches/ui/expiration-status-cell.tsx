@@ -28,7 +28,7 @@ export function ExpirationStatusCell({ expirationDate }: Props) {
       })}
     >
       <IconSolarCalendarMinimalisticLinear
-        className={cn('size-4', {
+        className={cn('size-4 text-default-300', {
           'text-warning-500': expiringSoon && !isExpired,
           'text-danger-500': isExpired,
         })}

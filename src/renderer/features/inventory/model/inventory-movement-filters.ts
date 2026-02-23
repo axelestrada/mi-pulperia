@@ -3,4 +3,6 @@ export type InventoryMovementFilters = {
   type?: 'IN' | 'OUT' | 'ADJUST'
   dateFrom?: string
   dateTo?: string
+  page?: number
+  pageSize?: number
 }
