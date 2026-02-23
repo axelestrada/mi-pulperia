@@ -224,6 +224,26 @@ export const SalesPage = () => {
     }
   }
 
+  const money = (cents: number) => formatCurrency(fromCents(cents))
+
+  const rows = [
+    { label: 'Subtotal', value: money(selectedSale?.subtotal || 0) },
+    (selectedSale?.discountAmount || 0) > 0
+      ? {
+          label: 'Descuento',
+          value: `-${money(selectedSale?.discountAmount || 0)}`,
+          className: 'text-green-600',
+        }
+      : null,
+    (selectedSale?.taxAmount || 0) > 0
+      ? { label: 'Impuesto', value: money(selectedSale?.taxAmount || 0) }
+      : null,
+  ].filter(Boolean) as Array<{
+    label: string
+    value: string
+    className?: string
+  }>
+
   return (
     <div className="space-y-6 p-4">
       {/* Header */}
@@ -669,8 +689,7 @@ export const SalesPage = () => {
                           <p className="text-xs">
                             {showInventoryBreakdown ? (
                               <>
-                                {formatQuantity(presentationQuantity)}
-                                {presentationUnitLabel} x{' '}
+                                {formatQuantity(presentationQuantity)} x{' '}
                                 {formatCurrency(fromCents(item.unitPrice))} x{' '}
                                 {formatQuantity(
                                   fromUnitPrecision(
@@ -682,12 +701,14 @@ export const SalesPage = () => {
                               </>
                             ) : (
                               <>
-                                {formatQuantity(item.quantity)}
-                                {inventoryUnitLabel} x{' '}
+                                {formatQuantity(item.quantity)} x{' '}
                                 {formatCurrency(fromCents(item.unitPrice))}
                               </>
                             )}
                           </p>
+                          {item.notes && (
+                            <p className="text-xs">{item.notes}</p>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="font-medium">
@@ -695,7 +716,7 @@ export const SalesPage = () => {
                           </p>
                           {item.discount > 0 && (
                             <p className="text-xs text-green-600">
-                              Desc: -{formatCurrency(item.discount)}
+                              Desc: -{formatCurrency(fromCents(item.discount))}
                             </p>
                           )}
                         </div>
@@ -711,23 +732,33 @@ export const SalesPage = () => {
               <div>
                 <h4 className="font-medium mb-2">Pagos</h4>
                 <div className="space-y-2">
-                  {selectedSale.payments?.map(payment => {
+                  {selectedSale?.payments?.map(payment => {
+                    const delivered = fromCents(payment.amount)
+                    const change = fromCents(payment.changeAmount ?? 0)
+                    const applied = Math.max(0, delivered - change)
+
                     return (
                       <div
                         key={payment.id}
-                        className="flex justify-between items-center"
+                        className="flex justify-between items-start py-2"
                       >
-                        <span className="capitalize">{payment.method}</span>
-                        <div className="text-right">
-                          <p className="font-medium">
-                            {formatCurrency(fromCents(payment.amount))}
+                        <span className="capitalize font-medium">
+                          {payment.method}
+                        </span>
+
+                        <div className="text-right leading-5">
+                          <p className="text-sm">
+                            Entregado:{' '}
+                            <span className="font-medium">
+                              {formatCurrency(delivered)}
+                            </span>
                           </p>
-                          {payment.changeAmount && (
-                            <p className="text-xs text-blue-600">
-                              Cambio:{' '}
-                              {formatCurrency(fromCents(payment.changeAmount))}
-                            </p>
-                          )}
+                          <p className="text-sm text-gray-600">
+                            Aplicado:{' '}
+                            <span className="font-medium">
+                              {formatCurrency(applied)}
+                            </span>
+                          </p>
                         </div>
                       </div>
                     )
@@ -738,46 +769,40 @@ export const SalesPage = () => {
               <Separator />
 
               {/* Totals */}
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>
-                    {formatCurrency(fromCents(selectedSale.subtotal))}
+              <div className="space-y-1">
+                {rows.map(r => (
+                  <div
+                    key={r.label}
+                    className={`flex items-baseline justify-between text-sm ${r.className ?? ''}`}
+                  >
+                    <span className="text-muted-foreground">{r.label}</span>
+                    <span className="font-medium tabular-nums">{r.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-medium text-muted-foreground">
+                    Total
                   </span>
-                </div>
-                {selectedSale.discountAmount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Descuento:</span>
-                    <span>
-                      -{formatCurrency(fromCents(selectedSale.discountAmount))}
-                    </span>
-                  </div>
-                )}
-                {selectedSale.taxAmount > 0 && (
-                  <div className="flex justify-between">
-                    <span>Impuesto:</span>
-                    <span>
-                      {formatCurrency(fromCents(selectedSale.taxAmount))}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Total:</span>
-                  <span>{formatCurrency(fromCents(selectedSale.total))}</span>
+                  <span className="text-xl font-bold tabular-nums">
+                    {money(selectedSale.total)}
+                  </span>
                 </div>
               </div>
 
-              {selectedSale.notes && (
+              {selectedSale.notes ? (
                 <>
                   <Separator />
-                  <div>
-                    <p className="text-sm font-medium mb-1">Notas</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Notas</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">
                       {selectedSale.notes}
                     </p>
                   </div>
                 </>
-              )}
+              ) : null}
             </div>
           )}
         </DialogContent>
