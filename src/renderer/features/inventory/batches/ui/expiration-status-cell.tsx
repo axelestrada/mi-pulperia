@@ -1,15 +1,14 @@
-import { cn } from '@/lib/utils'
-import { differenceInCalendarDays, formatDate, startOfDay } from 'date-fns'
-
+import { differenceInCalendarDays, format, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 type Props = {
-  expirationDate: Date | null
+  expirationDate?: Date | null
 }
 
 export function ExpirationStatusCell({ expirationDate }: Props) {
   if (!expirationDate) {
-    return <span className="text-muted-foreground">—</span>
+    return null
   }
 
   const today = startOfDay(new Date())
@@ -18,27 +17,29 @@ export function ExpirationStatusCell({ expirationDate }: Props) {
   const daysDiff = differenceInCalendarDays(expiration, today)
 
   const isExpired = daysDiff < 0
-  const expiresToday = daysDiff === 0
+
+  const expiringSoon = daysDiff <= 15
 
   return (
     <div
-      className={cn(
-        'flex gap-1',
-        !isExpired && daysDiff <= 15 && 'text-yellow-600',
-        isExpired && 'text-red-600'
-      )}
+      className={cn('flex gap-2 whitespace-nowrap', {
+        'text-warning-500': expiringSoon && !isExpired,
+        'text-danger-500': isExpired,
+      })}
     >
-      <span>{formatDate(expirationDate, 'dd MMM yyyy', { locale: es })}</span>
-
-      {isExpired ? (
-        <Badge variant="destructive" className="w-fit">
-          Vencido
-        </Badge>
-      ) : daysDiff<= 15 ? (
-        <Badge variant="outline" className="w-fit border-yellow-600 text-yellow-600">
-          {expiresToday ? 'Vence hoy' : `${daysDiff} días`}
-        </Badge>
-      ) : null}
+      <IconSolarCalendarMinimalisticLinear
+        className={cn('size-4 text-default-300', {
+          'text-warning-500': expiringSoon && !isExpired,
+          'text-danger-500': isExpired,
+        })}
+      />
+      <span>
+        {capitalize(
+          format(expirationDate, 'MMMM dd, yyyy', {
+            locale: es,
+          })
+        )}
+      </span>
     </div>
   )
 }

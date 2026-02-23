@@ -1,17 +1,24 @@
+import { ProductsListFilters } from '~/src/main/domains/products/products-list-filters'
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+
 export const productAdapter = {
-  list() {
-    return window.api.products.list()
+  list(filters?: ProductsListFilters) {
+    return window.api.products.list(filters)
   },
 
   create(payload: ProductFormData) {
     return window.api.products.create(payload)
   },
 
-  update(id: Product['id'], payload: Partial<ProductFormData>) {
+  update(id: ProductDTO['id'], payload: ProductFormData) {
     return window.api.products.update(id, payload)
   },
 
-  remove(id: Product['id']) {
+  remove(id: ProductDTO['id']) {
     return window.api.products.remove(id)
+  },
+
+  toggle(id: ProductDTO['id']) {
+    return window.api.products.toggle(id)
   },
 }

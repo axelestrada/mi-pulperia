@@ -1,14 +1,14 @@
-import { db } from 'main/db'
-
-import {
+import { PaginatedResult } from 'shared/types/pagination'
+import { inventoryBatchesRepository } from './inventory-batches-repository'
+import type {
   AddStockDTO,
   AdjustStockDTO,
   ConsumeProductDTO,
+  InventoryBatchDTO,
   InventoryBatchFilters,
+  InventoryMovementDTO,
   InventoryMovementFilters,
 } from './inventory-model'
-
-import { inventoryBatchesRepository } from './inventory-batches-repository'
 import { inventoryMovementsRepository } from './inventory-movements-repository'
 
 export const inventoryService = {
@@ -25,12 +25,13 @@ export const inventoryService = {
     if (quantity <= 0) {
       throw new Error('La cantidad debe ser mayor que cero.')
     }
+    if (!Number.isInteger(quantity)) {
+      throw new Error('La cantidad debe enviarse en enteros (unitPrecision).')
+    }
 
     if (unitCost < 0) {
       throw new Error('El costo no puede ser negativo.')
     }
-
-    console.log('batchCode', batchCode)
 
     const [batch] = await inventoryBatchesRepository.createBatch({
       productId,
@@ -63,19 +64,19 @@ export const inventoryService = {
     if (quantityDelta === 0) {
       throw new Error('La cantidad no puede ser cero.')
     }
+    if (!Number.isInteger(quantityDelta)) {
+      throw new Error('La cantidad debe enviarse en enteros (unitPrecision).')
+    }
+    await inventoryBatchesRepository.adjustAvailable(batchId, quantityDelta)
 
-    await db.transaction(async () => {
-      await inventoryBatchesRepository.adjustAvailable(batchId, quantityDelta)
-
-      await inventoryMovementsRepository.createMovement({
-        productId,
-        batchId,
-        type: 'ADJUSTMENT',
-        quantity: Math.abs(quantityDelta),
-        reason,
-        referenceType,
-        referenceId,
-      })
+    await inventoryMovementsRepository.createMovement({
+      productId,
+      batchId,
+      type: 'ADJUSTMENT',
+      quantity: Math.abs(quantityDelta),
+      reason,
+      referenceType,
+      referenceId,
     })
   },
 
@@ -89,52 +90,82 @@ export const inventoryService = {
     if (quantity <= 0) {
       throw new Error('La cantidad a consumir debe ser mayor que cero.')
     }
+    if (!Number.isInteger(quantity)) {
+      throw new Error('La cantidad debe enviarse en enteros (unitPrecision).')
+    }
+    const batches =
+      await inventoryBatchesRepository.findAvailableByProduct(productId)
 
-    await db.transaction(async () => {
-      const batches =
-        await inventoryBatchesRepository.findAvailableByProduct(productId)
+    if (batches.length === 0) {
+      throw new Error('No hay stock disponible para este producto.')
+    }
 
-      if (batches.length === 0) {
-        throw new Error('No hay stock disponible para este producto.')
-      }
+    let remaining = quantity
 
-      let remaining = quantity
+    for (const batch of batches) {
+      if (remaining <= 0) break
 
-      for (const batch of batches) {
-        if (remaining <= 0) break
+      const consumable = Math.min(batch.quantityAvailable, remaining)
 
-        const consumable = Math.min(batch.quantityAvailable, remaining)
+      await inventoryBatchesRepository.decreaseAvailable(batch.id, consumable)
 
-        await inventoryBatchesRepository.decreaseAvailable(batch.id, consumable)
+      await inventoryMovementsRepository.createMovement({
+        productId,
+        batchId: batch.id,
+        type: 'OUT',
+        quantity: consumable,
+        reason,
+        referenceType,
+        referenceId,
+      })
 
-        await inventoryMovementsRepository.createMovement({
-          productId,
-          batchId: batch.id,
-          type: 'OUT',
-          quantity: consumable,
-          reason,
-          referenceType,
-          referenceId,
-        })
+      remaining -= consumable
+    }
 
-        remaining -= consumable
-      }
-
-      if (remaining > 0) {
-        throw new Error('No hay suficiente stock para este producto.')
-      }
-    })
+    if (remaining > 0) {
+      throw new Error('No hay suficiente stock para este producto.')
+    }
   },
 
   getAvailableStock: async (productId: number) => {
     return inventoryBatchesRepository.getTotalAvailableByProduct(productId)
   },
 
-  listBatches(filters: InventoryBatchFilters) {
-    return inventoryBatchesRepository.findBatches(filters)
+  async listBatches(
+    filters: InventoryBatchFilters
+  ): Promise<PaginatedResult<InventoryBatchDTO>> {
+    const { rows, total, page, pageSize } =
+      await inventoryBatchesRepository.findBatches(filters)
+
+    const data: InventoryBatchDTO[] = rows.map(row => ({
+      id: row.id,
+      productId: row.productId,
+      productName: row.productName ?? '',
+      unitPrecision: row.unitPrecision ?? 0,
+      supplierId: row.supplierId,
+      batchCode: row.batchCode,
+      expirationDate: row.expirationDate
+        ? row.expirationDate.toISOString()
+        : null,
+      quantityInitial: row.quantityInitial,
+      quantityAvailable: row.quantityAvailable,
+      unitCost: row.unitCost,
+      receivedAt: row.receivedAt.toISOString(),
+      createdAt: row.createdAt.toISOString(),
+    }))
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    }
   },
 
-  listMovements(filters: InventoryMovementFilters) {
+  async listMovements(
+    filters: InventoryMovementFilters
+  ): Promise<PaginatedResult<InventoryMovementDTO>> {
     return inventoryMovementsRepository.findMovements(filters)
   },
 }

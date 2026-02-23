@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { PageHeader } from '@/components/ui/page-header'
+
 export const InventoryPage = () => {
   return (
     <>
@@ -5,31 +8,41 @@ export const InventoryPage = () => {
         title="Inventario"
         description="Control de lotes y movimientos."
         actions={
-          <NavLink to="/inventory-entry">
-            <Button>
-              <IconLucidePlus /> Nueva Entrada
-            </Button>
-          </NavLink>
+          <Button
+            as={Link}
+            to="/inventory-entry"
+            startContent={<IconLucidePlus />}
+            color="default"
+            variant="shadow"
+            className="bg-foreground text-background"
+          >
+            Nueva Entrada
+          </Button>
         }
       />
 
-      <Tabs defaultValue="batches" className="h-full">
-        <TabsList className="mb-2">
-          <TabsTrigger value="batches">
-            <IconLucidePackage /> Lotes
-          </TabsTrigger>
-          <TabsTrigger value="movements">
-            <IconLucideHistory /> Movimientos
-          </TabsTrigger>
-        </TabsList>
+      <Tabs className="mb-2">
+        <Tab
+          key="batches"
+          title={
+            <div className="flex items-center gap-1">
+              <IconSolarBoxLinear /> Lotes
+            </div>
+          }
+        >
+          <InventoryBatchesTable />
+        </Tab>
 
-        <TabsContent value="batches" className="h-full">
-          <InventoryBatchesTable filters={{}} />
-        </TabsContent>
-
-        <TabsContent value="movements">
-          <ComingSoon />
-        </TabsContent>
+        <Tab
+          key="movements"
+          title={
+            <div className="flex items-center gap-1">
+              <IconLucideHistory /> Movimientos
+            </div>
+          }
+        >
+          <InventoryMovementsTable />
+        </Tab>
       </Tabs>
     </>
   )

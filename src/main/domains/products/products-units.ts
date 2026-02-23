@@ -10,10 +10,10 @@ export const UNIT_CONFIG: Record<
   },
   lb: {
     label: 'Libra',
-    unitPrecision: 1000,
+    unitPrecision: 10,
   },
   liter: {
     label: 'Litro',
-    unitPrecision: 1000,
+    unitPrecision: 10,
   },
 }

@@ -1,24 +1,22 @@
-import { formatCurrency } from 'shared/utils/formatCurrency'
-
-import { useState } from 'react'
+import { format } from 'date-fns'
 import {
   AlertTriangleIcon,
+  CalendarIcon,
   CreditCardIcon,
   DollarSignIcon,
   EditIcon,
   EyeIcon,
+  LockIcon,
   MoreHorizontalIcon,
+  ReceiptIcon,
   SearchIcon,
+  ShoppingCartIcon,
+  UnlockIcon,
   UserRoundCheckIcon,
   UserRoundXIcon,
-  LockIcon,
-  UnlockIcon,
-  CalendarIcon,
-  ShoppingCartIcon,
-  ReceiptIcon,
 } from 'lucide-react'
-
-import { format } from 'date-fns'
+import { useState } from 'react'
+import { formatCurrency } from 'shared/utils/formatCurrency'
 
 type Customer = {
   id: string
@@ -195,9 +193,14 @@ export const CustomersTable = () => {
           ...selectedCustomer,
           currentDebt: Math.max(0, selectedCustomer.currentDebt - amount),
         })
+
         setPaymentAmount('')
         setIsPaymentDialogOpen(false)
-        alert(`Abono de ${formatCurrency(amount)} registrado exitosamente`)
+
+        sileo.success({
+          title: 'Abono registrado correctamente',
+          description: `Abono de ${amount} registrado correctamente para el cliente ${selectedCustomer.name}.`,
+        })
       }
     }
   }

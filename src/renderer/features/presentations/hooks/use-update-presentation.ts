@@ -2,7 +2,7 @@ export function useUpdatePresentation(productId: number) {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: PresentationFormData }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<PresentationFormData> }) =>
       presentationsService.update(id, data),
 
     onSuccess: () => {

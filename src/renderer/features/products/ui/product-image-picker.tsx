@@ -1,18 +1,20 @@
+import { Image, Button } from '@heroui/react'
+
+import placeholder from '@/assets/images/placeholder.svg'
+
 export const ProductImagePicker = () => {
   const { setValue, watch } = useFormContext<
     ProductFormData | PresentationFormData
   >()
 
   const { mutate: deleteImage } = useDeleteImage()
-  const { mutate: updateProduct } = useUpdateProduct()
   const { mutate: uploadImage, isPending } = useUploadImage()
 
   const [preview, setPreview] = useState<string | null>(null)
 
   const imageValue = watch('image')
-  const id = watch('id')
 
-  const { data: imagePath } = useImagePath(imageValue)
+  const { data: imagePath = '' } = useImagePath(imageValue)
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -22,10 +24,7 @@ export const ProductImagePicker = () => {
 
     uploadImage(file, {
       onSuccess: ({ filename }) => {
-        setValue('image', filename, {
-          shouldDirty: true,
-          shouldTouch: true,
-        })
+        setValue('image', filename)
       },
       onError: err => {
         console.error(err)
@@ -41,17 +40,8 @@ export const ProductImagePicker = () => {
 
     deleteImage(filename, {
       onSuccess: () => {
-        setValue('image', '', { shouldDirty: true, shouldTouch: true })
+        setValue('image', null)
         setPreview(null)
-
-        if (!id) return
-
-        updateProduct({
-          id,
-          data: {
-            image: '',
-          },
-        })
       },
       onError: err => {
         console.error(err)
@@ -67,7 +57,7 @@ export const ProductImagePicker = () => {
 
   return (
     <div
-      className="border-dashed border-2 rounded-lg p-4 text-center cursor-pointer"
+      className="border-dashed border-2 border-default-300 rounded-lg p-4 text-center justify-center items-center flex flex-col cursor-pointer w-full hover:border-default-400 transition-colors"
       onDragOver={e => e.preventDefault()}
       onDrop={e => {
         e.preventDefault()
@@ -85,30 +75,31 @@ export const ProductImagePicker = () => {
       }}
     >
       {preview || imagePath ? (
-        <SafeImage
-          className="w-32 h-32 object-cover mx-auto rounded"
-          src={preview ?? imagePath}
+        <Image
+          className="w-32 aspect-4/3 object-contain bg-white"
+          src={preview ?? imagePath ?? ''}
+          fallbackSrc={placeholder}
+          isBlurred
           alt="Imagen del producto"
         />
       ) : isPending ? (
-        <p className="text-xs">Procesando…</p>
+        <p className="text-xs text-default-500">Procesando…</p>
       ) : (
-        <p className="text-sm opacity-70">
+        <p className="text-sm text-default-500">
           Click o arrastra una imagen para subir
         </p>
       )}
 
       {(preview || imagePath) && (
         <Button
-          className="mt-4"
           size="sm"
-          variant="destructive"
-          onClick={e => {
-            e.stopPropagation()
+          className="mt-4"
+          color="danger"
+          onPress={() => {
             handleDelete()
           }}
         >
-          <IconLucideX className="size-4" />
+          <IconSolarTrashBinMinimalisticBoldDuotone className="size-4 text-current" />
           Eliminar imagen
         </Button>
       )}

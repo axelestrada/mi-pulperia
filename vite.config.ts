@@ -1,13 +1,13 @@
 import path from 'node:path'
-import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import electron from 'vite-plugin-electron/simple'
-
-import Icons from 'unplugin-icons/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import IconsResolver from 'unplugin-icons/resolver'
+
+import Icons from 'unplugin-icons/vite'
+import { defineConfig } from 'vite'
+import electron from 'vite-plugin-electron/simple'
 
 export default defineConfig({
   plugins: [
@@ -39,12 +39,40 @@ export default defineConfig({
         {
           '@hookform/resolvers/zod': ['zodResolver'],
         },
+        { sileo: ['sileo'] },
         { sonner: ['toast'] },
+        {
+          '@heroui/react': [
+            'HeroUIProvider',
+            'ToastProvider',
+            'useDisclosure',
+            'Button',
+            'Breadcrumbs',
+            'BreadcrumbItem',
+            'Badge',
+            'Input',
+            'Divider',
+            'Kbd',
+            'Tabs',
+            'Tab',
+            'Table',
+            'TableHeader',
+            'TableBody',
+            'TableColumn',
+            'TableRow',
+            'TableCell',
+            'Spinner',
+            'Tooltip',
+            'Pagination',
+            'Chip',
+          ],
+        },
       ],
       dirs: [
-        './src/renderer/components/**/*',
-        './src/renderer/components/ui/shadcn-io/**/*',
         './src/renderer/features/**/*',
+        './src/renderer/components/table/**/*',
+        './src/renderer/components/sidebar/**/*',
+        './src/renderer/components/badges/**/*',
         './src/shared/components/**/*',
         './src/shared/hooks/**/*',
         './src/shared/utils/**/*',

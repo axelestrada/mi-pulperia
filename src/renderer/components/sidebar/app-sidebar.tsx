@@ -1,19 +1,7 @@
-import * as React from 'react'
-import {
-  LifeBuoy,
-  ShoppingBasket,
-  LayoutDashboard,
-  ShoppingCart,
-  Users,
-  Package,
-  CreditCard,
-  DollarSign,
-  FileChartColumn,
-  Coins,
-  Settings,
-} from 'lucide-react'
+import type * as React from 'react'
 
-import { Sidebar } from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
+import { NavMain } from './nav-main'
 
 const data = {
   user: {
@@ -23,114 +11,149 @@ const data = {
   },
   navMain: [
     {
-      title: 'Panel Principal',
+      title: 'Panel principal',
       url: '/',
-      icon: LayoutDashboard,
+      icon: <IconSolarHome2Linear className="size-6" />,
     },
     {
-      title: 'Punto de Venta',
+      title: 'Punto de venta',
       shortcut: 'F2',
       url: 'pos',
-      icon: ShoppingCart,
+      icon: <IconSolarLaptopMinimalisticLinear className="size-6" />,
     },
     {
-      title: 'Clientes',
-      url: 'customers',
-      icon: Users,
-    },
-    {
-      title: 'Productos',
-      url: 'products',
-      icon: Package,
+      title: 'Ventas',
+      url: 'sales',
+      icon: <IconSolarWalletMoneyLinear className="size-6" />,
       isActive: true,
       items: [
         {
-          title: 'Lista de Productos',
-          url: 'products',
+          title: 'Historial',
+          url: 'sales',
+          icon: <IconSolarHistoryLinear className="size-5" />,
         },
         {
-          title: 'Categorías',
-          url: 'categories',
-        },
-        {
-          title: 'Inventario',
-          url: 'inventory',
-        },
-        {
-          title: 'Ordenes de Compra',
-          url: 'purchase-orders',
-        },
-        {
-          title: 'Ajustes y Merma',
-          url: 'adjustments',
-        },
-        {
-          title: 'Proveedores',
-          url: 'suppliers',
+          title: 'Devoluciones',
+          url: 'returns',
+          icon: <IconSolarRefreshSquareLinear className="size-5" />,
         },
       ],
     },
     {
-      title: 'Créditos',
-      url: 'credits',
-      icon: CreditCard,
+      title: 'Catálogo',
+      url: 'products',
+      icon: <IconSolarClipboardListLinear className="size-6" />,
+      items: [
+        {
+          title: 'Lista de productos',
+          url: 'products',
+          icon: <IconSolarBoxLinear className="size-5" />,
+        },
+        {
+          title: 'Categorías',
+          url: 'categories',
+          icon: <IconSolarWidget2Outline className="size-5" />,
+        },
+        {
+          title: 'Promociones',
+          url: 'promotions',
+          icon: <IconSolarSaleLinear className="size-5" />,
+        },
+      ],
     },
     {
-      title: 'Gastos',
-      url: 'expenses',
-      icon: DollarSign,
+      title: 'Inventario',
+      url: 'inventory',
+      icon: <IconSolarDocumentAddLinear className="size-6" />,
+      items: [
+        {
+          title: 'Stock',
+          url: 'inventory',
+          icon: <IconSolarChecklistMinimalisticLinear className="size-5" />,
+        },
+
+        {
+          title: 'Ajustes y Merma',
+          url: 'adjustments',
+          icon: <IconSolarSettingsMinimalisticLinear className="size-5" />,
+        },
+      ],
+    },
+    {
+      title: 'Compras',
+      url: 'purchase-orders',
+      icon: <IconSolarMoneyBagLinear className="size-6" />,
+      items: [
+        {
+          title: 'Ordenes de Compra',
+          url: 'purchase-orders',
+          icon: <IconSolarBillListLinear className="size-5" />,
+        },
+        {
+          title: 'Proveedores',
+          url: 'suppliers',
+          icon: <IconSolarScooterLinear className="size-5" />,
+        },
+      ],
+    },
+    {
+      title: 'Finanazas',
+      url: 'credits',
+      icon: <IconSolarBanknoteLinear className="size-6" />,
+      items: [
+        {
+          title: 'Créditos',
+          url: 'credits',
+          icon: <IconSolarBanknote2Linear className="size-5" />,
+        },
+        {
+          title: 'Gastos',
+          url: 'expenses',
+          icon: <IconSolarDocumentAddLinear className="size-5" />,
+        },
+        {
+          title: 'Caja',
+          url: 'cash',
+          icon: <IconSolarSafe2Linear className="size-5" />,
+        },
+      ],
+    },
+    {
+      title: 'Clientes',
+      url: 'customers',
+      icon: <IconSolarUsersGroupTwoRoundedLinear className="size-6" />,
+    },
+    {
+      title: 'Recargas',
+      url: 'top-ups',
+      icon: <IconSolarSmartphoneUpdateLinear className="size-6" />,
     },
     {
       title: 'Reportes',
       url: 'reports',
-      icon: FileChartColumn,
-    },
-    {
-      title: 'Caja',
-      url: 'cash',
-      icon: Coins,
+      icon: <IconSolarPresentationGraphLinear className="size-6" />,
     },
   ],
   navSecondary: [
     {
       title: 'Ayuda',
       url: 'help',
-      icon: LifeBuoy,
+      icon: <IconSolarHome2Linear className="size-6" />,
     },
     {
       title: 'Configuración',
       url: 'settings',
-      icon: Settings,
+      icon: <IconSolarHome2Linear className="size-6" />,
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar variant="inset" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <NavLink to="/">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <ShoppingBasket className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Mi Pulpería</span>
-                </div>
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+    <Sidebar variant="inset" {...props} className="bg-default-100">
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
     </Sidebar>
   )
 }

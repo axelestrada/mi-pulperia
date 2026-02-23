@@ -19,6 +19,6 @@ export const toPresentationDTO = (row: PresentationRow): PresentationDTO => ({
   factor: row.factor,
 
   salePrice: row.salePrice,
-  isActive: row.isActive,
+  status: row.status,
   createdAt: row.createdAt,
 })

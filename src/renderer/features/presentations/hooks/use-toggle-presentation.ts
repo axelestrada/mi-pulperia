@@ -1,16 +1,18 @@
-export function useTogglePresentation(productId: number) {
+export function useTogglePresentation() {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
-      presentationsService.toggleActive(id, isActive),
+    mutationFn: (id: number) => presentationsService.toggleActive(id),
 
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       qc.invalidateQueries({
-        queryKey: presentationKeys.byProduct(productId),
+        queryKey: presentationKeys.byProduct(id),
       })
       qc.invalidateQueries({
         queryKey: presentationKeys.all,
+      })
+      qc.invalidateQueries({
+        queryKey: productKeys.all,
       })
     },
   })

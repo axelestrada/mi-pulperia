@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, sql } from 'drizzle-orm'
+import { and, eq, like, or, sql } from 'drizzle-orm'
 import { db } from 'main/db'
 import {
   InsertPresentation,
@@ -13,7 +13,6 @@ export const PresentationsRepository = {
   async findAll({
     productId,
     categoryId,
-    isActive,
     page = 1,
     pageSize = 20,
     search,
@@ -28,16 +27,12 @@ export const PresentationsRepository = {
       whereConditions.push(eq(productsTable.categoryId, categoryId))
     }
 
-    if (typeof isActive === 'boolean') {
-      whereConditions.push(eq(presentationsTable.isActive, isActive))
-    }
-
     if (search) {
       const searchConditions = or(
-        ilike(presentationsTable.name, search),
-        ilike(presentationsTable.sku, search),
-        ilike(presentationsTable.barcode, search),
-        ilike(productsTable.name, search)
+        like(presentationsTable.name, `%${search}%`),
+        like(presentationsTable.sku, `%${search}%`),
+        like(presentationsTable.barcode, `%${search}%`),
+        like(productsTable.name, `%${search}%`)
       )
 
       if (searchConditions) {
@@ -90,6 +85,16 @@ export const PresentationsRepository = {
       )
   },
 
+  async findById(id: number) {
+    return db
+      .select()
+      .from(presentationsTable)
+      .where(
+        and(eq(presentationsTable.id, id), eq(presentationsTable.deleted, false))
+      )
+      .get()
+  },
+
   async create(data: InsertPresentation) {
     const [row] = await db.insert(presentationsTable).values(data).returning()
 
@@ -99,17 +104,55 @@ export const PresentationsRepository = {
   async update(id: number, data: Partial<InsertPresentation>) {
     const [row] = await db
       .update(presentationsTable)
-      .set(data)
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(presentationsTable.id, id))
       .returning()
 
     return row
   },
 
-  toggleActive(id: number, isActive: boolean) {
+  async updateBasePresentation(
+    productId: number,
+    data: Partial<InsertPresentation>
+  ) {
+    const [row] = await db
+      .update(presentationsTable)
+      .set({ ...data, updatedAt: new Date() })
+      .where(
+        and(
+          eq(presentationsTable.productId, productId),
+          eq(presentationsTable.isBase, true),
+          eq(presentationsTable.deleted, false)
+        )
+      )
+      .returning()
+
+    return row
+  },
+
+  toggleActive(id: number) {
     return db
       .update(presentationsTable)
-      .set({ isActive })
+      .set({
+        status: sql`
+        CASE
+          WHEN ${presentationsTable.status} = 'active' THEN 'inactive'
+          ELSE 'active'
+        END
+      `,
+        updatedAt: new Date(),
+      })
+      .where(eq(presentationsTable.id, id))
+  },
+
+  delete(id: number) {
+    return db
+      .update(presentationsTable)
+      .set({
+        deleted: true,
+        status: 'deleted',
+        updatedAt: new Date(),
+      })
       .where(eq(presentationsTable.id, id))
   },
 }

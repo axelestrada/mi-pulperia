@@ -22,7 +22,7 @@ export type PresentationRow = {
   factor: number | null
 
   salePrice: number
-  isActive: boolean
+  status: 'active' | 'inactive' | 'deleted'
   createdAt: Date
 }
 
@@ -45,7 +45,7 @@ export type PresentationDTO = {
   factor: number | null
 
   salePrice: number
-  isActive: boolean
+  status: 'active' | 'inactive' | 'deleted'
   createdAt: Date
 }
 

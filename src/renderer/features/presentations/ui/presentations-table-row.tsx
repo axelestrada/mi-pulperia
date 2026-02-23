@@ -12,7 +12,7 @@ export const PresentationsTableRow = ({ presentation, product }: Props) => {
         <SafeImage
           src={imagePath}
           alt={presentation.name}
-          className="h-12 w-12 object-cover rounded"
+          className="w-12 aspect-4/3 object-cover rounded"
         />
       </TableCell>
 

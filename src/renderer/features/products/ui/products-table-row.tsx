@@ -14,7 +14,7 @@ export const ProductsTableRow = ({ product, onEdit }: Props) => {
         <SafeImage
           src={imagePath}
           alt={product.name}
-          className="h-12 w-12 object-cover rounded"
+          className="w-12 aspect-4/3 object-cover rounded"
         />
       </TableCell>
 

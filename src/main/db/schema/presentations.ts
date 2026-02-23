@@ -28,7 +28,7 @@ export const presentationsTable = sqliteTable('presentations', {
 
   salePrice: int('sale_price').notNull(),
 
-  isActive: int('is_active', { mode: 'boolean' }).notNull().default(true),
+  status: text().$type<'active' | 'inactive' | 'deleted'>().notNull().default('active'),
 
   createdAt: int('created_at', { mode: 'timestamp' })
     .notNull()

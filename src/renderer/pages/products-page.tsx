@@ -1,46 +1,36 @@
-import { ProductsListFilters } from 'domains/products/products-list-filters'
+import { useDisclosure } from '@heroui/react'
+
+import type { ProductDTO } from '~/src/main/domains/products/products-model'
 
 export const ProductsPage = () => {
-  const [formOpen, setFormOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure()
 
-  const { data: products } = useProducts()
+  const [selectedProduct, setSelectedProduct] = useState<ProductDTO | null>(
+    null
+  )
 
   const handleCreate = () => {
     setSelectedProduct(null)
-    setFormOpen(true)
+    onOpen()
   }
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: ProductDTO) => {
     setSelectedProduct(product)
-    setFormOpen(true)
+    onOpen()
   }
-
-  const handleFiltersChange = useCallback((filters: ProductsListFilters) => {
-    console.log(filters)
-  }, [])
 
   return (
-    <>
-      <ProductsHeader />
-      <ProductsFilters
-        onCreate={handleCreate}
-        onFiltersChange={handleFiltersChange}
-      />
+    <div>
+      <ProductsHeader onCreate={handleCreate} />
 
-      <ProductsTable
-        products={products?.data ?? []}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-      />
-
-      <TablePagination />
+      <ProductsTable onEdit={handleEdit} />
 
       <ProductFormDialog
-        open={formOpen}
-        setOpen={setFormOpen}
+        onClose={onClose}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
         product={selectedProduct}
       />
-    </>
+    </div>
   )
 }

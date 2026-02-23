@@ -1,6 +1,8 @@
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+
 type Params = {
-  product: Product
-  presentation?: Presentation
+  product: ProductDTO
+  presentation: Presentation | null
   onSuccess: () => void
   mode: PresentationFormMode
 }
@@ -25,7 +27,7 @@ export function usePresentationForm({
   const { mutateAsync: updatePresentation, isPending: isUpdating } =
     useUpdatePresentation(product.id)
 
-  const onSubmit = form.handleSubmit(values => {
+  const onSubmit = (values: PresentationFormData) => {
     if (mode === 'edit' && presentation) {
       updatePresentation(
         {
@@ -43,7 +45,7 @@ export function usePresentationForm({
         { onSuccess }
       )
     }
-  })
+  }
 
   return {
     form,

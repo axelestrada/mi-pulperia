@@ -1,28 +1,28 @@
+import { Modal, ModalContent } from '@heroui/react'
+
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+import { ProductFormDialogContent } from './product-form-dialog-content'
+
 type Props = {
-  open: boolean
-  setOpen: (open: boolean) => void
-  product: Product | null
+  isOpen: boolean
+  onClose: () => void
+  product: ProductDTO | null
+  onOpenChange: (open: boolean) => void
 }
 
-export const ProductFormDialog = ({ product, open, setOpen }: Props) => {
-  const isEdit = Boolean(product)
-
+export const ProductFormDialog = ({ isOpen, product, onOpenChange }: Props) => {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-11/12 overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Editar Producto' : 'Nuevo Producto'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? 'Modifique los detalles del producto.'
-              : 'Complete el formulario para crear un nuevo producto.'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <ProductForm product={product} onClose={() => setOpen(false)} />
-      </DialogContent>
-    </Dialog>
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      scrollBehavior="inside"
+      className="sm:max-w-xl"
+    >
+      <ModalContent>
+        {onClose => (
+          <ProductFormDialogContent onClose={onClose} product={product} />
+        )}
+      </ModalContent>
+    </Modal>
   )
 }

@@ -1,7 +1,11 @@
 import { SelectProduct } from 'main/db/schema/products'
 import { ProductsRepository } from './products-repository'
-import { toProductDTO } from './products-mappers'
-import { NewProductDTO, ProductDTO } from './products-model'
+import {
+  NewProductDTO,
+  ProductDTO,
+  productDTOSchema,
+  UpdateProductDTO,
+} from './products-model'
 import { PresentationsRepository } from '../presentations/presentations-repository'
 import { UNIT_CONFIG } from './products-units'
 import { ProductsListFilters } from './products-list-filters'
@@ -22,7 +26,7 @@ export const ProductsService = {
     const total = rows[0]?.total ?? 0
 
     return {
-      data: rows.map(toProductDTO),
+      data: productDTOSchema.array().parse(rows),
       total,
       page,
       pageSize,
@@ -65,12 +69,12 @@ export const ProductsService = {
       unit: product.baseUnit,
       unitPrecision: product.unitPrecision,
       factorType: 'fixed',
-      factor: 1,
+      factor: product.unitPrecision,
       salePrice: input.salePrice,
     })
   },
 
-  async update(id: SelectProduct['id'], input: Partial<SelectProduct>) {
+  async update(id: SelectProduct['id'], input: UpdateProductDTO) {
     if (!Number.isInteger(id)) {
       throw new Error('ID inválido para el producto')
     }
@@ -79,7 +83,37 @@ export const ProductsService = {
       throw new Error('El nombre del producto es obligatorio')
     }
 
-    return ProductsRepository.update(id, input)
+    const unitConfig = UNIT_CONFIG[input.baseUnit]
+    if (!unitConfig) {
+      throw new Error('Unidad base invÃ¡lida')
+    }
+
+    await ProductsRepository.update(id, {
+      name: input.name,
+      description: input.description,
+      categoryId: input.categoryId,
+      baseUnit: input.baseUnit,
+      unitPrecision: unitConfig.unitPrecision,
+      minStock: input.minStock,
+    })
+
+    await PresentationsRepository.updateBasePresentation(id, {
+      image: input.image,
+      sku: input.sku,
+      barcode: input.barcode,
+      unit: input.baseUnit,
+      unitPrecision: unitConfig.unitPrecision,
+      factor: unitConfig.unitPrecision,
+      salePrice: input.salePrice,
+    })
+  },
+
+  async toggle(id: SelectProduct['id']) {
+    if (!Number.isInteger(id)) {
+      throw new Error('ID inválido para el producto')
+    }
+
+    return ProductsRepository.toggle(id)
   },
 
   async remove(id: SelectProduct['id']) {

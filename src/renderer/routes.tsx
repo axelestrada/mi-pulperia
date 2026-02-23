@@ -10,21 +10,21 @@ export const router = createHashRouter([
     children: [
       {
         index: true,
-        element: <ComingSoon />,
+        element: <DashboardPage />,
         handle: {
           title: 'Panel Principal',
         },
       },
       {
         path: 'pos',
-        element: <ComingSoon />,
+        element: <PosPage />,
         handle: {
           title: 'Punto de Venta',
         },
       },
       {
         path: 'customers',
-        element: <ComingSoon />,
+        element: <CustomersPage />,
         handle: {
           title: 'Clientes',
         },
@@ -45,77 +45,84 @@ export const router = createHashRouter([
       },
       {
         path: 'inventory',
-        element: <ComingSoon />,
+        element: <InventoryPage />,
         handle: {
           title: 'Inventario',
         },
       },
       {
         path: 'inventory-entry',
-        element: <ComingSoon />,
+        element: <InventoryEntryPage />,
         handle: {
           title: 'Entrada de Inventario',
         },
       },
       {
         path: 'purchase-orders',
-        element: <ComingSoon />,
+        element: <PurchaseOrdersPage />,
         handle: {
           title: 'Ordenes de Compra',
         },
       },
       {
         path: 'adjustments',
-        element: <ComingSoon />,
+        element: <AdjustmentsPage />,
         handle: {
           title: 'Ajustes y Merma',
         },
       },
       {
         path: 'suppliers',
-        element: <ComingSoon />,
+        element: <SuppliersPage />,
         handle: {
           title: 'Proveedores',
         },
       },
       {
         path: 'credits',
-        element: <ComingSoon />,
+        element: <CreditsPage />,
         handle: {
           title: 'Créditos',
         },
       },
       {
         path: 'expenses',
-        element: <ComingSoon />,
+        element: <ExpensesPage />,
         handle: {
           title: 'Gastos',
         },
       },
       {
         path: 'reports',
-        element: <ComingSoon />,
+        element: <ReportsPage />,
         handle: {
           title: 'Reportes',
         },
       },
       {
+        path: 'sales',
+        element: <SalesPage />,
+        handle: {
+          title: 'Ventas',
+        },
+      },
+      {
         path: 'cash',
-        element: <ComingSoon />,
+        element: <CashPage />,
         handle: {
           title: 'Caja',
         },
       },
       {
         path: 'help',
-        element: <ComingSoon />,
+        element: <HelpPage />,
         handle: {
           title: 'Ayuda',
         },
       },
       {
         path: 'settings',
-        element: <ComingSoon />,
+        element: <SettingsPage />,
         handle: {
           title: 'Configuración',
         },

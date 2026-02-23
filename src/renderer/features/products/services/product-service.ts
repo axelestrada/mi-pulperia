@@ -1,8 +1,14 @@
-export const productService = {
-  async list() {
-    const result = await productAdapter.list()
+import type { ProductsListFilters } from '~/src/main/domains/products/products-list-filters'
+import {
+  type ProductDTO,
+  productDTOSchema,
+} from '~/src/main/domains/products/products-model'
 
-    const { data, error } = productSchema.array().safeParse(result.data)
+export const productService = {
+  async list(filters?: ProductsListFilters) {
+    const result = await productAdapter.list(filters)
+
+    const { data, error } = productDTOSchema.array().safeParse(result.data)
 
     if (error) {
       console.error('Error al obtener los productos', error)
@@ -24,11 +30,15 @@ export const productService = {
     await productAdapter.create(payload)
   },
 
-  async update(id: Product['id'], payload: Partial<ProductFormData>) {
+  async update(id: ProductDTO['id'], payload: ProductFormData) {
     await productAdapter.update(id, payload)
   },
 
-  async remove(id: Product['id']) {
+  async remove(id: ProductDTO['id']) {
     await productAdapter.remove(id)
+  },
+
+  async toggle(id: ProductDTO['id']) {
+    await productAdapter.toggle(id)
   },
 }

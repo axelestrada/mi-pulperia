@@ -1,16 +1,21 @@
-export type UnitType = 'unit' | 'lb' | 'liter'
+export const Units = ['unit', 'lb', 'liter'] as const
+
+export type UnitType = (typeof Units)[number]
 
 export const UNIT_CONFIG: Record<
   UnitType,
-  { label: string; }
+  { label: string; unitPrecision: number }
 > = {
   unit: {
-    label: 'uds',
+    label: 'ud',
+    unitPrecision: 1,
   },
   lb: {
     label: 'lb',
+    unitPrecision: 10,
   },
   liter: {
     label: 'l',
+    unitPrecision: 10,
   },
 }

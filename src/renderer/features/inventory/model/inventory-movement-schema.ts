@@ -8,8 +8,9 @@ export const movementSchema = z.object({
   type: z.enum(['IN', 'OUT', 'ADJUST']),
   quantity: z.number(),
   unitCost: z.number(),
-  referenceType: z.string().optional(),
-  referenceId: z.number().optional(),
+  reason: z.string(),
+  referenceType: z.string().nullable().optional(),
+  referenceId: z.number().nullable().optional(),
   createdAt: z.string(),
 })
 

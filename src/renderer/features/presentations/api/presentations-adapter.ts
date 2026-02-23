@@ -17,7 +17,11 @@ export const presentationsAdapter = {
     return window.api.presentations.update(id, payload)
   },
 
-  toggleActive(id: number, isActive: boolean) {
-    return window.api.presentations.toggle(id, isActive)
+  toggleActive(id: number) {
+    return window.api.presentations.toggle(id)
+  },
+
+  delete(id: number) {
+    return window.api.presentations.delete(id)
   },
 }

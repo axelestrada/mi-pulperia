@@ -48,6 +48,6 @@ export const inventoryAdapter = {
   },
 
   listMovements(filters: InventoryMovementFilters) {
-    return window.api.inventory.listBatches(filters)
+    return window.api.inventory.listMovements(filters)
   },
 }

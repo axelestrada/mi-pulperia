@@ -1,12 +1,13 @@
 import { sql } from 'drizzle-orm'
 import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { suppliersTable } from './suppliers'
 
 export const inventoryBatchesTable = sqliteTable(
   'inventory_batches',
   {
     id: int().primaryKey({ autoIncrement: true }),
     productId: int('product_id').notNull(),
-    supplierId: int('supplier_id'),
+    supplierId: int('supplier_id').references(() => suppliersTable.id),
     batchCode: text('batch_code'),
     expirationDate: int('expiration_date', { mode: 'timestamp' }),
     quantityInitial: int('quantity_initial').notNull(),

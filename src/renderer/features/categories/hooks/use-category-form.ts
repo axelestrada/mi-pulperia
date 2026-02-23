@@ -18,17 +18,24 @@ export const useCategoryForm = (
           data,
         })
 
-        toast.success('Categoría actualizada correctamente.')
+        sileo.success({
+          title: 'Categoría actualizada correctamente.',
+        })
       } else {
         await createCategory(data)
 
-        toast.success('Categoría creada correctamente.')
+        sileo.success({
+          title: 'Categoría creada correctamente.',
+        })
       }
 
       onSuccess()
     } catch (error) {
       console.error(error)
-      toast.error('Error al guardar la categoría.')
+      sileo.error({
+        title: 'Error al guardar la categoría.',
+        description: parseError(error),
+      })
     }
   }
 

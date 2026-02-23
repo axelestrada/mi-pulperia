@@ -1,5 +1,8 @@
+import { Chip } from '@heroui/react'
+import { ProductDTO } from '~/src/main/domains/products/products-model'
+
 type Props = {
-  unit: Product['baseUnit']
+  unit: ProductDTO['baseUnit']
 }
 
 export const MeasurementUnitBadge = ({ unit }: Props) => {
@@ -9,5 +12,9 @@ export const MeasurementUnitBadge = ({ unit }: Props) => {
     liter: 'Litro',
   }
 
-  return <Badge variant="outline">{labelMap[unit]}</Badge>
+  return (
+    <Chip className="capitalize" size="sm" variant="light">
+      {labelMap[unit]}
+    </Chip>
+  )
 }
