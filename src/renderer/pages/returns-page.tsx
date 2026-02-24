@@ -1,21 +1,26 @@
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
-import { formatCurrency } from '../../shared/utils/formatCurrency'
-import { fromCents } from '../../shared/utils/currency'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Chip,
+  Pagination,
+  Spinner,
   Table,
   TableBody,
   TableCell,
-  TableHead,
+  TableColumn,
   TableHeader,
   TableRow,
-} from '../components/ui/table'
-import { useReturns, type SaleReturn } from '../hooks/use-returns'
+} from '@heroui/react'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { ArrowLeftRight, Plus, RotateCcw } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { NewReturnDialog } from '../features/returns/ui/new-return-dialog'
+import { useReturns, type SaleReturn } from '../hooks/use-returns'
+import { fromCents } from '../../shared/utils/currency'
+import { formatCurrency } from '../../shared/utils/formatCurrency'
 
 export function ReturnsPage() {
   const [page, setPage] = useState(1)
@@ -30,140 +35,168 @@ export function ReturnsPage() {
     sortOrder: 'desc',
   })
 
-  const returnsList = data?.data ?? []
+  const returnsList = useMemo(() => data?.data ?? [], [data?.data])
   const pagination = data?.pagination
+
+  const stats = useMemo(() => {
+    const refunds = returnsList.filter(r => r.type === 'refund').length
+    const exchanges = returnsList.filter(r => r.type === 'exchange').length
+    const totalRefunded = returnsList.reduce(
+      (sum, r) => sum + Math.max(0, r.balanceCents),
+      0
+    )
+
+    return { refunds, exchanges, totalRefunded }
+  }, [returnsList])
 
   return (
     <div className="space-y-6 p-4">
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Devoluciones</h1>
-          <p className="text-muted-foreground">
-            Gestione devoluciones, reembolsos y cambios de productos
+          <h1 className="text-3xl font-bold tracking-tight">Devoluciones y Cambios</h1>
+          <p className="text-default-500">
+            Gestiona devoluciones de dinero y cambios de producto
           </p>
         </div>
-        <Button onClick={() => setShowNewDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva devolución
+        <Button
+          onPress={() => setShowNewDialog(true)}
+          startContent={<Plus className="size-4" />}
+          className="bg-foreground text-background"
+        >
+          Nueva Devolucion / Cambio
         </Button>
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>Historial de devoluciones</CardTitle>
+        <CardBody className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-large border border-default-200 p-4">
+            <div className="flex items-center gap-3">
+              <RotateCcw className="size-5 text-default-500" />
+              <div>
+                <p className="text-small text-default-500">Devoluciones</p>
+                <p className="text-2xl font-semibold">{stats.refunds}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-large border border-default-200 p-4">
+            <div className="flex items-center gap-3">
+              <ArrowLeftRight className="size-5 text-default-500" />
+              <div>
+                <p className="text-small text-default-500">Cambios</p>
+                <p className="text-2xl font-semibold">{stats.exchanges}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-large border border-default-200 p-4">
+            <p className="text-small text-default-500">Total Reembolsado</p>
+            <p className="text-2xl font-semibold text-danger">
+              {formatCurrency(fromCents(stats.totalRefunded))}
+            </p>
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div className="flex items-center gap-2 font-semibold">
+            <RotateCcw className="size-5" />
+            Historial
+          </div>
           <div className="flex gap-2">
             <Button
-              variant={typeFilter === '' ? 'secondary' : 'outline'}
+              variant={typeFilter === '' ? 'solid' : 'flat'}
               size="sm"
-              onClick={() => setTypeFilter('')}
+              onPress={() => setTypeFilter('')}
             >
               Todas
             </Button>
             <Button
-              variant={typeFilter === 'refund' ? 'secondary' : 'outline'}
+              variant={typeFilter === 'refund' ? 'solid' : 'flat'}
               size="sm"
-              onClick={() => setTypeFilter('refund')}
+              onPress={() => setTypeFilter('refund')}
             >
               Reembolsos
             </Button>
             <Button
-              variant={typeFilter === 'exchange' ? 'secondary' : 'outline'}
+              variant={typeFilter === 'exchange' ? 'solid' : 'flat'}
               size="sm"
-              onClick={() => setTypeFilter('exchange')}
+              onPress={() => setTypeFilter('exchange')}
             >
               Cambios
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              <Spinner />
             </div>
           ) : returnsList.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">
-              No hay devoluciones registradas
-            </p>
+            <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-default-500">
+              <RotateCcw className="size-8" />
+              <p>No hay devoluciones registradas</p>
+            </div>
           ) : (
             <>
-              <Table>
+              <Table aria-label="Historial de devoluciones">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Número</TableHead>
-                    <TableHead>Venta</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Valor devuelto</TableHead>
-                    <TableHead>Valor cambio</TableHead>
-                    <TableHead>Vuelto</TableHead>
-                  </TableRow>
+                  <TableColumn>FECHA</TableColumn>
+                  <TableColumn>VENTA</TableColumn>
+                  <TableColumn className="text-center">TIPO</TableColumn>
+                  <TableColumn>MOTIVO / NOTA</TableColumn>
+                  <TableColumn className="text-right">MONTO</TableColumn>
+                  <TableColumn className="text-center">ESTADO</TableColumn>
                 </TableHeader>
-                <TableBody>
-                  {returnsList.map((r: SaleReturn) => (
+                <TableBody items={returnsList}>
+                  {(r: SaleReturn) => (
                     <TableRow key={r.id}>
-                      <TableCell className="font-medium">
-                        {r.returnNumber}
-                      </TableCell>
-                      <TableCell>{r.saleNumber ?? `#${r.saleId}`}</TableCell>
                       <TableCell>
                         {format(new Date(r.createdAt), 'PPp', { locale: es })}
                       </TableCell>
-                      <TableCell>
-                        {r.type === 'refund' ? 'Reembolso' : 'Cambio'}
+                      <TableCell className="font-medium">#{r.saleNumber ?? r.saleId}</TableCell>
+                      <TableCell className="text-center">
+                        <Chip
+                          size="sm"
+                          color={r.type === 'refund' ? 'danger' : 'primary'}
+                          variant="flat"
+                        >
+                          {r.type === 'refund' ? 'Devolucion' : 'Cambio'}
+                        </Chip>
                       </TableCell>
-                      <TableCell>
-                        {formatCurrency(fromCents(r.totalReturnedValue))}
+                      <TableCell className="max-w-[320px] truncate">{r.notes || '-'}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {r.balanceCents > 0
+                          ? `-${formatCurrency(fromCents(r.balanceCents))}`
+                          : r.balanceCents < 0
+                            ? `+${formatCurrency(fromCents(Math.abs(r.balanceCents)))}`
+                            : formatCurrency(0)}
                       </TableCell>
-                      <TableCell>
-                        {r.totalExchangeValue > 0
-                          ? formatCurrency(fromCents(r.totalExchangeValue))
-                          : '-'}
-                      </TableCell>
-                      <TableCell>
-                        {r.balanceCents > 0 ? (
-                          <span className="text-green-600">
-                            Devuelve {formatCurrency(fromCents(r.balanceCents))}
-                          </span>
-                        ) : r.balanceCents < 0 ? (
-                          <span className="text-amber-600">
-                            Paga {formatCurrency(fromCents(Math.abs(r.balanceCents)))}
-                          </span>
-                        ) : (
-                          '-'
-                        )}
+                      <TableCell className="text-center">
+                        <Chip size="sm" color="success" variant="flat">
+                          Completado
+                        </Chip>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
+
               {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-sm text-muted-foreground">
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-small text-default-500">
                     Mostrando {returnsList.length} de {pagination.total}
                   </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      disabled={!pagination.hasPrev}
-                    >
-                      Anterior
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(p => p + 1)}
-                      disabled={!pagination.hasNext}
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
+                  <Pagination
+                    page={page}
+                    total={pagination.totalPages}
+                    showControls
+                    onChange={setPage}
+                  />
                 </div>
               )}
             </>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
       <NewReturnDialog
