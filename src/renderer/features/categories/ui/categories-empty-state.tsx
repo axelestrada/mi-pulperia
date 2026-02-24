@@ -1,3 +1,5 @@
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+
 type Props = {
   onCreate: () => void
 }
@@ -15,7 +17,7 @@ export const CategoriesEmptyState = ({ onCreate }: Props) => {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button onClick={onCreate}>
+        <Button onPress={onCreate}>
           <IconLucidePlus />
           Nueva Categoría
         </Button>

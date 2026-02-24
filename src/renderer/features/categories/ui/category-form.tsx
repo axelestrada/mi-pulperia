@@ -1,3 +1,5 @@
+import { Field, FieldGroup } from "@/components/ui/field"
+
 type Props = {
   category: Category | null
   onClose: () => void
@@ -18,7 +20,7 @@ export const CategoryForm = ({ category, onClose }: Props) => {
           <CategoryFormFields />
 
           <Field orientation="horizontal" className="justify-end">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" onPress={onClose}>
               Cancelar
             </Button>
 

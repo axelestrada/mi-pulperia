@@ -1,3 +1,14 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
+import { TableCell, TableRow } from '@/components/ui/table'
+
 type Props = {
   category: Category
   onEdit: (category: Category) => void
@@ -23,18 +34,15 @@ export const CategoriesTableRow = ({ category, onEdit }: Props) => {
       <TableCell>{category.description ?? '—'}</TableCell>
 
       <TableCell>
-        <Badge
-          variant={category.isActive ? 'default' : 'destructive'}
-          className={category.isActive ? 'bg-green-600' : ''}
-        >
+        <Chip className={category.isActive ? 'bg-green-600' : ''}>
           {category.isActive ? 'Activa' : 'Inactiva'}
-        </Badge>
+        </Chip>
       </TableCell>
 
       <TableCell className="text-right">
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon-sm">
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" isIconOnly>
               <IconLucideMoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
