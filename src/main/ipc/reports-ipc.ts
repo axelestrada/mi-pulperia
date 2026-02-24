@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import { SalesRepository } from '../repositories/sales-repository'
+import { SaleReturnsRepository } from '../repositories/sale-returns-repository'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { CustomersRepository } from '../repositories/customers-repository'
 import { ExpensesRepository } from '../repositories/expenses-repository'
@@ -20,7 +21,10 @@ export function registerReportsIpc() {
     try {
       const { dateFrom, dateTo, customerId, categoryId, productId } = filters
 
-      const whereConditions = [eq(salesTable.deleted, false)]
+      const whereConditions = [
+        eq(salesTable.deleted, false),
+        eq(salesTable.status, 'completed'),
+      ]
 
       if (dateFrom) {
         whereConditions.push(gte(salesTable.createdAt, new Date(dateFrom)))
@@ -34,18 +38,21 @@ export function registerReportsIpc() {
         whereConditions.push(eq(salesTable.customerId, customerId))
       }
 
-      // Get sales summary
+      // Get sales summary (solo ventas completadas)
       const summary = await db
         .select({
           totalSales: count(salesTable.id),
           totalRevenue: sum(salesTable.total),
-          totalCost: sum(salesTable.totalCost),
-          totalProfit: sum(salesTable.totalProfit),
-          averageTicket: sum(salesTable.total),
         })
         .from(salesTable)
         .where(and(...whereConditions))
         .get()
+
+      const dateFromObj = dateFrom ? new Date(dateFrom) : undefined
+      const dateToObj = dateTo ? new Date(dateTo) : undefined
+      const { totalRefunded, totalReceived } =
+        await SaleReturnsRepository.getTotalRefunded(dateFromObj, dateToObj)
+      const netRevenue = (Number(summary?.totalRevenue) || 0) - totalRefunded + totalReceived
 
       // Get sales by date
       const salesByDate = await db
@@ -91,9 +98,12 @@ export function registerReportsIpc() {
       return {
         summary: {
           ...summary,
-          averageTicket: summary?.totalRevenue && summary?.totalSales
-            ? (summary.totalRevenue / summary.totalSales)
-            : 0
+          totalRevenue: netRevenue,
+          totalRefunded,
+          totalReceivedFromReturns: totalReceived,
+          averageTicket: summary?.totalSales
+            ? netRevenue / Number(summary.totalSales)
+            : 0,
         },
         salesByDate,
         topProducts,

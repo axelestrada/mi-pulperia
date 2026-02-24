@@ -17,6 +17,7 @@ import { registerCashRegistersHandlers } from './ipc/cash-registers-ipc'
 import { registerCashSessionsHandlers } from './ipc/cash-sessions-ipc'
 import { registerPOSHandlers } from './ipc/pos-ipc'
 import { registerSalesHandlers } from './ipc/sales-ipc'
+import { registerSaleReturnsHandlers } from './ipc/sale-returns-ipc'
 import { registerSuppliersIpc } from './ipc/suppliers-ipc'
 import { registerPurchaseOrdersIpc } from './ipc/purchase-orders-ipc'
 import { registerInventoryAdjustmentsIpc } from './ipc/inventory-adjustments-ipc'
@@ -97,6 +98,7 @@ app.on('activate', async () => {
     registerCashSessionsHandlers()
     registerPOSHandlers()
     registerSalesHandlers()
+    registerSaleReturnsHandlers()
     registerSuppliersIpc()
     registerPurchaseOrdersIpc()
     registerInventoryAdjustmentsIpc()

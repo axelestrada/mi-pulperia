@@ -334,6 +334,13 @@ declare global {
         calculateSaleTotals: (items: any[], taxRate?: number) => Promise<any>
         calculateChange: (payments: any[]) => Promise<number>
       }
+      saleReturns: {
+        processReturn: (data: any) => Promise<{ return: any; returnDetails: any }>
+        list: (filters: any) => Promise<{ data: any[]; pagination: any }>
+        getById: (id: number) => Promise<any>
+        getBySaleId: (saleId: number) => Promise<any[]>
+        getTotalRefunded: (dateFrom?: Date, dateTo?: Date) => Promise<{ totalRefunded: number; totalReceived: number }>
+      }
       suppliers: {
         list: () => Promise<Supplier[]>
         create: (supplier: SupplierFormData) => Promise<Supplier>

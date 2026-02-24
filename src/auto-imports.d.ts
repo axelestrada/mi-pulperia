@@ -158,6 +158,7 @@ declare global {
   const NavSecondary: typeof import('./renderer/components/sidebar/nav-secondary').NavSecondary
   const NavUser: typeof import('./renderer/components/sidebar/nav-user').NavUser
   const Navigate: typeof import('react-router-dom').Navigate
+  const NewReturnDialog: typeof import('./renderer/features/returns/ui/new-return-dialog').NewReturnDialog
   const NotFoundPage: typeof import('./renderer/pages/not-found-page').NotFoundPage
   const Outlet: typeof import('react-router-dom').Outlet
   const POSInterface: typeof import('./renderer/features/pos/components/pos-interface').POSInterface
@@ -196,6 +197,7 @@ declare global {
   const QueryClient: typeof import('@tanstack/react-query').QueryClient
   const QueryClientProvider: typeof import('@tanstack/react-query').QueryClientProvider
   const ReportsPage: typeof import('./renderer/pages/reports-page').ReportsPage
+  const ReturnsPage: typeof import('./renderer/pages/returns-page').ReturnsPage
   const Route: typeof import('react-router-dom').Route
   const Routes: typeof import('react-router-dom').Routes
   const SalesPage: typeof import('./renderer/pages/sales-page').SalesPage

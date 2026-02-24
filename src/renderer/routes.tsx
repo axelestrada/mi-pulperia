@@ -1,4 +1,5 @@
 import { createHashRouter } from 'react-router-dom'
+import { ReturnsPage } from './pages/returns-page'
 
 export const router = createHashRouter([
   {
@@ -104,6 +105,13 @@ export const router = createHashRouter([
         element: <SalesPage />,
         handle: {
           title: 'Ventas',
+        },
+      },
+      {
+        path: 'returns',
+        element: <ReturnsPage />,
+        handle: {
+          title: 'Devoluciones',
         },
       },
       {

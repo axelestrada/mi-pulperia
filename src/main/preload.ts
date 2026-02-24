@@ -171,6 +171,16 @@ contextBridge.exposeInMainWorld('api', {
     quickSearch: (query: string, limit?: number) =>
       ipcRenderer.invoke('pos:quickSearch', query, limit),
   },
+  saleReturns: {
+    processReturn: (data: any) =>
+      ipcRenderer.invoke('saleReturns:processReturn', data),
+    list: (filters: any) => ipcRenderer.invoke('saleReturns:list', filters),
+    getById: (id: number) => ipcRenderer.invoke('saleReturns:getById', id),
+    getBySaleId: (saleId: number) =>
+      ipcRenderer.invoke('saleReturns:getBySaleId', saleId),
+    getTotalRefunded: (dateFrom?: Date, dateTo?: Date) =>
+      ipcRenderer.invoke('saleReturns:getTotalRefunded', dateFrom, dateTo),
+  },
   sales: {
     list: (filters: SalesFilters) => ipcRenderer.invoke('sales:list', filters),
     getById: (id: number) => ipcRenderer.invoke('sales:getById', id),
