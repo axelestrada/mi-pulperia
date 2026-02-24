@@ -136,6 +136,7 @@ app.whenReady().then(async () => {
   registerCashSessionsHandlers()
   registerPOSHandlers()
   registerSalesHandlers()
+  registerSaleReturnsHandlers()
   registerSuppliersIpc()
   registerPurchaseOrdersIpc()
   registerInventoryAdjustmentsIpc()
