@@ -51,9 +51,8 @@ import {
 } from '../hooks/use-pos-shortcuts'
 import {
   TOP_UPS_UPDATED_EVENT,
-  getVirtualBalance,
-  registerTopUp,
-} from '@/features/top-ups/model/top-ups-storage'
+  topUpsService,
+} from '@/features/top-ups/services/top-ups-service'
 import { PosChargeModal } from './pos-charge-modal'
 
 // Form validation schemas
@@ -264,9 +263,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     'fixed' | 'percentage'
   >('fixed')
   const [itemNotesDraft, setItemNotesDraft] = useState('')
-  const [topUpsVirtualBalance, setTopUpsVirtualBalance] = useState(() =>
-    getVirtualBalance()
-  )
+  const [topUpsVirtualBalance, setTopUpsVirtualBalance] = useState(0)
   const [topUpAmountDraft, setTopUpAmountDraft] = useState<number | undefined>()
   const [topUpCostDraft, setTopUpCostDraft] = useState<number | undefined>()
   const [topUpPhoneDraft, setTopUpPhoneDraft] = useState('')
@@ -365,9 +362,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   useEffect(() => {
     const refreshVirtualBalance = () => {
-      setTopUpsVirtualBalance(getVirtualBalance())
+      void topUpsService
+        .getVirtualBalance()
+        .then(setTopUpsVirtualBalance)
+        .catch(() => setTopUpsVirtualBalance(0))
     }
 
+    refreshVirtualBalance()
     window.addEventListener(TOP_UPS_UPDATED_EVENT, refreshVirtualBalance)
     return () => {
       window.removeEventListener(TOP_UPS_UPDATED_EVENT, refreshVirtualBalance)
@@ -396,9 +397,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     previousItemCountRef.current = currentItemCount
   }, [itemFields.length])
 
-  const saveTopUpFromPOS = useCallback(() => {
+  const saveTopUpFromPOS = useCallback(async () => {
     try {
-      registerTopUp({
+      await topUpsService.register({
         amount: Number(topUpAmountDraft || 0),
         cost: Number(topUpCostDraft || 0),
         phoneNumber: topUpPhoneDraft,

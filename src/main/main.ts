@@ -24,6 +24,7 @@ import { registerInventoryAdjustmentsIpc } from './ipc/inventory-adjustments-ipc
 import { registerCreditsIpc } from './ipc/credits-ipc'
 import { registerExpensesIpc } from './ipc/expenses-ipc'
 import { registerReportsIpc } from './ipc/reports-ipc'
+import { registerTopUpsIpc } from './ipc/top-ups-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -105,6 +106,7 @@ app.on('activate', async () => {
     registerCreditsIpc()
     registerExpensesIpc()
     registerReportsIpc()
+    registerTopUpsIpc()
 
     createWindow()
   }
@@ -143,6 +145,7 @@ app.whenReady().then(async () => {
   registerCreditsIpc()
   registerExpensesIpc()
   registerReportsIpc()
+  registerTopUpsIpc()
 
   createWindow()
 })

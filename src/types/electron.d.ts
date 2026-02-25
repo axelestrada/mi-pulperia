@@ -388,6 +388,31 @@ declare global {
         getAvailableBatches: (productId?: number) => Promise<InventoryBatch[]>
         getBatchInfo: (batchId: number) => Promise<InventoryBatch>
       }
+      topUps: {
+        list: (filters?: { dateFrom?: string; dateTo?: string; limit?: number }) => Promise<any[]>
+        getVirtualBalance: () => Promise<number>
+        loadBalance: (payload: {
+          amount: number
+          operator?: string
+          notes?: string
+          createdBy?: string
+        }) => Promise<any>
+        register: (payload: {
+          amount: number
+          cost: number
+          operator?: string
+          phoneNumber?: string
+          notes?: string
+          createdBy?: string
+        }) => Promise<any>
+        getSummary: (filters?: { dateFrom?: string; dateTo?: string }) => Promise<{
+          count: number
+          amount: number
+          cost: number
+          margin: number
+          loadedAmount: number
+        }>
+      }
     }
     electron: {
       ipcRenderer: {

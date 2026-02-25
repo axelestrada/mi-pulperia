@@ -1,46 +1,25 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FileText, Package, ShoppingCart } from 'lucide-react'
+import {
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Cell,
+  CartesianGrid,
+} from 'recharts'
 
 import { PageHeader } from '@/components/ui/page-header'
-
-// Import report components (keep existing ones that work)
-
-import { Button, Select, SelectItem, Card, Chip, cn } from '@heroui/react'
-
-const data = [
-  {
-    title: 'Ventas de hoy',
-    value: 'L 0.00',
-    change: '33%',
-    changeType: 'positive',
-    trendChipPosition: 'top',
-    icon: <IconSolarWalletMoneyLinear />,
-  },
-  {
-    title: 'Ganancia de hoy',
-    value: 'L 0.00',
-    change: '0.0%',
-    changeType: 'neutral',
-    trendChipPosition: 'top',
-    icon: <IconSolarHandMoneyLinear />,
-  },
-  {
-    title: 'Stock bajo',
-    value: 0,
-    changeType: 'negative',
-    trendChipPosition: 'top',
-    icon: <IconSolarBoxLinear />,
-  },
-  {
-    title: 'Créditos totales',
-    value: 'L 0.00',
-    changeType: 'negative',
-    trendChipPosition: 'top',
-    icon: <IconSolarBanknote2Linear />,
-  },
-]
+import { formatCurrency } from '@/../shared/utils/formatCurrency'
+import { Button, Select, SelectItem, Card, Chip, cn, Spinner } from '@heroui/react'
 
 type TimeRange = '7' | '14' | '30'
+type Period = 'week' | 'month'
 
 interface DashboardMetrics {
   sales: {
@@ -67,8 +46,11 @@ export const DashboardPage = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('7')
   const [dashboardMetrics, setDashboardMetrics] =
     useState<DashboardMetrics | null>(null)
-  const [salesChart, setSalesChart] = useState<
-    Array<{ date: string; sales: number; margin: number }>
+  const [salesByDate, setSalesByDate] = useState<
+    Array<{ date: string; totalRevenue: number }>
+  >([])
+  const [topProducts, setTopProducts] = useState<
+    Array<{ name: string; quantity: number; revenue: number }>
   >([])
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
@@ -77,73 +59,63 @@ export const DashboardPage = () => {
     setTimeRange(value)
   }, [])
 
-  // Load dashboard metrics
-  const loadDashboardMetrics = useCallback(async (period: string) => {
+  const loadDashboardMetrics = useCallback(async (period: Period) => {
     try {
       setIsLoading(true)
 
-      // Check if reports API is available
-      if (window.api && window.api.reports) {
-        // Get dashboard metrics from backend
-        const metrics = await window.api.reports.getDashboardMetrics(period)
-        setDashboardMetrics(metrics)
+      const dateFrom = new Date()
+      dateFrom.setDate(dateFrom.getDate() - Number(timeRange))
 
-        // Get sales report for chart data
-        const dateFrom = new Date()
-        const daysBack = parseInt(period)
-        dateFrom.setDate(dateFrom.getDate() - daysBack)
-
-        const salesReport = await window.api.reports.getSalesReport({
+      const [metrics, salesReport, topProductsReport] = await Promise.all([
+        window.api.reports.getDashboardMetrics(period),
+        window.api.reports.getSalesReport({
           dateFrom: dateFrom.toISOString(),
           dateTo: new Date().toISOString(),
-        })
+        }),
+        window.api.reports.getTopProducts({
+          dateFrom: dateFrom.toISOString(),
+          dateTo: new Date().toISOString(),
+          limit: 6,
+          sortBy: 'quantity',
+        }),
+      ])
 
-        // Transform sales data for chart
-        if (salesReport && salesReport.salesByDate) {
-          const chartData = salesReport.salesByDate.map((item: any) => ({
-            date: new Date(item.date).toISOString().split('T')[0],
-            sales: (item.totalRevenue || 0) / 100, // Convert from cents
-            margin: (item.totalProfit || 0) / 100, // Convert from cents
-          }))
-          setSalesChart(chartData)
-        }
-      } else {
-        // Fallback with mock data if API not available
-        console.warn('Reports API not available, using fallback data')
-        setDashboardMetrics({
-          sales: {
-            totalSales: 45,
-            totalRevenue: 145000, // 1450.00 in cents
-            totalProfit: 36250, // 362.50 in cents
-            averageTicket: 5213, // 52.13 in cents
-          },
-          inventory: {
-            lowStockItems: 5,
-            totalLowStockValue: 50000, // 500.00 in cents
-          },
-          credits: {
-            overdueCredits: 1,
-            totalOverdueAmount: 125000, // 1250.00 in cents
-          },
-          orders: {
-            pendingOrders: 3,
-            totalPendingValue: 75000, // 750.00 in cents
-          },
-        })
+      setDashboardMetrics(metrics as DashboardMetrics)
 
-        setSalesChart([
-          { date: '2024-04-02', sales: 3100, margin: 465 },
-          { date: '2024-04-03', sales: 2950, margin: 440 },
-          { date: '2024-04-04', sales: 3400, margin: 510 },
-          { date: '2024-04-05', sales: 4200, margin: 630 },
-          { date: '2024-04-06', sales: 5600, margin: 840 },
-          { date: '2024-04-07', sales: 4800, margin: 720 },
-          { date: '2024-04-08', sales: 3000, margin: 450 },
-        ])
+      const grouped: Record<string, number> = {}
+      const salesRows = (salesReport?.salesByDate || []) as Array<{
+        date: string | Date
+        totalRevenue?: number
+      }>
+      for (const row of salesRows) {
+        const key = new Date(row.date).toISOString().slice(0, 10)
+        grouped[key] = (grouped[key] || 0) + Number(row.totalRevenue || 0)
       }
+
+      const salesTrend = Object.entries(grouped)
+        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+        .map(([date, totalRevenue]) => ({
+          date: date.slice(5),
+          totalRevenue,
+        }))
+      setSalesByDate(salesTrend)
+
+      const topRows = Array.isArray(topProductsReport)
+        ? (topProductsReport as Array<{
+            productName?: string
+            totalQuantity?: number
+            totalRevenue?: number
+          }>)
+        : []
+      setTopProducts(
+        topRows.map(p => ({
+          name: p.productName || 'Producto',
+          quantity: Number(p.totalQuantity || 0),
+          revenue: Number(p.totalRevenue || 0),
+        }))
+      )
     } catch (error) {
       console.error('Error loading dashboard metrics:', error)
-      // Set fallback data on error
       setDashboardMetrics({
         sales: {
           totalSales: 0,
@@ -164,26 +136,18 @@ export const DashboardPage = () => {
           totalPendingValue: 0,
         },
       })
-      setSalesChart([])
+      setSalesByDate([])
+      setTopProducts([])
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [timeRange])
 
-  // Load data on mount and when time range changes
   useEffect(() => {
-    const period =
-      timeRange === '7' ? 'week' : timeRange === '14' ? 'week' : 'month'
-    loadDashboardMetrics(period)
+    const period: Period = timeRange === '30' ? 'month' : 'week'
+    void loadDashboardMetrics(period)
   }, [timeRange, loadDashboardMetrics])
 
-  // Navigation handlers
-  const handleNewSale = () => navigate('/pos')
-  const handleAddStock = () => navigate('/inventory-entry')
-  const handleAddCustomer = () => navigate('/customers')
-  const handleAddExpense = () => navigate('/expenses')
-
-  // Calculate profit margin percentage
   const profitMargin =
     dashboardMetrics?.sales.totalRevenue &&
     dashboardMetrics.sales.totalRevenue > 0
@@ -192,16 +156,49 @@ export const DashboardPage = () => {
         100
       : 0
 
-  // Calculate trend (simplified - you could enhance this with historical comparison)
-  const salesTrend = '+12%' // You could calculate this from historical data
+  const cardsData = useMemo(() => {
+    const metrics = dashboardMetrics
+    return [
+      {
+        title: 'Ventas de hoy',
+        value: formatCurrency((metrics?.sales.totalRevenue || 0) / 100),
+        change: `${metrics?.sales.totalSales || 0} tickets`,
+        changeType: 'positive' as const,
+        trendChipPosition: 'top' as const,
+        icon: <IconSolarWalletMoneyLinear />,
+      },
+      {
+        title: 'Ganancia de hoy',
+        value: formatCurrency((metrics?.sales.totalProfit || 0) / 100),
+        change: `${profitMargin.toFixed(1)}%`,
+        changeType: profitMargin > 0 ? 'positive' as const : 'neutral' as const,
+        trendChipPosition: 'top' as const,
+        icon: <IconSolarHandMoneyLinear />,
+      },
+      {
+        title: 'Stock bajo',
+        value: metrics?.inventory.lowStockItems || 0,
+        changeType: 'negative' as const,
+        trendChipPosition: 'top' as const,
+        icon: <IconSolarBoxLinear />,
+      },
+      {
+        title: 'Créditos totales',
+        value: formatCurrency((metrics?.credits.totalOverdueAmount || 0) / 100),
+        change: `${metrics?.credits.overdueCredits || 0} vencidos`,
+        changeType: 'negative' as const,
+        trendChipPosition: 'top' as const,
+        icon: <IconSolarBanknote2Linear />,
+      },
+    ]
+  }, [dashboardMetrics, profitMargin])
+
+  const pieColors = ['#3366FF', '#70DD35', '#F59E0B', '#EF4444', '#06B6D4', '#8B5CF6']
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando dashboard...</p>
-        </div>
+        <Spinner />
       </div>
     )
   }
@@ -214,10 +211,13 @@ export const DashboardPage = () => {
         actions={
           <>
             <Select
-              defaultSelectedKeys={['7']}
+              selectedKeys={[timeRange]}
               fullWidth={false}
               className="min-w-30"
               disallowEmptySelection
+              onSelectionChange={key =>
+                handleTimeRangeChange((key.currentKey || '7') as TimeRange)
+              }
             >
               <SelectItem key="7">7 días</SelectItem>
               <SelectItem key="14">14 días</SelectItem>
@@ -229,7 +229,7 @@ export const DashboardPage = () => {
               startContent={<IconLucidePlus />}
               color="default"
               className="bg-foreground text-background"
-              onPress={handleNewSale}
+              onPress={() => navigate('/pos')}
             >
               Nueva Venta
             </Button>
@@ -238,7 +238,7 @@ export const DashboardPage = () => {
       />
 
       <dl className="grid w-full grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
-        {data.map(
+        {cardsData.map(
           (
             { title, value, change, changeType, icon, trendChipPosition },
             index
@@ -324,6 +324,91 @@ export const DashboardPage = () => {
           )
         )}
       </dl>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <Card className="border border-default-200">
+          <div className="p-4">
+            <h3 className="font-semibold">Rendimiento ({timeRange} días)</h3>
+            <p className="text-sm text-default-500">Ingresos diarios en el período seleccionado</p>
+          </div>
+          <div className="h-72 p-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={salesByDate}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => formatCurrency(value / 100)} />
+                <Line
+                  type="monotone"
+                  dataKey="totalRevenue"
+                  stroke="#3366FF"
+                  strokeWidth={3}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="border border-default-200">
+          <div className="p-4">
+            <h3 className="font-semibold">Productos más vendidos</h3>
+            <p className="text-sm text-default-500">Participación por cantidad vendida</p>
+          </div>
+          <div className="h-72 p-2">
+            {topProducts.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-default-500">
+                Sin datos en el período seleccionado.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={topProducts}
+                    dataKey="quantity"
+                    nameKey="name"
+                    outerRadius={95}
+                    label
+                  >
+                    {topProducts.map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={pieColors[index % pieColors.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-3 md:grid-cols-3">
+        <Button
+          variant="flat"
+          startContent={<ShoppingCart className="size-4" />}
+          onPress={() => navigate('/pos')}
+        >
+          Nueva venta
+        </Button>
+        <Button
+          variant="flat"
+          startContent={<Package className="size-4" />}
+          onPress={() => navigate('/inventory-entry')}
+        >
+          Agregar inventario
+        </Button>
+        <Button
+          variant="flat"
+          startContent={<FileText className="size-4" />}
+          onPress={() => navigate('/reports')}
+        >
+          Ver reportes
+        </Button>
+      </div>
     </div>
   )
 }

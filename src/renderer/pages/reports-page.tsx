@@ -5,31 +5,24 @@ import {
   DollarSign,
   FileText,
   Package,
-  TrendingUp,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
+  Button,
   Card,
-  CardContent,
-  CardDescription,
+  CardBody,
   CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
+  Chip,
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+  Spinner,
+  Textarea,
+} from '@heroui/react'
 import {
   SHIFT_HANDOVER_UPDATED_EVENT,
   getShiftModuleNote,
   setShiftModuleNote,
 } from '@/features/operations/model/shift-handover-storage'
-import { getTopUpRecords } from '@/features/top-ups/model/top-ups-storage'
+import { topUpsService } from '@/features/top-ups/services/top-ups-service'
 
 type DateRange = 'today' | 'week' | 'month' | 'year'
 
@@ -64,6 +57,13 @@ type DashboardResponse = {
   orders?: { pendingOrders?: number }
 }
 
+type TopUpsSummary = {
+  count: number
+  amount: number
+  cost: number
+  margin: number
+}
+
 export function ReportsPage() {
   const [dateRange, setDateRange] = useState<DateRange>('month')
   const [isLoading, setIsLoading] = useState(false)
@@ -72,10 +72,16 @@ export function ReportsPage() {
     useState<ProfitsReportResponse | null>(null)
   const [topProducts, setTopProducts] = useState<TopProductItem[]>([])
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
-  const [shiftNote, setShiftNote] = useState(() => getShiftModuleNote('reports'))
+  const [topUpsSummary, setTopUpsSummary] = useState<TopUpsSummary>({
+    count: 0,
+    amount: 0,
+    cost: 0,
+    margin: 0,
+  })
+  const [shiftNote, setShiftNoteState] = useState(() => getShiftModuleNote('reports'))
 
   useEffect(() => {
-    const refreshShiftNote = () => setShiftNote(getShiftModuleNote('reports'))
+    const refreshShiftNote = () => setShiftNoteState(getShiftModuleNote('reports'))
     window.addEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
     return () =>
       window.removeEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
@@ -99,30 +105,10 @@ export function ReportsPage() {
     }
   }, [dateRange])
 
-  const topUpsSummary = useMemo(() => {
-    const records = getTopUpRecords().filter(record => record.cost > 0)
-    const fromDate = new Date(dateFilters.dateFrom).getTime()
-    const toDate = new Date(dateFilters.dateTo).getTime()
-    const filtered = records.filter(record => {
-      const timestamp = new Date(record.createdAt).getTime()
-      return timestamp >= fromDate && timestamp <= toDate
-    })
-
-    const amount = filtered.reduce((sum, record) => sum + record.amount, 0)
-    const cost = filtered.reduce((sum, record) => sum + record.cost, 0)
-
-    return {
-      count: filtered.length,
-      amount,
-      cost,
-      margin: amount - cost,
-    }
-  }, [dateFilters.dateFrom, dateFilters.dateTo])
-
   const loadReports = useCallback(async () => {
     setIsLoading(true)
     try {
-      const [sales, profits, metrics, top] = await Promise.all([
+      const [sales, profits, metrics, top, topUps] = await Promise.all([
         window.api.reports.getSalesReport(dateFilters),
         window.api.reports.getProfitsReport(dateFilters),
         window.api.reports.getDashboardMetrics(dateRange),
@@ -131,11 +117,13 @@ export function ReportsPage() {
           limit: 10,
           sortBy: 'revenue',
         }),
+        topUpsService.getSummary(dateFilters),
       ])
       setSalesReport(sales as SalesReportResponse)
       setProfitsReport(profits as ProfitsReportResponse)
       setDashboard(metrics as DashboardResponse)
       setTopProducts(Array.isArray(top) ? (top as TopProductItem[]) : [])
+      setTopUpsSummary(topUps as TopUpsSummary)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error desconocido'
       sileo.error({ title: 'No se pudieron cargar los reportes', description: message })
@@ -158,177 +146,171 @@ export function ReportsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Reportes</h1>
-          <p className="text-muted-foreground">
+          <p className="text-default-500">
             Vista consolidada de ventas, ganancias, gastos y recargas.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Select
-            value={dateRange}
-            onValueChange={value => setDateRange(value as DateRange)}
+            disallowEmptySelection
+            selectedKeys={[dateRange]}
+            className="w-44"
+            onSelectionChange={key =>
+              setDateRange(String(key.currentKey || 'month') as DateRange)
+            }
           >
-            <SelectTrigger className="w-[170px]">
-              <SelectValue placeholder="Período" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Hoy</SelectItem>
-              <SelectItem value="week">Últimos 7 días</SelectItem>
-              <SelectItem value="month">Último mes</SelectItem>
-              <SelectItem value="year">Último año</SelectItem>
-            </SelectContent>
+            <SelectItem key="today">Hoy</SelectItem>
+            <SelectItem key="week">Ultimos 7 dias</SelectItem>
+            <SelectItem key="month">Ultimo mes</SelectItem>
+            <SelectItem key="year">Ultimo ano</SelectItem>
           </Select>
-          <Button variant="outline" onClick={() => void loadReports()}>
+          <Button variant="flat" onPress={() => void loadReports()}>
             Recargar
           </Button>
         </div>
       </div>
 
       {isLoading && (
-        <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 rounded-large border border-default-200 p-3 text-sm text-default-500">
+          <Spinner size="sm" />
           Cargando reportes...
         </div>
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardBody className="py-4">
+            <p className="text-sm text-default-500">Ingresos</p>
+            <p className="text-2xl font-semibold">
               L {((salesReport?.summary?.totalRevenue || 0) / 100).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">Ventas netas</p>
-          </CardContent>
+            </p>
+            <p className="text-xs text-default-500">Ventas netas</p>
+          </CardBody>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ganancia Neta</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardBody className="py-4">
+            <p className="text-sm text-default-500">Ganancia Neta</p>
+            <p className="text-2xl font-semibold">
               L {((profitsReport?.summary?.netProfit || 0) / 100).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">
+            </p>
+            <p className="text-xs text-default-500">
               Margen: {(profitsReport?.summary?.netMargin || 0).toFixed(2)}%
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gasto Total</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardBody className="py-4">
+            <p className="text-sm text-default-500">Gasto Total</p>
+            <p className="text-2xl font-semibold">
               L {((profitsReport?.summary?.totalExpenses || 0) / 100).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">Egresos pagados</p>
-          </CardContent>
+            </p>
+            <p className="text-xs text-default-500">Egresos pagados</p>
+          </CardBody>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recargas</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{topUpsSummary.count}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardBody className="py-4">
+            <p className="text-sm text-default-500">Recargas</p>
+            <p className="text-2xl font-semibold">{topUpsSummary.count}</p>
+            <p className="text-xs text-default-500">
               Margen: L {topUpsSummary.margin.toFixed(2)}
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+          <CardHeader className="pb-0">
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <FileText className="size-4" />
               Top Productos
-            </CardTitle>
-            <CardDescription>Productos con más ingreso en el período</CardDescription>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             {topProducts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin datos disponibles.</p>
+              <p className="text-sm text-default-500">Sin datos disponibles.</p>
             ) : (
               <div className="space-y-2">
                 {topProducts.map(product => (
                   <div
                     key={product.productId}
-                    className="flex items-center justify-between rounded border p-2"
+                    className="flex items-center justify-between rounded-large border border-default-200 px-3 py-2"
                   >
                     <div>
                       <p className="font-medium">{product.productName}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {product.categoryName || 'Sin categoría'}
+                      <p className="text-xs text-default-500">
+                        {product.categoryName || 'Sin categoria'}
                       </p>
                     </div>
-                    <Badge variant="secondary">
+                    <Chip variant="flat">
                       L {((product.totalRevenue || 0) / 100).toFixed(2)}
-                    </Badge>
+                    </Chip>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+          <CardHeader className="pb-0">
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <Calendar className="size-4" />
               Resumen Operativo
-            </CardTitle>
-            <CardDescription>Métricas clave para el cambio de turno</CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
+          <CardBody className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <span>Ventas realizadas</span>
+              <span className="text-default-500">Ventas registradas</span>
               <span className="font-semibold">{dashboard?.sales?.totalSales || 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Créditos vencidos</span>
-              <span className="font-semibold">
-                {dashboard?.credits?.overdueCredits || 0}
-              </span>
+              <span className="text-default-500">Creditos vencidos</span>
+              <span className="font-semibold">{dashboard?.credits?.overdueCredits || 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Órdenes pendientes</span>
-              <span className="font-semibold">
-                {dashboard?.orders?.pendingOrders || 0}
-              </span>
+              <span className="text-default-500">Ordenes pendientes</span>
+              <span className="font-semibold">{dashboard?.orders?.pendingOrders || 0}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Recargas (monto / costo)</span>
-              <span className="font-semibold">
-                L {topUpsSummary.amount.toFixed(2)} / L {topUpsSummary.cost.toFixed(2)}
-              </span>
+            <div className="rounded-large border border-default-200 p-3">
+              <p className="mb-2 font-medium">Nota de turno (reportes)</p>
+              <Textarea
+                value={shiftNote}
+                onValueChange={setShiftNoteState}
+                placeholder="Ej. Revisar caida de margen en recargas y gastos de transporte."
+              />
+              <Button className="mt-3" size="sm" onPress={handleSaveShiftNote}>
+                Guardar nota
+              </Button>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Nota de Turno</CardTitle>
-          <CardDescription>
-            Escriba observaciones de reportes para quien continúa turno.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Textarea
-            value={shiftNote}
-            onChange={e => setShiftNote(e.target.value)}
-            placeholder="Ej. Revisar caída de margen en recargas y gastos de transporte."
-          />
-          <Button size="sm" onClick={handleSaveShiftNote}>
-            Guardar nota
-          </Button>
-        </CardContent>
+        <CardBody className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-large border border-default-200 p-3">
+            <div className="mb-1 flex items-center gap-2 text-default-500">
+              <DollarSign className="size-4" />
+              Ingresos de recarga
+            </div>
+            <p className="text-lg font-semibold">L {topUpsSummary.amount.toFixed(2)}</p>
+          </div>
+          <div className="rounded-large border border-default-200 p-3">
+            <div className="mb-1 flex items-center gap-2 text-default-500">
+              <Package className="size-4" />
+              Costo de recargas
+            </div>
+            <p className="text-lg font-semibold">L {topUpsSummary.cost.toFixed(2)}</p>
+          </div>
+          <div className="rounded-large border border-default-200 p-3">
+            <div className="mb-1 flex items-center gap-2 text-default-500">
+              <BarChart3 className="size-4" />
+              Margen recargas
+            </div>
+            <p className="text-lg font-semibold">L {topUpsSummary.margin.toFixed(2)}</p>
+          </div>
+        </CardBody>
       </Card>
     </div>
   )

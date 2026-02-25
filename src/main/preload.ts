@@ -353,6 +353,27 @@ contextBridge.exposeInMainWorld('api', {
     getNonCogsCategories: () =>
       ipcRenderer.invoke('expenseCategories:getNonCogsCategories'),
   },
+  topUps: {
+    list: (filters?: { dateFrom?: string; dateTo?: string; limit?: number }) =>
+      ipcRenderer.invoke('topUps:list', filters),
+    getVirtualBalance: () => ipcRenderer.invoke('topUps:getVirtualBalance'),
+    loadBalance: (payload: {
+      amount: number
+      operator?: string
+      notes?: string
+      createdBy?: string
+    }) => ipcRenderer.invoke('topUps:loadBalance', payload),
+    register: (payload: {
+      amount: number
+      cost: number
+      operator?: string
+      phoneNumber?: string
+      notes?: string
+      createdBy?: string
+    }) => ipcRenderer.invoke('topUps:register', payload),
+    getSummary: (filters?: { dateFrom?: string; dateTo?: string }) =>
+      ipcRenderer.invoke('topUps:getSummary', filters),
+  },
   reports: {
     getSalesReport: (filters: any) =>
       ipcRenderer.invoke('reports:getSalesReport', filters),

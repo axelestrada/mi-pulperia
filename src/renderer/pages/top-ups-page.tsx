@@ -1,27 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CreditCard, Plus, Smartphone, Wallet } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
+  Button,
   Card,
-  CardContent,
-  CardDescription,
+  CardBody,
   CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+  Chip,
+  Input,
+  Select,
+  SelectItem,
+  Spinner,
+  Textarea,
+} from '@heroui/react'
 import { formatCurrency } from '@/../shared/utils/formatCurrency'
 import {
+  topUpsService,
   TOP_UPS_UPDATED_EVENT,
-  getTopUpRecords,
-  getVirtualBalance,
-  increaseVirtualBalance,
-  registerTopUp,
-} from '@/features/top-ups/model/top-ups-storage'
+  type TopUpRecord,
+} from '@/features/top-ups/services/top-ups-service'
 import {
   SHIFT_HANDOVER_UPDATED_EVENT,
   getShiftModuleNote,
@@ -31,8 +29,8 @@ import {
 const operators = ['Tigo', 'Claro', 'Hondutel', 'Otro']
 
 export function TopUpsPage() {
-  const [records, setRecords] = useState(() => getTopUpRecords())
-  const [virtualBalance, setVirtualBalance] = useState(() => getVirtualBalance())
+  const [records, setRecords] = useState<TopUpRecord[]>([])
+  const [virtualBalance, setVirtualBalance] = useState(0)
   const [operator, setOperator] = useState('Tigo')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [amount, setAmount] = useState('')
@@ -41,47 +39,68 @@ export function TopUpsPage() {
   const [loadAmount, setLoadAmount] = useState('')
   const [loadNotes, setLoadNotes] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [shiftNote, setShiftNote] = useState(() => getShiftModuleNote('top-ups'))
+  const [shiftNote, setShiftNoteState] = useState(() => getShiftModuleNote('top-ups'))
+  const [isLoading, setIsLoading] = useState(true)
+
+  const refreshData = useCallback(async () => {
+    const [items, balance] = await Promise.all([
+      topUpsService.list({ limit: 300 }),
+      topUpsService.getVirtualBalance(),
+    ])
+    setRecords(items)
+    setVirtualBalance(balance)
+  }, [])
 
   useEffect(() => {
-    const refresh = () => {
-      setRecords(getTopUpRecords())
-      setVirtualBalance(getVirtualBalance())
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        await refreshData()
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error desconocido'
+        sileo.error({ title: 'No se pudo cargar recargas', description: message })
+      } finally {
+        setIsLoading(false)
+      }
     }
-    const refreshShiftNote = () => setShiftNote(getShiftModuleNote('top-ups'))
 
+    const refreshShiftNote = () => setShiftNoteState(getShiftModuleNote('top-ups'))
+    const refresh = () => {
+      void refreshData()
+    }
+
+    void load()
     window.addEventListener(TOP_UPS_UPDATED_EVENT, refresh)
     window.addEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
     return () => {
       window.removeEventListener(TOP_UPS_UPDATED_EVENT, refresh)
       window.removeEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
     }
-  }, [])
+  }, [refreshData])
 
   const stats = useMemo(() => {
     const today = new Date().toDateString()
     const todayRecords = records.filter(
-      record => new Date(record.createdAt).toDateString() === today
+      record =>
+        record.type === 'top_up' &&
+        new Date(record.createdAt).toDateString() === today
     )
 
     const totalCost = todayRecords.reduce((sum, record) => sum + record.cost, 0)
-    const totalAmount = todayRecords.reduce(
-      (sum, record) => sum + record.amount,
-      0
-    )
+    const totalAmount = todayRecords.reduce((sum, record) => sum + record.amount, 0)
 
     return {
-      todayCount: todayRecords.filter(record => record.cost > 0).length,
+      todayCount: todayRecords.length,
       totalCost,
       totalAmount,
       margin: totalAmount - totalCost,
     }
   }, [records])
 
-  const handleCreateTopUp = () => {
+  const handleCreateTopUp = async () => {
     setErrorMessage('')
     try {
-      registerTopUp({
+      await topUpsService.register({
         operator,
         phoneNumber,
         amount: Number(amount),
@@ -100,10 +119,11 @@ export function TopUpsPage() {
     }
   }
 
-  const handleLoadBalance = () => {
+  const handleLoadBalance = async () => {
     setErrorMessage('')
     try {
-      increaseVirtualBalance(Number(loadAmount), {
+      await topUpsService.loadBalance({
+        amount: Number(loadAmount),
         operator,
         notes: loadNotes,
       })
@@ -125,223 +145,190 @@ export function TopUpsPage() {
     sileo.success({ title: 'Nota de turno guardada' })
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Spinner />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Recargas</h1>
-          <p className="text-muted-foreground">
-            Registra recargas desde el POS y controla el saldo virtual.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Recargas</h1>
+        <p className="text-default-500">
+          Registra recargas desde el POS y controla el saldo virtual.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo Virtual</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(virtualBalance)}</div>
-            <p className="text-xs text-muted-foreground">Disponible para recargas</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recargas Hoy</CardTitle>
-            <Smartphone className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.todayCount}</div>
-            <p className="text-xs text-muted-foreground">Operaciones registradas</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Costo del Día</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalCost)}</div>
-            <p className="text-xs text-muted-foreground">Descontado de saldo virtual</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Margen del Día</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.margin)}</div>
-            <p className="text-xs text-muted-foreground">Monto - costo</p>
-          </CardContent>
-        </Card>
+        <Card><CardBody className="py-4">
+          <p className="text-sm text-default-500">Saldo Virtual</p>
+          <div className="mt-1 flex items-center gap-2 text-2xl font-semibold">
+            <Wallet className="size-4 text-default-500" />
+            {formatCurrency(virtualBalance)}
+          </div>
+        </CardBody></Card>
+        <Card><CardBody className="py-4">
+          <p className="text-sm text-default-500">Recargas Hoy</p>
+          <div className="mt-1 flex items-center gap-2 text-2xl font-semibold">
+            <Smartphone className="size-4 text-default-500" />
+            {stats.todayCount}
+          </div>
+        </CardBody></Card>
+        <Card><CardBody className="py-4">
+          <p className="text-sm text-default-500">Costo del Dia</p>
+          <div className="mt-1 flex items-center gap-2 text-2xl font-semibold">
+            <CreditCard className="size-4 text-default-500" />
+            {formatCurrency(stats.totalCost)}
+          </div>
+        </CardBody></Card>
+        <Card><CardBody className="py-4">
+          <p className="text-sm text-default-500">Margen del Dia</p>
+          <div className="mt-1 text-2xl font-semibold">
+            {formatCurrency(stats.margin)}
+          </div>
+        </CardBody></Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Nueva Recarga</CardTitle>
-            <CardDescription>
-              Ingrese el monto de la recarga y su costo real para descontar saldo
-              virtual.
-            </CardDescription>
+          <CardHeader className="pb-0">
+            <p className="text-lg font-semibold">Nueva Recarga</p>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Operador</Label>
-              <select
-                value={operator}
-                onChange={e => setOperator(e.target.value)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-              >
-                {operators.map(item => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label>Número de teléfono (opcional)</Label>
-              <Input
-                placeholder="Ej. 9999-9999"
-                value={phoneNumber}
-                onChange={e => setPhoneNumber(e.target.value)}
-              />
-            </div>
+          <CardBody className="space-y-4">
+            <Select
+              label="Operador"
+              disallowEmptySelection
+              selectedKeys={[operator]}
+              onSelectionChange={key => setOperator(String(key.currentKey || 'Tigo'))}
+            >
+              {operators.map(item => (
+                <SelectItem key={item}>{item}</SelectItem>
+              ))}
+            </Select>
+            <Input
+              label="Numero de telefono (opcional)"
+              placeholder="Ej. 9999-9999"
+              value={phoneNumber}
+              onValueChange={setPhoneNumber}
+            />
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Monto de recarga (L)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Costo real (L)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={cost}
-                  onChange={e => setCost(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Notas</Label>
-              <Textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="Referencia, tipo de promo u observación."
+              <Input
+                label="Monto de recarga (L)"
+                type="number"
+                min={0}
+                step={1}
+                value={amount}
+                onValueChange={setAmount}
+              />
+              <Input
+                label="Costo real (L)"
+                type="number"
+                min={0}
+                step={1}
+                value={cost}
+                onValueChange={setCost}
               />
             </div>
+            <Textarea
+              label="Notas"
+              value={notes}
+              onValueChange={setNotes}
+              placeholder="Referencia, tipo de promo u observacion."
+            />
             {errorMessage && (
-              <p className="text-sm font-medium text-destructive">{errorMessage}</p>
+              <p className="text-sm font-medium text-danger">{errorMessage}</p>
             )}
-            <Button onClick={handleCreateTopUp} className="w-full">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onPress={handleCreateTopUp} color="primary">
+              <Plus className="mr-2 size-4" />
               Registrar Recarga
             </Button>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Recargar Saldo Virtual</CardTitle>
-            <CardDescription>
-              Use este bloque para cargar saldo al monedero de recargas.
-            </CardDescription>
+          <CardHeader className="pb-0">
+            <p className="text-lg font-semibold">Recargar Saldo Virtual</p>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Monto a agregar (L)</Label>
-              <Input
-                type="number"
-                min="0"
-                step="1"
-                value={loadAmount}
-                onChange={e => setLoadAmount(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Notas de carga</Label>
-              <Textarea
-                value={loadNotes}
-                onChange={e => setLoadNotes(e.target.value)}
-                placeholder="Ej. Depósito de saldo para turno tarde."
-              />
-            </div>
-            <Button variant="secondary" onClick={handleLoadBalance} className="w-full">
+          <CardBody className="space-y-4">
+            <Input
+              label="Monto a agregar (L)"
+              type="number"
+              min={0}
+              step={1}
+              value={loadAmount}
+              onValueChange={setLoadAmount}
+            />
+            <Textarea
+              label="Notas de carga"
+              value={loadNotes}
+              onValueChange={setLoadNotes}
+              placeholder="Ej. Deposito de saldo para turno tarde."
+            />
+            <Button variant="flat" onPress={handleLoadBalance}>
               Agregar saldo virtual
             </Button>
 
-            <div className="rounded-lg border p-3">
+            <div className="rounded-large border border-default-200 p-3">
               <p className="text-sm font-medium">Nota de turno (recargas)</p>
               <Textarea
                 className="mt-2"
                 value={shiftNote}
-                onChange={e => setShiftNote(e.target.value)}
-                placeholder="Deja aquí instrucciones para la siguiente persona de turno."
+                onValueChange={setShiftNoteState}
+                placeholder="Deja aqui instrucciones para la siguiente persona de turno."
               />
-              <Button size="sm" className="mt-3" onClick={handleShiftNoteSave}>
+              <Button size="sm" className="mt-3" onPress={handleShiftNoteSave}>
                 Guardar nota
               </Button>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Historial de Recargas</CardTitle>
-          <CardDescription>
-            Últimas operaciones, ordenadas de la más reciente a la más antigua.
-          </CardDescription>
+        <CardHeader className="pb-0">
+          <p className="text-lg font-semibold">Historial de Recargas</p>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {records.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No hay recargas registradas todavía.
-            </p>
+            <p className="text-sm text-default-500">No hay recargas registradas todavia.</p>
           ) : (
             <div className="space-y-3">
               {records.slice(0, 40).map(record => (
                 <div
                   key={record.id}
-                  className="flex flex-col gap-2 rounded-lg border p-3 md:flex-row md:items-center md:justify-between"
+                  className="flex flex-col gap-2 rounded-large border border-default-200 p-3 md:flex-row md:items-center md:justify-between"
                 >
                   <div>
                     <p className="font-medium">
                       {record.operator || 'Operador'}{' '}
                       {record.phoneNumber ? `- ${record.phoneNumber}` : ''}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(record.createdAt), "dd/MM/yyyy HH:mm", {
+                    <p className="text-sm text-default-500">
+                      {format(new Date(record.createdAt), "d 'de' MMM yyyy, hh:mm a", {
                         locale: es,
                       })}
                     </p>
                     {record.notes && (
-                      <p className="text-sm text-muted-foreground">{record.notes}</p>
+                      <p className="mt-1 text-sm text-default-600">{record.notes}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      Monto: {formatCurrency(record.amount)}
-                    </Badge>
-                    <Badge variant={record.cost > 0 ? 'secondary' : 'default'}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Chip variant="flat" color={record.type === 'balance_load' ? 'primary' : 'success'}>
+                      {record.type === 'balance_load' ? 'Carga de saldo' : 'Recarga'}
+                    </Chip>
+                    <Chip variant="flat">Monto: {formatCurrency(record.amount)}</Chip>
+                    <Chip variant="flat" color="warning">
                       Costo: {formatCurrency(record.cost)}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   )
