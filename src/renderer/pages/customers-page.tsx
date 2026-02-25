@@ -10,6 +10,12 @@ import {
   SelectItem,
   Spinner,
   Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
   Tabs,
 } from '@heroui/react'
 import { CreditCard, DollarSign, PlusIcon, Search, Users } from 'lucide-react'
@@ -477,67 +483,77 @@ export const CustomersPage = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {credits.slice(0, 5).map((credit: Credit) => (
-                      <div
-                        key={credit.id}
-                        className="flex items-center justify-between rounded-lg border p-4"
-                      >
-                        <div className="flex-1">
-                          <h3 className="font-medium">
-                            {credit.customerName || 'Cliente desconocido'}
-                          </h3>
-                          <div className="text-sm text-default-500">
-                            Crédito: {credit.creditNumber} | Monto: L
-                            {(credit.originalAmount / 100).toFixed(2)} |
-                            Pendiente: L
-                            {(credit.remainingAmount / 100).toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            {credit.dueDate && (
-                              <div className="text-sm font-medium">
-                                Vence:{' '}
-                                {new Date(credit.dueDate).toLocaleDateString(
-                                  'es-NI'
-                                )}
-                              </div>
-                            )}
-                            <Chip
-                              size="sm"
-                              variant="flat"
-                              color={
-                                credit.status === 'overdue'
-                                  ? 'danger'
-                                  : credit.status === 'active'
-                                    ? 'primary'
+                  <>
+                    <Table aria-label="Creditos recientes">
+                      <TableHeader>
+                        <TableColumn>CLIENTE</TableColumn>
+                        <TableColumn>CREDITO</TableColumn>
+                        <TableColumn className="text-right">MONTO</TableColumn>
+                        <TableColumn className="text-right">PENDIENTE</TableColumn>
+                        <TableColumn>VENCE</TableColumn>
+                        <TableColumn>ESTADO</TableColumn>
+                        <TableColumn align="center">ACCIONES</TableColumn>
+                      </TableHeader>
+                      <TableBody items={credits.slice(0, 5)}>
+                        {(credit: Credit) => (
+                          <TableRow key={credit.id}>
+                            <TableCell>
+                              {credit.customerName || 'Cliente desconocido'}
+                            </TableCell>
+                            <TableCell>{credit.creditNumber}</TableCell>
+                            <TableCell className="text-right">
+                              L {(credit.originalAmount / 100).toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              L {(credit.remainingAmount / 100).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              {credit.dueDate
+                                ? new Date(credit.dueDate).toLocaleDateString(
+                                    'es-NI'
+                                  )
+                                : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                size="sm"
+                                variant="flat"
+                                color={
+                                  credit.status === 'overdue'
+                                    ? 'danger'
+                                    : credit.status === 'active'
+                                      ? 'primary'
+                                      : credit.status === 'paid'
+                                        ? 'success'
+                                        : 'default'
+                                }
+                              >
+                                {credit.status === 'active'
+                                  ? 'Activo'
+                                  : credit.status === 'overdue'
+                                    ? 'Vencido'
                                     : credit.status === 'paid'
-                                      ? 'success'
-                                      : 'default'
-                              }
-                            >
-                              {credit.status === 'active'
-                                ? 'Activo'
-                                : credit.status === 'overdue'
-                                  ? 'Vencido'
-                                  : credit.status === 'paid'
-                                    ? 'Pagado'
-                                    : credit.status === 'partial'
-                                      ? 'Parcial'
-                                      : 'Cancelado'}
-                            </Chip>
-                          </div>
-                          <Button
-                            variant="bordered"
-                            size="sm"
-                            onPress={() => navigate(`/credits/${credit.id}`)}
-                          >
-                            Ver
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                                      ? 'Pagado'
+                                      : credit.status === 'partial'
+                                        ? 'Parcial'
+                                        : 'Cancelado'}
+                              </Chip>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex justify-center">
+                                <Button
+                                  variant="bordered"
+                                  size="sm"
+                                  onPress={() => navigate(`/credits/${credit.id}`)}
+                                >
+                                  Ver
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
 
                     {credits.length > 5 && (
                       <div className="pt-4 text-center">
@@ -549,7 +565,7 @@ export const CustomersPage = () => {
                         </Button>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
               </CardBody>
             </Card>
@@ -565,4 +581,5 @@ export const CustomersPage = () => {
     </div>
   )
 }
+
 
