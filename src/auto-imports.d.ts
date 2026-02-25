@@ -158,6 +158,7 @@ declare global {
   const NavSecondary: typeof import('./renderer/components/sidebar/nav-secondary').NavSecondary
   const NavUser: typeof import('./renderer/components/sidebar/nav-user').NavUser
   const Navigate: typeof import('react-router-dom').Navigate
+  const NewReturnDialog: typeof import('./renderer/features/returns/ui/new-return-dialog').NewReturnDialog
   const NotFoundPage: typeof import('./renderer/pages/not-found-page').NotFoundPage
   const Outlet: typeof import('react-router-dom').Outlet
   const POSInterface: typeof import('./renderer/features/pos/components/pos-interface').POSInterface
@@ -196,8 +197,10 @@ declare global {
   const QueryClient: typeof import('@tanstack/react-query').QueryClient
   const QueryClientProvider: typeof import('@tanstack/react-query').QueryClientProvider
   const ReportsPage: typeof import('./renderer/pages/reports-page').ReportsPage
+  const ReturnsPage: typeof import('./renderer/pages/returns-page').ReturnsPage
   const Route: typeof import('react-router-dom').Route
   const Routes: typeof import('react-router-dom').Routes
+  const SHIFT_HANDOVER_UPDATED_EVENT: typeof import('./renderer/features/operations/model/shift-handover-storage').SHIFT_HANDOVER_UPDATED_EVENT
   const SalesPage: typeof import('./renderer/pages/sales-page').SalesPage
   const SettingsPage: typeof import('./renderer/pages/settings-page').SettingsPage
   const Spinner: typeof import('@heroui/react').Spinner
@@ -207,6 +210,7 @@ declare global {
   const SuppliersPage: typeof import('./renderer/pages/suppliers-page').SuppliersPage
   const SuppliersTable: typeof import('./renderer/features/suppliers/ui/suppliers-table').SuppliersTable
   const Suspense: typeof import('react').Suspense
+  const TOP_UPS_UPDATED_EVENT: typeof import('./renderer/features/top-ups/services/top-ups-service').TOP_UPS_UPDATED_EVENT
   const Tab: typeof import('@heroui/react').Tab
   const Table: typeof import('@heroui/react').Table
   const TableBody: typeof import('@heroui/react').TableBody
@@ -220,6 +224,7 @@ declare global {
   const ToastProvider: typeof import('@heroui/react').ToastProvider
   const Tooltip: typeof import('@heroui/react').Tooltip
   const TopProducts: typeof import('./renderer/features/reports/components/top-products').TopProducts
+  const TopUpsPage: typeof import('./renderer/pages/top-ups-page').TopUpsPage
   const UNIT_CONFIG: typeof import('./renderer/features/products/ui/product-units').UNIT_CONFIG
   const Units: typeof import('./renderer/features/products/ui/product-units').Units
   const adjustmentAdapter: typeof import('./renderer/features/inventory-adjustments/api/adjustment-adapter').adjustmentAdapter
@@ -236,15 +241,21 @@ declare global {
   const categoryToForm: typeof import('./renderer/features/categories/model/category-mappers').categoryToForm
   const createContext: typeof import('react').createContext
   const createRef: typeof import('react').createRef
+  const emitTopUpsUpdated: typeof import('./renderer/features/top-ups/services/top-ups-service').emitTopUpsUpdated
   const formatCurrency: typeof import('./shared/utils/formatCurrency').formatCurrency
   const formatLempira: typeof import('./shared/utils/formatCurrency').formatLempira
   const forwardRef: typeof import('react').forwardRef
   const fromCents: typeof import('./shared/utils/currency').fromCents
   const fromUnitPrecision: typeof import('./shared/utils/quantity').fromUnitPrecision
   const getQuantityStep: typeof import('./shared/utils/quantity').getQuantityStep
+  const getShiftModuleNote: typeof import('./renderer/features/operations/model/shift-handover-storage').getShiftModuleNote
+  const getTopUpRecords: typeof import('./renderer/features/top-ups/model/top-ups-storage').getTopUpRecords
+  const getTopUpsState: typeof import('./renderer/features/top-ups/model/top-ups-storage').getTopUpsState
+  const getVirtualBalance: typeof import('./renderer/features/top-ups/model/top-ups-storage').getVirtualBalance
   const hero: typeof import('./renderer/hero').default
   const imageAdapter: typeof import('./renderer/features/images/api/image-adapter').imageAdapter
   const imageService: typeof import('./renderer/features/images/services/image-service').imageService
+  const increaseVirtualBalance: typeof import('./renderer/features/top-ups/model/top-ups-storage').increaseVirtualBalance
   const inventoryAdapter: typeof import('./renderer/features/inventory/api/inventory-adapter').inventoryAdapter
   const inventoryEntrySchema: typeof import('./renderer/features/inventory/model/inventory-entry-schema').inventoryEntrySchema
   const inventoryItemSchema: typeof import('./renderer/features/inventory/model/inventory-entry-schema').inventoryItemSchema
@@ -269,13 +280,16 @@ declare global {
   const productService: typeof import('./renderer/features/products/services/product-service').productService
   const productToForm: typeof import('./renderer/features/products/model/product-mappers').productToForm
   const purchaseOrderAdapter: typeof import('./renderer/features/purchase-orders/api/purchase-order-adapter').purchaseOrderAdapter
+  const registerTopUp: typeof import('./renderer/features/top-ups/model/top-ups-storage').registerTopUp
   const router: typeof import('./renderer/routes').router
+  const setShiftModuleNote: typeof import('./renderer/features/operations/model/shift-handover-storage').setShiftModuleNote
   const sileo: typeof import('sileo').sileo
   const startTransition: typeof import('react').startTransition
   const supplierAdapter: typeof import('./renderer/features/suppliers/api/supplier-adapter').supplierAdapter
   const toCents: typeof import('./shared/utils/currency').toCents
   const toUnitPrecision: typeof import('./shared/utils/quantity').toUnitPrecision
   const toast: typeof import('sonner').toast
+  const topUpsService: typeof import('./renderer/features/top-ups/services/top-ups-service').topUpsService
   const use: typeof import('react').use
   const useActionState: typeof import('react').useActionState
   const useActiveCredits: typeof import('./renderer/features/credits/hooks/use-credits').useActiveCredits
@@ -433,6 +447,9 @@ declare global {
   export type { InventoryMovementColumnKey, MovementColumnDef } from './renderer/features/inventory/movements/model/movement-columns'
   import('./renderer/features/inventory/movements/model/movement-columns')
   // @ts-ignore
+  export type { ShiftModuleKey } from './renderer/features/operations/model/shift-handover-storage'
+  import('./renderer/features/operations/model/shift-handover-storage')
+  // @ts-ignore
   export type { POSFormInput, POSFormData } from './renderer/features/pos/components/pos-interface'
   import('./renderer/features/pos/components/pos-interface')
   // @ts-ignore
@@ -453,6 +470,9 @@ declare global {
   // @ts-ignore
   export type { UnitType } from './renderer/features/products/ui/product-units'
   import('./renderer/features/products/ui/product-units')
+  // @ts-ignore
+  export type { TopUpRecord } from './renderer/features/top-ups/services/top-ups-service'
+  import('./renderer/features/top-ups/services/top-ups-service')
   // @ts-ignore
   export type { INavMainSubItem, INavMainItem } from './renderer/components/sidebar/nav-main'
   import('./renderer/components/sidebar/nav-main')

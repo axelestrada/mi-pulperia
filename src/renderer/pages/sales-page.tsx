@@ -1,4 +1,32 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Chip,
+  Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Pagination,
+  Select,
+  SelectItem,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from '@heroui/react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
@@ -9,56 +37,12 @@ import {
   Eye,
   FileText,
   Filter,
+  MoreVertical,
   Receipt,
   RefreshCw,
   TrendingUp,
 } from 'lucide-react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { formatCurrency } from '../../shared/utils/formatCurrency'
-import { Alert, AlertDescription } from '../components/ui/alert'
-import { Badge } from '../components/ui/badge'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../components/ui/dropdown-menu'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../components/ui/form'
-import { Input } from '../components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select'
-import { Separator } from '../components/ui/separator'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../components/ui/table'
-import { Textarea } from '../components/ui/textarea'
+import { useMemo, useState } from 'react'
 import { UNIT_CONFIG } from '../features/products/ui/product-units'
 import {
   type Sale,
@@ -71,34 +55,26 @@ import {
   useTopSellingProducts,
 } from '../hooks/use-sales'
 
-// Form validation schemas
-const filtersSchema = z.object({
-  search: z.string().optional(),
-  status: z.enum(['completed', 'cancelled', 'refunded', '']).optional(),
-  customerId: z.number().optional(),
-  cashSessionId: z.number().optional(),
-  dateFrom: z.date().optional(),
-  dateTo: z.date().optional(),
-  minAmount: z.number().min(0).optional(),
-  maxAmount: z.number().min(0).optional(),
-})
+type SalesStatusFilter = '' | 'completed' | 'cancelled' | 'refunded'
 
-const cancelSaleSchema = z.object({
-  reason: z.string().min(1, 'Debe especificar una razón'),
-})
+type FiltersState = {
+  search: string
+  status: SalesStatusFilter
+  minAmount: string
+  maxAmount: string
+}
 
-const refundSaleSchema = z.object({
-  reason: z.string().min(1, 'Debe especificar una razón'),
-})
+const DEFAULT_FILTERS: FiltersState = {
+  search: '',
+  status: '',
+  minAmount: '',
+  maxAmount: '',
+}
 
 const formatQuantity = (value: number) => {
   const formatted = value.toFixed(3)
   return formatted.replace(/\.?0+$/, '')
 }
-
-type FiltersFormData = z.infer<typeof filtersSchema>
-type CancelSaleFormData = z.infer<typeof cancelSaleSchema>
-type RefundSaleFormData = z.infer<typeof refundSaleSchema>
 
 export const SalesPage = () => {
   const [showFilters, setShowFilters] = useState(false)
@@ -109,41 +85,49 @@ export const SalesPage = () => {
   const [saleToCancel, setSaleToCancel] = useState<Sale | null>(null)
   const [saleToRefund, setSaleToRefund] = useState<Sale | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [draftFilters, setDraftFilters] =
+    useState<FiltersState>(DEFAULT_FILTERS)
+  const [appliedFilters, setAppliedFilters] =
+    useState<FiltersState>(DEFAULT_FILTERS)
+  const [cancelReason, setCancelReason] = useState('')
+  const [refundReason, setRefundReason] = useState('')
+  const [cancelReasonError, setCancelReasonError] = useState('')
+  const [refundReasonError, setRefundReasonError] = useState('')
 
-  // Form for filters
-  const filtersForm = useForm<FiltersFormData>({
-    resolver: zodResolver(filtersSchema),
-    defaultValues: {
-      search: '',
-      status: '',
-    },
-  })
-
-  const cancelForm = useForm<CancelSaleFormData>({
-    resolver: zodResolver(cancelSaleSchema),
-  })
-
-  const refundForm = useForm<RefundSaleFormData>({
-    resolver: zodResolver(refundSaleSchema),
-  })
-
-  // Build filters for API
-  const filters: SalesFilters = {
-    ...filtersForm.watch(),
-    page: currentPage,
-    limit: 20,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  }
-
-  // Remove empty values
-  Object.keys(filters).forEach(key => {
-    if (filters[key] === '' || filters[key] === undefined) {
-      delete filters[key]
+  const filters = useMemo(() => {
+    const nextFilters: SalesFilters = {
+      search: appliedFilters.search.trim() || undefined,
+      status: appliedFilters.status || undefined,
+      minAmount:
+        appliedFilters.minAmount.trim() === ''
+          ? undefined
+          : Number(appliedFilters.minAmount),
+      maxAmount:
+        appliedFilters.maxAmount.trim() === ''
+          ? undefined
+          : Number(appliedFilters.maxAmount),
+      page: currentPage,
+      limit: 20,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
     }
-  })
 
-  // Queries
+    if (
+      typeof nextFilters.minAmount === 'number' &&
+      Number.isNaN(nextFilters.minAmount)
+    ) {
+      delete nextFilters.minAmount
+    }
+    if (
+      typeof nextFilters.maxAmount === 'number' &&
+      Number.isNaN(nextFilters.maxAmount)
+    ) {
+      delete nextFilters.maxAmount
+    }
+
+    return nextFilters
+  }, [appliedFilters, currentPage])
+
   const { data: salesData, isLoading } = useSales(filters)
   const { data: selectedSale } = useSale(selectedSaleId || 0)
   const { data: summary } = useSalesSummary({
@@ -156,21 +140,20 @@ export const SalesPage = () => {
     filters.dateTo
   )
 
-  // Mutations
   const cancelSale = useCancelSale()
   const refundSale = useRefundSale()
 
-  // Handlers
+  const salesList = salesData?.data ?? []
+  const pagination = salesData?.pagination
+
   const onApplyFilters = () => {
+    setAppliedFilters(draftFilters)
     setCurrentPage(1)
-    // Filters are applied automatically through the form watch
   }
 
   const onClearFilters = () => {
-    filtersForm.reset({
-      search: '',
-      status: '',
-    })
+    setDraftFilters(DEFAULT_FILTERS)
+    setAppliedFilters(DEFAULT_FILTERS)
     setCurrentPage(1)
   }
 
@@ -179,48 +162,88 @@ export const SalesPage = () => {
     setShowSaleDetail(true)
   }
 
-  const onCancelSale = async (data: CancelSaleFormData) => {
+  const openCancelDialog = (sale: Sale) => {
+    setSaleToCancel(sale)
+    setCancelReason('')
+    setCancelReasonError('')
+    setShowCancelDialog(true)
+  }
+
+  const openRefundDialog = (sale: Sale) => {
+    setSaleToRefund(sale)
+    setRefundReason('')
+    setRefundReasonError('')
+    setShowRefundDialog(true)
+  }
+
+  const onCancelSale = async () => {
     if (!saleToCancel) return
+    if (!cancelReason.trim()) {
+      setCancelReasonError('Debe especificar una razón')
+      return
+    }
 
     try {
       await cancelSale.mutateAsync({
         id: saleToCancel.id,
-        reason: data.reason,
+        reason: cancelReason.trim(),
       })
       setShowCancelDialog(false)
       setSaleToCancel(null)
-      cancelForm.reset()
+      setCancelReason('')
+      setCancelReasonError('')
     } catch (error) {
       console.error('Error cancelling sale:', error)
     }
   }
 
-  const onRefundSale = async (data: RefundSaleFormData) => {
+  const onRefundSale = async () => {
     if (!saleToRefund) return
+    if (!refundReason.trim()) {
+      setRefundReasonError('Debe especificar una razón')
+      return
+    }
 
     try {
       await refundSale.mutateAsync({
         id: saleToRefund.id,
-        reason: data.reason,
+        reason: refundReason.trim(),
       })
       setShowRefundDialog(false)
       setSaleToRefund(null)
-      refundForm.reset()
+      setRefundReason('')
+      setRefundReasonError('')
     } catch (error) {
       console.error('Error refunding sale:', error)
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: Sale['status']) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="default">Completada</Badge>
+        return (
+          <Chip size="sm" color="success" variant="flat">
+            Completada
+          </Chip>
+        )
       case 'cancelled':
-        return <Badge variant="secondary">Cancelada</Badge>
+        return (
+          <Chip size="sm" color="warning" variant="flat">
+            Cancelada
+          </Chip>
+        )
       case 'refunded':
-        return <Badge variant="destructive">Reembolsada</Badge>
+        return (
+          <Chip size="sm" color="danger" variant="flat">
+            Reembolsada
+          </Chip>
+        )
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return (
+          <Chip size="sm" variant="flat">
+            {status}
+          </Chip>
+        )
     }
   }
 
@@ -232,7 +255,7 @@ export const SalesPage = () => {
       ? {
           label: 'Descuento',
           value: `-${money(selectedSale?.discountAmount || 0)}`,
-          className: 'text-green-600',
+          className: 'text-success',
         }
       : null,
     (selectedSale?.taxAmount || 0) > 0
@@ -246,252 +269,204 @@ export const SalesPage = () => {
 
   return (
     <div className="space-y-6 p-4">
-      {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ventas</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Historial de Ventas
+          </h1>
+          <p className="text-default-500">
             Gestione y consulte todas las ventas realizadas
           </p>
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
+            variant={showFilters ? 'solid' : 'flat'}
+            startContent={<Filter className="size-4" />}
+            onPress={() => setShowFilters(prev => !prev)}
           >
-            <Filter className="h-4 w-4 mr-2" />
             Filtros
           </Button>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
+          <Button
+            variant="flat"
+            isDisabled
+            startContent={<Download className="size-4" />}
+          >
             Exportar
           </Button>
         </div>
       </div>
 
-      {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Ventas
-              </CardTitle>
-              <Receipt className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalSales}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Ingresos Totales
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(fromCents(summary.totalRevenue))}
+            <CardBody className="rounded-large border border-default-200 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-small text-default-500">Total Ventas</p>
+                  <p className="text-2xl font-semibold">{summary.totalSales}</p>
+                </div>
+                <Receipt className="size-5 text-default-500" />
               </div>
-            </CardContent>
+            </CardBody>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Promedio por Venta
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(fromCents(summary.averageSaleAmount))}
+            <CardBody className="rounded-large border border-default-200 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-small text-default-500">
+                    Ingresos Totales
+                  </p>
+                  <p className="text-2xl font-semibold text-success">
+                    {formatCurrency(fromCents(summary.totalRevenue))}
+                  </p>
+                </div>
+                <DollarSign className="size-5 text-default-500" />
               </div>
-            </CardContent>
+            </CardBody>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Estado</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm">
+            <CardBody className="rounded-large border border-default-200 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-small text-default-500">
+                    Promedio por Venta
+                  </p>
+                  <p className="text-2xl font-semibold">
+                    {formatCurrency(fromCents(summary.averageSaleAmount))}
+                  </p>
+                </div>
+                <TrendingUp className="size-5 text-default-500" />
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardBody className="rounded-large border border-default-200 p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-small text-default-500">Estados</p>
+                <FileText className="size-5 text-default-500" />
+              </div>
+              <div className="mt-2 space-y-1">
                 {Object.entries(summary.salesByStatus).map(
                   ([status, count]) => (
-                    <div key={status} className="flex justify-between">
-                      <span className="capitalize">{status}:</span>
+                    <div
+                      key={status}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="capitalize text-default-500">
+                        {status}
+                      </span>
                       <span className="font-medium">{count}</span>
                     </div>
                   )
                 )}
               </div>
-            </CardContent>
+            </CardBody>
           </Card>
         </div>
       )}
 
-      {/* Filters Panel */}
       {showFilters && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2 font-semibold">
+              <Filter className="size-5" />
               Filtros de Búsqueda
-            </CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
-            <Form {...filtersForm}>
-              <form
-                onSubmit={filtersForm.handleSubmit(onApplyFilters)}
-                className="space-y-4"
+          <CardBody className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <Input
+                label="Buscar"
+                value={draftFilters.search}
+                onValueChange={value =>
+                  setDraftFilters(prev => ({ ...prev, search: value }))
+                }
+                placeholder="Número de venta, cliente..."
+              />
+
+              <Select
+                label="Estado"
+                selectedKeys={[draftFilters.status || 'all']}
+                onSelectionChange={keys => {
+                  const next = Array.from(keys)[0]?.toString() ?? 'all'
+                  setDraftFilters(prev => ({
+                    ...prev,
+                    status: next === 'all' ? '' : (next as SalesStatusFilter),
+                  }))
+                }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={filtersForm.control}
-                    name="search"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Buscar</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Número de venta, cliente..."
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                <SelectItem key="all">Todos los estados</SelectItem>
+                <SelectItem key="completed">Completada</SelectItem>
+                <SelectItem key="cancelled">Cancelada</SelectItem>
+                <SelectItem key="refunded">Reembolsada</SelectItem>
+              </Select>
 
-                  <FormField
-                    control={filtersForm.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estado</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Todos los estados" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="all">
-                              Todos los estados
-                            </SelectItem>
-                            <SelectItem value="completed">
-                              Completada
-                            </SelectItem>
-                            <SelectItem value="cancelled">Cancelada</SelectItem>
-                            <SelectItem value="refunded">
-                              Reembolsada
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  label="Monto Mín."
+                  type="number"
+                  step="0.01"
+                  value={draftFilters.minAmount}
+                  onValueChange={value =>
+                    setDraftFilters(prev => ({ ...prev, minAmount: value }))
+                  }
+                  placeholder="0.00"
+                />
+                <Input
+                  label="Monto Máx."
+                  type="number"
+                  step="0.01"
+                  value={draftFilters.maxAmount}
+                  onValueChange={value =>
+                    setDraftFilters(prev => ({ ...prev, maxAmount: value }))
+                  }
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
 
-                  <div className="flex gap-2">
-                    <FormField
-                      control={filtersForm.control}
-                      name="minAmount"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Monto Mín.</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              onChange={e =>
-                                field.onChange(
-                                  parseFloat(e.target.value) || undefined
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={filtersForm.control}
-                      name="maxAmount"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Monto Máx.</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              onChange={e =>
-                                field.onChange(
-                                  parseFloat(e.target.value) || undefined
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onClearFilters}
-                  >
-                    Limpiar
-                  </Button>
-                  <Button type="submit">Aplicar Filtros</Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
+            <div className="flex justify-end gap-2">
+              <Button variant="flat" onPress={onClearFilters}>
+                Limpiar
+              </Button>
+              <Button color="primary" onPress={onApplyFilters}>
+                Aplicar Filtros
+              </Button>
+            </div>
+          </CardBody>
         </Card>
       )}
 
-      {/* Sales Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Lista de Ventas</CardTitle>
+        <CardHeader className="pb-2">
+          <div className="font-semibold">Lista de Ventas</div>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="flex justify-center py-12">
+              <Spinner />
             </div>
-          ) : salesData?.data?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Receipt className="h-12 w-12 mx-auto mb-2 opacity-50" />
+          ) : salesList.length === 0 ? (
+            <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-default-500">
+              <Receipt className="size-8" />
               <p>No se encontraron ventas</p>
             </div>
           ) : (
             <>
-              <Table>
+              <Table aria-label="Historial de ventas">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Número</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
+                  <TableColumn>NÚMERO</TableColumn>
+                  <TableColumn>FECHA</TableColumn>
+                  <TableColumn>CLIENTE</TableColumn>
+                  <TableColumn className="text-right">TOTAL</TableColumn>
+                  <TableColumn className="text-center">ESTADO</TableColumn>
+                  <TableColumn className="text-right">ACCIONES</TableColumn>
                 </TableHeader>
-                <TableBody>
-                  {salesData?.data?.map(sale => (
+                <TableBody items={salesList}>
+                  {(sale: Sale) => (
                     <TableRow key={sale.id}>
                       <TableCell className="font-medium">
                         {sale.saleNumber}
@@ -502,423 +477,410 @@ export const SalesPage = () => {
                         })}
                       </TableCell>
                       <TableCell>
-                        {sale.customerName || 'Cliente general'}
-                        {sale.customerDocument && (
-                          <div className="text-xs text-muted-foreground">
-                            {sale.customerDocument}
-                          </div>
-                        )}
+                        <div>
+                          <p>{sale.customerName || 'Cliente general'}</p>
+                          {sale.customerDocument && (
+                            <p className="text-xs text-default-500">
+                              {sale.customerDocument}
+                            </p>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="text-right font-medium">
                         {formatCurrency(fromCents(sale.total))}
                       </TableCell>
-                      <TableCell>{getStatusBadge(sale.status)}</TableCell>
+                      <TableCell className="text-center">
+                        {getStatusBadge(sale.status)}
+                      </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger>
-                            <Button variant="ghost" size="sm">
-                              •••
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button isIconOnly size="sm" variant="light">
+                              <MoreVertical className="size-4" />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onViewSale(sale)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver Detalle
-                            </DropdownMenuItem>
-                            {sale.status === 'completed' && (
-                              <>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSaleToCancel(sale)
-                                    setShowCancelDialog(true)
-                                  }}
-                                >
-                                  <Ban className="h-4 w-4 mr-2" />
-                                  Cancelar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSaleToRefund(sale)
-                                    setShowRefundDialog(true)
-                                  }}
-                                >
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Reembolsar
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            aria-label={`Acciones de venta ${sale.saleNumber}`}
+                          >
+                            <DropdownItem
+                              key="view"
+                              startContent={<Eye className="size-4" />}
+                              onPress={() => onViewSale(sale)}
+                            >
+                              Ver detalle
+                            </DropdownItem>
+                            {sale.status === 'completed' ? (
+                              <DropdownItem
+                                key="cancel"
+                                color="warning"
+                                startContent={<Ban className="size-4" />}
+                                onPress={() => openCancelDialog(sale)}
+                              >
+                                Cancelar
+                              </DropdownItem>
+                            ) : null}
+                            {sale.status === 'completed' ? (
+                              <DropdownItem
+                                key="refund"
+                                color="danger"
+                                startContent={<RefreshCw className="size-4" />}
+                                onPress={() => openRefundDialog(sale)}
+                              >
+                                Reembolsar
+                              </DropdownItem>
+                            ) : null}
+                          </DropdownMenu>
+                        </Dropdown>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
 
-              {/* Pagination */}
-              {salesData?.pagination && salesData.pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Mostrando {salesData.data.length} de{' '}
-                    {salesData.pagination.total} ventas
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={!salesData.pagination.hasPrev}
-                    >
-                      Anterior
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => p + 1)}
-                      disabled={!salesData.pagination.hasNext}
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
+              {pagination && pagination.totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-small text-default-500">
+                    Mostrando {salesList.length} de {pagination.total}
+                  </p>
+                  <Pagination
+                    page={currentPage}
+                    total={pagination.totalPages}
+                    showControls
+                    onChange={setCurrentPage}
+                  />
                 </div>
               )}
             </>
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Top Products */}
       {topProducts && topProducts.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>Productos Más Vendidos</CardTitle>
+          <CardHeader className="pb-2">
+            <div className="font-semibold">Productos Más Vendidos</div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {topProducts.map((product, index) => (
-                <div
-                  key={product.presentationId}
-                  className="flex items-center justify-between p-2 rounded-lg bg-gray-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">{index + 1}</Badge>
-                    <div>
-                      <p className="font-medium">{product.presentationName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {product.productName}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">
-                      {product.totalQuantity} unidades
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatCurrency(fromCents(product.totalRevenue))}
+          <CardBody className="space-y-2">
+            {topProducts.map((product, index) => (
+              <div
+                key={product.presentationId}
+                className="flex items-center justify-between rounded-large border border-default-200 p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <Chip size="sm" variant="flat">
+                    {index + 1}
+                  </Chip>
+                  <div>
+                    <p className="font-medium">{product.presentationName}</p>
+                    <p className="text-sm text-default-500">
+                      {product.productName}
                     </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
+                <div className="text-right">
+                  <p className="font-medium">
+                    {product.totalQuantity} unidades
+                  </p>
+                  <p className="text-sm text-default-500">
+                    {formatCurrency(fromCents(product.totalRevenue))}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </CardBody>
         </Card>
       )}
 
-      {/* Sale Detail Dialog */}
-      <Dialog open={showSaleDetail} onOpenChange={setShowSaleDetail}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Detalle de Venta</DialogTitle>
-          </DialogHeader>
-          {selectedSale && (
-            <div className="space-y-4">
-              {/* Sale Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium">Número de Venta</p>
-                  <p>{selectedSale.saleNumber}</p>
-                  {/* TODO: poner aqui un boton para copiar el numero de la venta */}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Fecha</p>
-                  <p>
-                    {format(
-                      new Date(selectedSale.createdAt),
-                      'dd MMM yyyy hh:mm aa',
-                      {
-                        locale: es,
-                      }
-                    )}
+      <Modal
+        isOpen={showSaleDetail}
+        onOpenChange={setShowSaleDetail}
+        scrollBehavior="inside"
+        size="3xl"
+      >
+        <ModalContent>
+          {() => (
+            <>
+              <ModalHeader>Detalle de Venta</ModalHeader>
+              <ModalBody>
+                {selectedSale && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-sm font-medium">Número de Venta</p>
+                        <p>{selectedSale.saleNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Fecha</p>
+                        <p>
+                          {format(
+                            new Date(selectedSale.createdAt),
+                            'dd MMM yyyy hh:mm aa',
+                            {
+                              locale: es,
+                            }
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Cliente</p>
+                        <p>
+                          {selectedSale.customer?.name || 'Cliente general'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Estado</p>
+                        {getStatusBadge(selectedSale.status)}
+                      </div>
+                    </div>
+
+                    <Divider />
+
+                    <div>
+                      <h4 className="mb-2 font-medium">Artículos</h4>
+                      <div className="space-y-2">
+                        {selectedSale.items?.map(item => {
+                          const displayName = `${item.productName} (${item.presentationName})`
+                          const factor = item.presentationFactor || 1
+                          const presentationQuantity = item.quantity / factor
+                          const inventoryUnitLabel =
+                            UNIT_CONFIG[item.productBaseUnit]?.label || 'ud'
+                          const showInventoryBreakdown = factor !== 1
+
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between rounded-large border border-default-200 p-3"
+                            >
+                              <div>
+                                <p className="text-sm text-default-500">
+                                  {displayName}
+                                </p>
+                                <p className="text-xs">
+                                  {showInventoryBreakdown ? (
+                                    <>
+                                      {formatQuantity(presentationQuantity)} x{' '}
+                                      {formatCurrency(
+                                        fromCents(item.unitPrice)
+                                      )}{' '}
+                                      x{' '}
+                                      {formatQuantity(
+                                        fromUnitPrecision(
+                                          item.quantity,
+                                          item.productBaseUnitPrecision
+                                        )
+                                      )}
+                                      {inventoryUnitLabel} del inventario
+                                    </>
+                                  ) : (
+                                    <>
+                                      {formatQuantity(item.quantity)} x{' '}
+                                      {formatCurrency(
+                                        fromCents(item.unitPrice)
+                                      )}
+                                    </>
+                                  )}
+                                </p>
+                                {item.notes && (
+                                  <p className="text-xs">{item.notes}</p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium">
+                                  {formatCurrency(fromCents(item.totalPrice))}
+                                </p>
+                                {item.discount > 0 && (
+                                  <p className="text-xs text-success">
+                                    Desc: -
+                                    {formatCurrency(fromCents(item.discount))}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <Divider />
+
+                    <div>
+                      <h4 className="mb-2 font-medium">Pagos</h4>
+                      <div className="space-y-2">
+                        {selectedSale.payments?.map(payment => {
+                          const delivered = fromCents(payment.amount)
+                          const change = fromCents(payment.changeAmount ?? 0)
+                          const applied = Math.max(0, delivered - change)
+
+                          return (
+                            <div
+                              key={payment.id}
+                              className="flex items-start justify-between rounded-large border border-default-200 p-3"
+                            >
+                              <span className="font-medium capitalize">
+                                {payment.method}
+                              </span>
+                              <div className="text-right text-sm">
+                                <p>
+                                  Entregado:{' '}
+                                  <span className="font-medium">
+                                    {formatCurrency(delivered)}
+                                  </span>
+                                </p>
+                                <p className="text-default-500">
+                                  Aplicado:{' '}
+                                  <span className="font-medium">
+                                    {formatCurrency(applied)}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <Divider />
+
+                    <div className="space-y-1">
+                      {rows.map(row => (
+                        <div
+                          key={row.label}
+                          className={`flex items-center justify-between text-sm ${row.className ?? ''}`}
+                        >
+                          <span className="text-default-500">{row.label}</span>
+                          <span className="font-medium tabular-nums">
+                            {row.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="rounded-large border border-default-200 bg-default-100 p-3">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xl font-medium text-default-600">
+                          Total
+                        </span>
+                        <span className="text-xl font-bold tabular-nums">
+                          {money(selectedSale.total)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedSale.notes ? (
+                      <>
+                        <Divider />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Notas</p>
+                          <p className="whitespace-pre-line text-sm text-default-500">
+                            {selectedSale.notes}
+                          </p>
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                )}
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <ModalContent>
+          {onClose => (
+            <>
+              <ModalHeader>Cancelar Venta</ModalHeader>
+              <ModalBody className="space-y-4">
+                <div className="flex items-start gap-2 rounded-large border border-warning-200 bg-warning-50 p-3 text-warning-700">
+                  <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                  <p className="text-sm">
+                    Esta acción cancelará la venta y revertirá los movimientos
+                    de inventario.
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Cliente</p>
-                  <p>{selectedSale.customer?.name || 'Cliente general'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Estado</p>
-                  {getStatusBadge(selectedSale.status)}
-                </div>
-              </div>
 
-              <Separator />
-
-              {/* Items */}
-              <div>
-                <h4 className="font-medium mb-2">Artículos</h4>
-                <div className="space-y-2">
-                  {selectedSale.items?.map(item => {
-                    const displayName = `${item.productName} (${item.presentationName})`
-                    const factor = item.presentationFactor || 1
-                    const presentationQuantity = item.quantity / factor
-                    const presentationUnitLabel =
-                      UNIT_CONFIG[item.presentationUnit]?.label || 'ud'
-                    const inventoryUnitLabel =
-                      UNIT_CONFIG[item.productBaseUnit]?.label || 'ud'
-                    const showInventoryBreakdown = factor !== 1
-
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                      >
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            {displayName}
-                          </p>
-                          <p className="text-xs">
-                            {showInventoryBreakdown ? (
-                              <>
-                                {formatQuantity(presentationQuantity)} x{' '}
-                                {formatCurrency(fromCents(item.unitPrice))} x{' '}
-                                {formatQuantity(
-                                  fromUnitPrecision(
-                                    item.quantity,
-                                    item.productBaseUnitPrecision
-                                  )
-                                )}
-                                {inventoryUnitLabel} del inventario
-                              </>
-                            ) : (
-                              <>
-                                {formatQuantity(item.quantity)} x{' '}
-                                {formatCurrency(fromCents(item.unitPrice))}
-                              </>
-                            )}
-                          </p>
-                          {item.notes && (
-                            <p className="text-xs">{item.notes}</p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">
-                            {formatCurrency(fromCents(item.totalPrice))}
-                          </p>
-                          {item.discount > 0 && (
-                            <p className="text-xs text-green-600">
-                              Desc: -{formatCurrency(fromCents(item.discount))}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Payments */}
-              <div>
-                <h4 className="font-medium mb-2">Pagos</h4>
-                <div className="space-y-2">
-                  {selectedSale?.payments?.map(payment => {
-                    const delivered = fromCents(payment.amount)
-                    const change = fromCents(payment.changeAmount ?? 0)
-                    const applied = Math.max(0, delivered - change)
-
-                    return (
-                      <div
-                        key={payment.id}
-                        className="flex justify-between items-start py-2"
-                      >
-                        <span className="capitalize font-medium">
-                          {payment.method}
-                        </span>
-
-                        <div className="text-right leading-5">
-                          <p className="text-sm">
-                            Entregado:{' '}
-                            <span className="font-medium">
-                              {formatCurrency(delivered)}
-                            </span>
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Aplicado:{' '}
-                            <span className="font-medium">
-                              {formatCurrency(applied)}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Totals */}
-              <div className="space-y-1">
-                {rows.map(r => (
-                  <div
-                    key={r.label}
-                    className={`flex items-baseline justify-between text-sm ${r.className ?? ''}`}
-                  >
-                    <span className="text-muted-foreground">{r.label}</span>
-                    <span className="font-medium tabular-nums">{r.value}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-medium text-muted-foreground">
-                    Total
-                  </span>
-                  <span className="text-xl font-bold tabular-nums">
-                    {money(selectedSale.total)}
-                  </span>
-                </div>
-              </div>
-
-              {selectedSale.notes ? (
-                <>
-                  <Separator />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Notas</p>
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">
-                      {selectedSale.notes}
-                    </p>
-                  </div>
-                </>
-              ) : null}
-            </div>
+                <Textarea
+                  label="Razón de la Cancelación"
+                  isRequired
+                  value={cancelReason}
+                  onValueChange={value => {
+                    setCancelReason(value)
+                    if (cancelReasonError) setCancelReasonError('')
+                  }}
+                  placeholder="Especifique la razón..."
+                  isInvalid={Boolean(cancelReasonError)}
+                  errorMessage={cancelReasonError}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="flat" onPress={onClose}>
+                  Cerrar
+                </Button>
+                <Button
+                  color="warning"
+                  onPress={onCancelSale}
+                  isLoading={cancelSale.isPending}
+                  startContent={
+                    !cancelSale.isPending ? <Ban className="size-4" /> : null
+                  }
+                >
+                  Cancelar Venta
+                </Button>
+              </ModalFooter>
+            </>
           )}
-        </DialogContent>
-      </Dialog>
+        </ModalContent>
+      </Modal>
 
-      {/* Cancel Sale Dialog */}
-      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cancelar Venta</DialogTitle>
-          </DialogHeader>
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Esta acción cancelará la venta y revertirá los movimientos de
-              inventario.
-            </AlertDescription>
-          </Alert>
-          <Form {...cancelForm}>
-            <form
-              onSubmit={cancelForm.handleSubmit(onCancelSale)}
-              className="space-y-4"
-            >
-              <FormField
-                control={cancelForm.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Razón de la Cancelación *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Especifique la razón..."
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowCancelDialog(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="destructive"
-                  disabled={cancelSale.isPending}
-                >
-                  {cancelSale.isPending ? 'Cancelando...' : 'Cancelar Venta'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <Modal isOpen={showRefundDialog} onOpenChange={setShowRefundDialog}>
+        <ModalContent>
+          {onClose => (
+            <>
+              <ModalHeader>Reembolsar Venta</ModalHeader>
+              <ModalBody className="space-y-4">
+                <div className="flex items-start gap-2 rounded-large border border-danger-200 bg-danger-50 p-3 text-danger-700">
+                  <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                  <p className="text-sm">
+                    Esta acción reembolsará la venta y revertirá los movimientos
+                    de inventario.
+                  </p>
+                </div>
 
-      {/* Refund Sale Dialog */}
-      <Dialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reembolsar Venta</DialogTitle>
-          </DialogHeader>
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Esta acción reembolsará la venta y revertirá los movimientos de
-              inventario.
-            </AlertDescription>
-          </Alert>
-          <Form {...refundForm}>
-            <form
-              onSubmit={refundForm.handleSubmit(onRefundSale)}
-              className="space-y-4"
-            >
-              <FormField
-                control={refundForm.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Razón del Reembolso *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Especifique la razón..."
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowRefundDialog(false)}
-                >
-                  Cancelar
+                <Textarea
+                  label="Razón del Reembolso"
+                  isRequired
+                  value={refundReason}
+                  onValueChange={value => {
+                    setRefundReason(value)
+                    if (refundReasonError) setRefundReasonError('')
+                  }}
+                  placeholder="Especifique la razón..."
+                  isInvalid={Boolean(refundReasonError)}
+                  errorMessage={refundReasonError}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="flat" onPress={onClose}>
+                  Cerrar
                 </Button>
                 <Button
-                  type="submit"
-                  variant="destructive"
-                  disabled={refundSale.isPending}
+                  color="danger"
+                  onPress={onRefundSale}
+                  isLoading={refundSale.isPending}
+                  startContent={
+                    !refundSale.isPending ? (
+                      <RefreshCw className="size-4" />
+                    ) : null
+                  }
                 >
-                  {refundSale.isPending
-                    ? 'Reembolsando...'
-                    : 'Reembolsar Venta'}
+                  Reembolsar Venta
                 </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   )
 }
+

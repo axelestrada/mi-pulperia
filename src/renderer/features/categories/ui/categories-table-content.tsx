@@ -1,3 +1,5 @@
+import { Table, TableBody } from "@/components/ui/table"
+
 type Props = {
   categories: Category[]
   onEdit: (category: Category) => void

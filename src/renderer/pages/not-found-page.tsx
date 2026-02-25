@@ -1,3 +1,11 @@
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty'
+
 export const NotFoundPage = () => {
   return (
     <Empty>

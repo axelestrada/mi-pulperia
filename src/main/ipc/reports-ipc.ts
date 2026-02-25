@@ -1,18 +1,18 @@
 import { ipcMain } from 'electron'
 import { SalesRepository } from '../repositories/sales-repository'
+import { SaleReturnsRepository } from '../repositories/sale-returns-repository'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { CustomersRepository } from '../repositories/customers-repository'
 import { ExpensesRepository } from '../repositories/expenses-repository'
 import { CreditsRepository } from '../repositories/credits-repository'
 import { PurchaseOrdersRepository } from '../repositories/purchase-orders-repository'
-import { InventoryAdjustmentsRepository } from '../repositories/inventory-adjustments-repository'
-import { eq, and, gte, lte, sum, count, desc, asc } from 'drizzle-orm'
+import { eq, and, gte, lte, sum, count, desc, asc, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { salesTable } from '../db/schema/sales'
 import { saleItemsTable } from '../db/schema/sale-items'
+import { presentationsTable } from '../db/schema/presentations'
 import { productsTable } from '../db/schema/products'
 import { categoriesTable } from '../db/schema/categories'
-import { customersTable } from '../db/schema/customers'
 
 export function registerReportsIpc() {
   // === SALES REPORTS ===
@@ -20,7 +20,10 @@ export function registerReportsIpc() {
     try {
       const { dateFrom, dateTo, customerId, categoryId, productId } = filters
 
-      const whereConditions = [eq(salesTable.deleted, false)]
+      const whereConditions = [
+        eq(salesTable.deleted, false),
+        eq(salesTable.status, 'completed'),
+      ]
 
       if (dateFrom) {
         whereConditions.push(gte(salesTable.createdAt, new Date(dateFrom)))
@@ -34,18 +37,21 @@ export function registerReportsIpc() {
         whereConditions.push(eq(salesTable.customerId, customerId))
       }
 
-      // Get sales summary
+      // Get sales summary (solo ventas completadas)
       const summary = await db
         .select({
           totalSales: count(salesTable.id),
           totalRevenue: sum(salesTable.total),
-          totalCost: sum(salesTable.totalCost),
-          totalProfit: sum(salesTable.totalProfit),
-          averageTicket: sum(salesTable.total),
         })
         .from(salesTable)
         .where(and(...whereConditions))
         .get()
+
+      const dateFromObj = dateFrom ? new Date(dateFrom) : undefined
+      const dateToObj = dateTo ? new Date(dateTo) : undefined
+      const { totalRefunded, totalReceived } =
+        await SaleReturnsRepository.getTotalRefunded(dateFromObj, dateToObj)
+      const netRevenue = (Number(summary?.totalRevenue) || 0) - totalRefunded + totalReceived
 
       // Get sales by date
       const salesByDate = await db
@@ -53,7 +59,7 @@ export function registerReportsIpc() {
           date: salesTable.createdAt,
           totalSales: count(salesTable.id),
           totalRevenue: sum(salesTable.total),
-          totalProfit: sum(salesTable.totalProfit),
+          totalProfit: sql<number>`0`.as('total_profit'),
         })
         .from(salesTable)
         .where(and(...whereConditions))
@@ -63,17 +69,21 @@ export function registerReportsIpc() {
       // Get top products
       const topProducts = await db
         .select({
-          productId: saleItemsTable.productId,
+          productId: productsTable.id,
           productName: productsTable.name,
           totalQuantity: sum(saleItemsTable.quantity),
           totalRevenue: sum(saleItemsTable.totalPrice),
-          totalProfit: sum(saleItemsTable.totalProfit),
+          totalProfit: sql<number>`0`.as('total_profit'),
         })
         .from(saleItemsTable)
         .leftJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
-        .leftJoin(productsTable, eq(saleItemsTable.productId, productsTable.id))
+        .leftJoin(
+          presentationsTable,
+          eq(saleItemsTable.presentationId, presentationsTable.id)
+        )
+        .leftJoin(productsTable, eq(presentationsTable.productId, productsTable.id))
         .where(and(...whereConditions))
-        .groupBy(saleItemsTable.productId, productsTable.name)
+        .groupBy(productsTable.id, productsTable.name)
         .orderBy(desc(sum(saleItemsTable.totalPrice)))
         .limit(10)
 
@@ -91,9 +101,12 @@ export function registerReportsIpc() {
       return {
         summary: {
           ...summary,
-          averageTicket: summary?.totalRevenue && summary?.totalSales
-            ? (summary.totalRevenue / summary.totalSales)
-            : 0
+          totalRevenue: netRevenue,
+          totalRefunded,
+          totalReceivedFromReturns: totalReceived,
+          averageTicket: summary?.totalSales
+            ? netRevenue / Number(summary.totalSales)
+            : 0,
         },
         salesByDate,
         topProducts,
@@ -407,23 +420,27 @@ export function registerReportsIpc() {
 
       const topProducts = await db
         .select({
-          productId: saleItemsTable.productId,
+          productId: productsTable.id,
           productName: productsTable.name,
           categoryName: categoriesTable.name,
           totalQuantity: sum(saleItemsTable.quantity),
           totalRevenue: sum(saleItemsTable.totalPrice),
-          totalProfit: sum(saleItemsTable.totalProfit),
+          totalProfit: sql<number>`0`.as('total_profit'),
           totalSales: count(saleItemsTable.id),
         })
         .from(saleItemsTable)
         .leftJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
-        .leftJoin(productsTable, eq(saleItemsTable.productId, productsTable.id))
+        .leftJoin(
+          presentationsTable,
+          eq(saleItemsTable.presentationId, presentationsTable.id)
+        )
+        .leftJoin(productsTable, eq(presentationsTable.productId, productsTable.id))
         .leftJoin(categoriesTable, eq(productsTable.categoryId, categoriesTable.id))
         .where(and(...whereConditions))
-        .groupBy(saleItemsTable.productId, productsTable.name, categoriesTable.name)
+        .groupBy(productsTable.id, productsTable.name, categoriesTable.name)
         .orderBy(
           sortBy === 'quantity' ? desc(sum(saleItemsTable.quantity)) :
-          sortBy === 'profit' ? desc(sum(saleItemsTable.totalProfit)) :
+          sortBy === 'profit' ? desc(sum(saleItemsTable.totalPrice)) :
           desc(sum(saleItemsTable.totalPrice))
         )
         .limit(limit)

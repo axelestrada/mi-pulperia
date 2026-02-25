@@ -334,6 +334,13 @@ declare global {
         calculateSaleTotals: (items: any[], taxRate?: number) => Promise<any>
         calculateChange: (payments: any[]) => Promise<number>
       }
+      saleReturns: {
+        processReturn: (data: any) => Promise<{ return: any; returnDetails: any }>
+        list: (filters: any) => Promise<{ data: any[]; pagination: any }>
+        getById: (id: number) => Promise<any>
+        getBySaleId: (saleId: number) => Promise<any[]>
+        getTotalRefunded: (dateFrom?: Date, dateTo?: Date) => Promise<{ totalRefunded: number; totalReceived: number }>
+      }
       suppliers: {
         list: () => Promise<Supplier[]>
         create: (supplier: SupplierFormData) => Promise<Supplier>
@@ -380,6 +387,31 @@ declare global {
         generateAdjustmentNumber: () => Promise<string>
         getAvailableBatches: (productId?: number) => Promise<InventoryBatch[]>
         getBatchInfo: (batchId: number) => Promise<InventoryBatch>
+      }
+      topUps: {
+        list: (filters?: { dateFrom?: string; dateTo?: string; limit?: number }) => Promise<any[]>
+        getVirtualBalance: () => Promise<number>
+        loadBalance: (payload: {
+          amount: number
+          operator?: string
+          notes?: string
+          createdBy?: string
+        }) => Promise<any>
+        register: (payload: {
+          amount: number
+          cost: number
+          operator?: string
+          phoneNumber?: string
+          notes?: string
+          createdBy?: string
+        }) => Promise<any>
+        getSummary: (filters?: { dateFrom?: string; dateTo?: string }) => Promise<{
+          count: number
+          amount: number
+          cost: number
+          margin: number
+          loadedAmount: number
+        }>
       }
     }
     electron: {

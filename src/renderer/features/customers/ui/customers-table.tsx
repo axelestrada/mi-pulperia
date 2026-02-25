@@ -1,35 +1,25 @@
 import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import {
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  CreditCard,
-  DollarSign,
-} from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import {
+  Button,
+  Chip,
+  Dropdown,
+  DropdownItem,
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
+  DropdownSection,
+  DropdownTrigger,
   Table,
   TableBody,
   TableCell,
-  TableHead,
+  TableColumn,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-
+} from '@heroui/react'
+import {
+  CreditCard,
+  DollarSign,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import { useDeleteCustomer } from '../hooks/use-customers'
 
 interface Customer {
@@ -51,170 +41,119 @@ interface CustomersTableProps {
   onEdit: (customer: Customer) => void
 }
 
+const columns = [
+  { key: 'name', label: 'NOMBRE' },
+  { key: 'document', label: 'DOCUMENTO' },
+  { key: 'phone', label: 'TELEFONO' },
+  { key: 'city', label: 'CIUDAD' },
+  { key: 'creditLimit', label: 'LIMITE DE CREDITO' },
+  { key: 'currentBalance', label: 'SALDO ACTUAL' },
+  { key: 'isActive', label: 'ESTADO' },
+  { key: 'actions', label: 'ACCIONES' },
+] as const
+
 export function CustomersTable({ customers, onEdit }: CustomersTableProps) {
   const deleteCustomer = useDeleteCustomer()
 
   const handleDelete = (customer: Customer) => {
-    if (confirm(`¿Está seguro de eliminar al cliente "${customer.name}"?`)) {
+    if (confirm(`Esta seguro de eliminar al cliente "${customer.name}"?`)) {
       deleteCustomer.mutate(customer.id)
     }
   }
 
-  const columns: ColumnDef<Customer>[] = [
-    {
-      accessorKey: 'name',
-      header: 'Nombre',
-      cell: ({ row }) => (
-        <div>
-          <div className="font-medium">{row.original.name}</div>
-          {row.original.email && (
-            <div className="text-sm text-muted-foreground">
-              {row.original.email}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'document',
-      header: 'Documento',
-      cell: ({ row }) => row.original.document || '-',
-    },
-    {
-      accessorKey: 'phone',
-      header: 'Teléfono',
-      cell: ({ row }) => row.original.phone || '-',
-    },
-    {
-      accessorKey: 'city',
-      header: 'Ciudad',
-      cell: ({ row }) => row.original.city || '-',
-    },
-    {
-      accessorKey: 'creditLimit',
-      header: 'Límite de Crédito',
-      cell: ({ row }) => (
-        <div className="text-right">
-          L {(row.original.creditLimit / 100).toFixed(2)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'currentBalance',
-      header: 'Saldo Actual',
-      cell: ({ row }) => {
-        const balance = row.original.currentBalance
-        return (
-          <div className="text-right">
-            <span className={balance > 0 ? 'text-red-600' : 'text-green-600'}>
-              L {Math.abs(balance / 100).toFixed(2)}
-            </span>
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: 'isActive',
-      header: 'Estado',
-      cell: ({ row }) => (
-        <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Activo' : 'Inactivo'}
-        </Badge>
-      ),
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const customer = row.original
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menú</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(customer)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <CreditCard className="mr-2 h-4 w-4" />
-                Ver Créditos
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <DollarSign className="mr-2 h-4 w-4" />
-                Ajustar Saldo
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={() => handleDelete(customer)}
-                className="text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Eliminar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      },
-    },
-  ]
-
-  const table = useReactTable({
-    data: customers,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map(headerGroup => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map(row => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
+    <Table aria-label="Tabla de clientes">
+      <TableHeader columns={columns}>
+        {column => (
+          <TableColumn
+            key={column.key}
+            align={column.key === 'actions' ? 'center' : 'start'}
+          >
+            {column.label}
+          </TableColumn>
+        )}
+      </TableHeader>
+      <TableBody emptyContent="No se encontraron clientes." items={customers}>
+        {customer => (
+          <TableRow key={customer.id}>
+            <TableCell>
+              <div>
+                <div className="font-medium">{customer.name}</div>
+                {customer.email ? (
+                  <div className="text-sm text-default-500">{customer.email}</div>
+                ) : null}
+              </div>
+            </TableCell>
+            <TableCell>{customer.document || '-'}</TableCell>
+            <TableCell>{customer.phone || '-'}</TableCell>
+            <TableCell>{customer.city || '-'}</TableCell>
+            <TableCell>L {(customer.creditLimit / 100).toFixed(2)}</TableCell>
+            <TableCell>
+              <span
+                className={
+                  customer.currentBalance > 0 ? 'text-danger' : 'text-success'
+                }
               >
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No se encontraron clientes.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+                L {Math.abs(customer.currentBalance / 100).toFixed(2)}
+              </span>
+            </TableCell>
+            <TableCell>
+              <Chip
+                size="sm"
+                variant="flat"
+                color={customer.isActive ? 'success' : 'default'}
+              >
+                {customer.isActive ? 'Activo' : 'Inactivo'}
+              </Chip>
+            </TableCell>
+            <TableCell>
+              <div className="flex justify-center">
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button isIconOnly size="sm" variant="light">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label={`Acciones de ${customer.name}`}>
+                    <DropdownSection showDivider title="Acciones">
+                      <DropdownItem
+                        key="edit"
+                        startContent={<Pencil className="h-4 w-4" />}
+                        onPress={() => onEdit(customer)}
+                      >
+                        Editar
+                      </DropdownItem>
+                      <DropdownItem
+                        key="credits"
+                        startContent={<CreditCard className="h-4 w-4" />}
+                      >
+                        Ver Creditos
+                      </DropdownItem>
+                      <DropdownItem
+                        key="balance"
+                        startContent={<DollarSign className="h-4 w-4" />}
+                      >
+                        Ajustar Saldo
+                      </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection title="Zona de Peligro">
+                      <DropdownItem
+                        key="delete"
+                        color="danger"
+                        className="text-danger"
+                        startContent={<Trash2 className="h-4 w-4" />}
+                        onPress={() => handleDelete(customer)}
+                      >
+                        Eliminar
+                      </DropdownItem>
+                    </DropdownSection>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
   )
 }

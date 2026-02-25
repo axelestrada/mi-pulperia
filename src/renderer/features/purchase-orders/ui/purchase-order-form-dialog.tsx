@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -83,7 +83,7 @@ export function PurchaseOrderFormDialog({
   purchaseOrder,
 }: PurchaseOrderFormDialogProps) {
   const isEdit = !!purchaseOrder
-  const [taxRate, setTaxRate] = useState(15) // Default 15% tax rate
+  const taxRate = 15
 
   const { data: suppliers = [] } = useActiveSuppliers()
   const { data: orderNumber } = useGenerateOrderNumber()
@@ -261,11 +261,11 @@ export function PurchaseOrderFormDialog({
           <DialogTitle>
             {isEdit ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}
           </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? 'Modifica los detalles de la orden de compra.'
-              : 'Crea una nueva orden de compra para enviar a un proveedor.'}
-          </DialogDescription>
+            <DialogDescription>
+              {isEdit
+              ? 'Modifica la lista de compra para el proveedor.'
+              : 'Crea una lista de compra por proveedor para el siguiente turno.'}
+            </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -579,10 +579,10 @@ export function PurchaseOrderFormDialog({
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notas para el Proveedor</FormLabel>
+                      <FormLabel>Notas para quien compra</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Instrucciones especiales, términos de entrega, etc."
+                          placeholder="Que comprar, prioridades, marcas o cantidades sugeridas."
                           className="min-h-[80px]"
                           {...field}
                         />
@@ -596,10 +596,10 @@ export function PurchaseOrderFormDialog({
                   name="internalNotes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notas Internas</FormLabel>
+                      <FormLabel>Notas de Turno</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Notas internas que no verá el proveedor"
+                          placeholder="Indicaciones para la persona que queda en turno."
                           className="min-h-[80px]"
                           {...field}
                         />

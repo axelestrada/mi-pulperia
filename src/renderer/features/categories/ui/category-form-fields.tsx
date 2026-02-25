@@ -1,3 +1,6 @@
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import { Textarea } from "@/components/ui/textarea"
+
 export const CategoryFormFields = () => {
   const { control } = useFormContext<CategoryFormData>()
 

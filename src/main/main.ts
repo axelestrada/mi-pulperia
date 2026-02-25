@@ -17,12 +17,14 @@ import { registerCashRegistersHandlers } from './ipc/cash-registers-ipc'
 import { registerCashSessionsHandlers } from './ipc/cash-sessions-ipc'
 import { registerPOSHandlers } from './ipc/pos-ipc'
 import { registerSalesHandlers } from './ipc/sales-ipc'
+import { registerSaleReturnsHandlers } from './ipc/sale-returns-ipc'
 import { registerSuppliersIpc } from './ipc/suppliers-ipc'
 import { registerPurchaseOrdersIpc } from './ipc/purchase-orders-ipc'
 import { registerInventoryAdjustmentsIpc } from './ipc/inventory-adjustments-ipc'
 import { registerCreditsIpc } from './ipc/credits-ipc'
 import { registerExpensesIpc } from './ipc/expenses-ipc'
 import { registerReportsIpc } from './ipc/reports-ipc'
+import { registerTopUpsIpc } from './ipc/top-ups-ipc'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -97,12 +99,14 @@ app.on('activate', async () => {
     registerCashSessionsHandlers()
     registerPOSHandlers()
     registerSalesHandlers()
+    registerSaleReturnsHandlers()
     registerSuppliersIpc()
     registerPurchaseOrdersIpc()
     registerInventoryAdjustmentsIpc()
     registerCreditsIpc()
     registerExpensesIpc()
     registerReportsIpc()
+    registerTopUpsIpc()
 
     createWindow()
   }
@@ -134,12 +138,14 @@ app.whenReady().then(async () => {
   registerCashSessionsHandlers()
   registerPOSHandlers()
   registerSalesHandlers()
+  registerSaleReturnsHandlers()
   registerSuppliersIpc()
   registerPurchaseOrdersIpc()
   registerInventoryAdjustmentsIpc()
   registerCreditsIpc()
   registerExpensesIpc()
   registerReportsIpc()
+  registerTopUpsIpc()
 
   createWindow()
 })

@@ -171,6 +171,16 @@ contextBridge.exposeInMainWorld('api', {
     quickSearch: (query: string, limit?: number) =>
       ipcRenderer.invoke('pos:quickSearch', query, limit),
   },
+  saleReturns: {
+    processReturn: (data: any) =>
+      ipcRenderer.invoke('saleReturns:processReturn', data),
+    list: (filters: any) => ipcRenderer.invoke('saleReturns:list', filters),
+    getById: (id: number) => ipcRenderer.invoke('saleReturns:getById', id),
+    getBySaleId: (saleId: number) =>
+      ipcRenderer.invoke('saleReturns:getBySaleId', saleId),
+    getTotalRefunded: (dateFrom?: Date, dateTo?: Date) =>
+      ipcRenderer.invoke('saleReturns:getTotalRefunded', dateFrom, dateTo),
+  },
   sales: {
     list: (filters: SalesFilters) => ipcRenderer.invoke('sales:list', filters),
     getById: (id: number) => ipcRenderer.invoke('sales:getById', id),
@@ -286,7 +296,7 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('inventoryAdjustments:generateShrinkageNumber'),
   },
   credits: {
-    list: () => ipcRenderer.invoke('credits:list'),
+    list: (filters?: any) => ipcRenderer.invoke('credits:list', filters),
     create: (credit: any) => ipcRenderer.invoke('credits:create', credit),
     update: (id: number, credit: any) =>
       ipcRenderer.invoke('credits:update', id, credit),
@@ -310,7 +320,7 @@ contextBridge.exposeInMainWorld('api', {
     getPartialCredits: () => ipcRenderer.invoke('credits:getPartialCredits'),
   },
   expenses: {
-    list: () => ipcRenderer.invoke('expenses:list'),
+    list: (filters?: any) => ipcRenderer.invoke('expenses:list', filters),
     create: (expense: any) => ipcRenderer.invoke('expenses:create', expense),
     update: (id: number, expense: any) =>
       ipcRenderer.invoke('expenses:update', id, expense),
@@ -342,6 +352,27 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('expenseCategories:getCogsCategories'),
     getNonCogsCategories: () =>
       ipcRenderer.invoke('expenseCategories:getNonCogsCategories'),
+  },
+  topUps: {
+    list: (filters?: { dateFrom?: string; dateTo?: string; limit?: number }) =>
+      ipcRenderer.invoke('topUps:list', filters),
+    getVirtualBalance: () => ipcRenderer.invoke('topUps:getVirtualBalance'),
+    loadBalance: (payload: {
+      amount: number
+      operator?: string
+      notes?: string
+      createdBy?: string
+    }) => ipcRenderer.invoke('topUps:loadBalance', payload),
+    register: (payload: {
+      amount: number
+      cost: number
+      operator?: string
+      phoneNumber?: string
+      notes?: string
+      createdBy?: string
+    }) => ipcRenderer.invoke('topUps:register', payload),
+    getSummary: (filters?: { dateFrom?: string; dateTo?: string }) =>
+      ipcRenderer.invoke('topUps:getSummary', filters),
   },
   reports: {
     getSalesReport: (filters: any) =>

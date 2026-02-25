@@ -1,3 +1,5 @@
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
 type Props = {
   open: boolean
   setOpen: (open: boolean) => void
