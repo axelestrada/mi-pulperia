@@ -296,7 +296,7 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('inventoryAdjustments:generateShrinkageNumber'),
   },
   credits: {
-    list: () => ipcRenderer.invoke('credits:list'),
+    list: (filters?: any) => ipcRenderer.invoke('credits:list', filters),
     create: (credit: any) => ipcRenderer.invoke('credits:create', credit),
     update: (id: number, credit: any) =>
       ipcRenderer.invoke('credits:update', id, credit),
@@ -320,7 +320,7 @@ contextBridge.exposeInMainWorld('api', {
     getPartialCredits: () => ipcRenderer.invoke('credits:getPartialCredits'),
   },
   expenses: {
-    list: () => ipcRenderer.invoke('expenses:list'),
+    list: (filters?: any) => ipcRenderer.invoke('expenses:list', filters),
     create: (expense: any) => ipcRenderer.invoke('expenses:create', expense),
     update: (id: number, expense: any) =>
       ipcRenderer.invoke('expenses:update', id, expense),

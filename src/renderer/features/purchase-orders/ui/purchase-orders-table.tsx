@@ -175,7 +175,7 @@ export function PurchaseOrdersTable({
     },
     {
       accessorKey: 'itemCount',
-      header: 'Productos',
+      header: 'Items',
       cell: ({ row }) => {
         const itemCount = row.original.items?.length || 0
         return (
@@ -186,6 +186,15 @@ export function PurchaseOrdersTable({
           </div>
         )
       },
+    },
+    {
+      accessorKey: 'internalNotes',
+      header: 'Nota Turno',
+      cell: ({ row }) => (
+        <div className="max-w-[280px] truncate text-sm text-muted-foreground">
+          {row.original.internalNotes || row.original.notes || '-'}
+        </div>
+      ),
     },
     {
       id: 'actions',

@@ -1,14 +1,5 @@
-import { useState } from 'react'
-import {
-  Plus,
-  Search,
-  Filter,
-  DollarSign,
-  TrendingDown,
-  Calendar,
-  Tag,
-} from 'lucide-react'
-
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Calendar, DollarSign, Search, Tag, TrendingDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -26,103 +17,131 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  SHIFT_HANDOVER_UPDATED_EVENT,
+  getShiftModuleNote,
+  setShiftModuleNote,
+} from '@/features/operations/model/shift-handover-storage'
+
+type ExpenseStatusFilter = 'all' | 'pending' | 'paid' | 'cancelled'
+
+type ExpenseItem = {
+  id: number
+  expenseNumber: string
+  title: string
+  totalAmount: number
+  expenseDate: string | Date
+  status: 'pending' | 'paid' | 'cancelled'
+  categoryName?: string
+  supplierName?: string
+}
 
 export function ExpensesPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [periodFilter, setPeriodFilter] = useState<string>('month')
+  const [statusFilter, setStatusFilter] = useState<ExpenseStatusFilter>('all')
+  const [shiftNote, setShiftNote] = useState(() => getShiftModuleNote('expenses'))
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  // Mock data - replace with real data hooks
-  const expenses = [
-    {
-      id: 1,
-      description: 'Alquiler del local',
-      amount: 1500000, // cents
-      category: 'rent',
-      date: new Date('2024-01-01'),
-      paymentMethod: 'cash',
-      receipt: 'REC-001',
-    },
-    {
-      id: 2,
-      description: 'Servicios públicos',
-      amount: 35000,
-      category: 'utilities',
-      date: new Date('2024-01-15'),
-      paymentMethod: 'bank',
-      receipt: 'REC-002',
-    },
-    {
-      id: 3,
-      description: 'Suministros de oficina',
-      amount: 25000,
-      category: 'supplies',
-      date: new Date('2024-01-20'),
-      paymentMethod: 'cash',
-      receipt: 'REC-003',
-    },
-  ]
+  const loadExpenses = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setErrorMessage('')
+      const data = await window.api.expenses.list({
+        search: searchTerm || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+      })
+      setExpenses(Array.isArray(data) ? (data as ExpenseItem[]) : [])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error desconocido'
+      setErrorMessage(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [searchTerm, statusFilter])
 
-  const categories = [
-    { value: 'rent', label: 'Alquiler' },
-    { value: 'utilities', label: 'Servicios públicos' },
-    { value: 'supplies', label: 'Suministros' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'maintenance', label: 'Mantenimiento' },
-    { value: 'transportation', label: 'Transporte' },
-    { value: 'other', label: 'Otros' },
-  ]
+  useEffect(() => {
+    void loadExpenses()
+  }, [loadExpenses])
 
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesSearch =
-      expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.receipt.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    const refreshShiftNote = () => setShiftNote(getShiftModuleNote('expenses'))
+    window.addEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
+    return () =>
+      window.removeEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
+  }, [])
 
-    const matchesCategory =
-      categoryFilter === 'all' || expense.category === categoryFilter
+  const stats = useMemo(() => {
+    const totalAmount = expenses.reduce(
+      (sum: number, expense) => sum + (expense.totalAmount || 0),
+      0
+    )
+    const pendingAmount = expenses
+      .filter(expense => expense.status === 'pending')
+      .reduce((sum: number, expense) => sum + (expense.totalAmount || 0), 0)
 
-    return matchesSearch && matchesCategory
-  })
-
-  const stats = {
-    total: expenses.length,
-    totalAmount: expenses.reduce((sum, e) => sum + e.amount, 0),
-    monthlyAverage:
-      expenses.length > 0
-        ? expenses.reduce((sum, e) => sum + e.amount, 0) / 12
-        : 0,
-    categoryBreakdown: categories.reduce(
-      (acc, cat) => {
-        acc[cat.value] = expenses
-          .filter(e => e.category === cat.value)
-          .reduce((sum, e) => sum + e.amount, 0)
+    const categoryBreakdown = expenses.reduce(
+      (acc: Record<string, number>, expense) => {
+        const categoryName = expense.categoryName || 'Sin categoría'
+        acc[categoryName] = (acc[categoryName] || 0) + (expense.totalAmount || 0)
         return acc
       },
-      {} as Record<string, number>
-    ),
+      {}
+    )
+
+    const topCategory =
+      Object.entries(categoryBreakdown).sort(([, a], [, b]) => b - a)[0] || null
+
+    return {
+      total: expenses.length,
+      totalAmount,
+      pendingAmount,
+      average:
+        expenses.length > 0 ? Math.round(totalAmount / expenses.length) : 0,
+      topCategory,
+    }
+  }, [expenses])
+
+  const handleSaveShiftNote = () => {
+    setShiftModuleNote('expenses', shiftNote)
+    sileo.success({ title: 'Nota de turno guardada en gastos' })
   }
 
-  const topCategory = Object.entries(stats.categoryBreakdown).sort(
-    ([, a], [, b]) => b - a
-  )[0]
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando gastos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{errorMessage}</p>
+          <Button onClick={() => void loadExpenses()}>Reintentar</Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Gastos</h1>
           <p className="text-muted-foreground">
-            Registra y controla todos los gastos del negocio
+            Control diario de egresos para el personal de turno.
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Gasto
-        </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -131,10 +150,9 @@ export function ExpensesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Este mes</p>
+            <p className="text-xs text-muted-foreground">Registros filtrados</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monto Total</CardTitle>
@@ -144,149 +162,141 @@ export function ExpensesPage() {
             <div className="text-2xl font-bold text-red-600">
               L {(stats.totalAmount / 100).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">Gastos acumulados</p>
+            <p className="text-xs text-muted-foreground">Acumulado</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Promedio Mensual
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Promedio</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              L {(stats.monthlyAverage / 100).toFixed(2)}
+              L {(stats.average / 100).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">Estimado mensual</p>
+            <p className="text-xs text-muted-foreground">Por gasto</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Mayor Categoría
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Mayor Categoría</CardTitle>
             <Tag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {topCategory
-                ? categories.find(c => c.value === topCategory[0])?.label
-                : 'N/A'}
+              {stats.topCategory?.[0] || 'N/A'}
             </div>
             <p className="text-xs text-muted-foreground">
-              L {topCategory ? (topCategory[1] / 100).toFixed(2) : '0.00'}
+              L {stats.topCategory ? (stats.topCategory[1] / 100).toFixed(2) : '0.00'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra gastos</CardDescription>
+          <CardDescription>Busca por número, título o proveedor</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por descripción o recibo..."
+                className="pl-10"
+                placeholder="Buscar gasto..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="pl-10"
               />
             </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={value => setStatusFilter(value as ExpenseStatusFilter)}
+            >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Categoría" />
+                <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={periodFilter} onValueChange={setPeriodFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">Esta semana</SelectItem>
-                <SelectItem value="month">Este mes</SelectItem>
-                <SelectItem value="quarter">Trimestre</SelectItem>
-                <SelectItem value="year">Este año</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="pending">Pendientes</SelectItem>
+                <SelectItem value="paid">Pagados</SelectItem>
+                <SelectItem value="cancelled">Cancelados</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Results */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Gastos</CardTitle>
-              <CardDescription>
-                {filteredExpenses.length} gasto
-                {filteredExpenses.length !== 1 ? 's' : ''} encontrado
-                {filteredExpenses.length !== 1 ? 's' : ''}
-              </CardDescription>
-            </div>
-          </div>
+          <CardTitle>Nota de Turno</CardTitle>
+          <CardDescription>
+            Deja instrucciones sobre gastos pendientes o por aprobar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={shiftNote}
+            onChange={e => setShiftNote(e.target.value)}
+            placeholder="Ej. Revisar gasto EXP202602-010, falta factura."
+          />
+          <Button size="sm" onClick={handleSaveShiftNote}>
+            Guardar nota
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Gastos</CardTitle>
+          <CardDescription>
+            {expenses.length} gasto{expenses.length !== 1 ? 's' : ''} encontrado
+            {expenses.length !== 1 ? 's' : ''}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredExpenses.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                No se encontraron gastos
-              </p>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Registrar Primer Gasto
-              </Button>
-            </div>
+          {expenses.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No se encontraron gastos con los filtros aplicados.
+            </p>
           ) : (
-            <div className="space-y-4">
-              {filteredExpenses.map(expense => (
+            <div className="space-y-3">
+              {expenses.map(expense => (
                 <div
                   key={expense.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
                 >
-                  <div className="flex-1">
-                    <h3 className="font-medium">{expense.description}</h3>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                      <span>Recibo: {expense.receipt}</span>
-                      <Badge variant="outline">
-                        {
-                          categories.find(c => c.value === expense.category)
-                            ?.label
-                        }
-                      </Badge>
-                      <span>{expense.date.toLocaleDateString('es-NI')}</span>
-                    </div>
+                  <div>
+                    <p className="font-medium">
+                      {expense.expenseNumber} - {expense.title}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {expense.categoryName || 'Sin categoría'}
+                      {expense.supplierName ? ` | ${expense.supplierName}` : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(expense.expenseDate).toLocaleDateString('es-HN')}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-red-600">
-                        -L {(expense.amount / 100).toFixed(2)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {expense.paymentMethod === 'cash'
-                          ? 'Efectivo'
-                          : 'Banco'}
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Ver
-                    </Button>
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      variant={
+                        expense.status === 'pending'
+                          ? 'outline'
+                          : expense.status === 'cancelled'
+                            ? 'destructive'
+                            : 'secondary'
+                      }
+                    >
+                      {expense.status === 'pending'
+                        ? 'Pendiente'
+                        : expense.status === 'paid'
+                          ? 'Pagado'
+                          : 'Cancelado'}
+                    </Badge>
+                    <span className="font-semibold text-red-600">
+                      L {((expense.totalAmount || 0) / 100).toFixed(2)}
+                    </span>
                   </div>
                 </div>
               ))}

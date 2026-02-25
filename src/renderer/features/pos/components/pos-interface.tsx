@@ -49,6 +49,11 @@ import {
   type PaymentShortcutMethod,
   usePOSShortcuts,
 } from '../hooks/use-pos-shortcuts'
+import {
+  TOP_UPS_UPDATED_EVENT,
+  getVirtualBalance,
+  registerTopUp,
+} from '@/features/top-ups/model/top-ups-storage'
 import { PosChargeModal } from './pos-charge-modal'
 
 // Form validation schemas
@@ -210,6 +215,12 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     onClose: onCloseItemNotesModal,
     onOpenChange: onItemNotesModalOpenChange,
   } = useDisclosure()
+  const {
+    isOpen: isTopUpModalOpen,
+    onOpen: onOpenTopUpModal,
+    onClose: onCloseTopUpModal,
+    onOpenChange: onTopUpModalOpenChange,
+  } = useDisclosure()
 
   const [saleDiscount, setSaleDiscount] = useState(0)
   const [saleDiscountType, setSaleDiscountType] = useState<
@@ -253,6 +264,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     'fixed' | 'percentage'
   >('fixed')
   const [itemNotesDraft, setItemNotesDraft] = useState('')
+  const [topUpsVirtualBalance, setTopUpsVirtualBalance] = useState(() =>
+    getVirtualBalance()
+  )
+  const [topUpAmountDraft, setTopUpAmountDraft] = useState<number | undefined>()
+  const [topUpCostDraft, setTopUpCostDraft] = useState<number | undefined>()
+  const [topUpPhoneDraft, setTopUpPhoneDraft] = useState('')
+  const [topUpOperatorDraft, setTopUpOperatorDraft] = useState('Tigo')
+  const [topUpNotesDraft, setTopUpNotesDraft] = useState('')
 
   // Queries
   const { data: openSession, isLoading } = useCurrentOpenSession()
@@ -345,6 +364,17 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   }, [form, persistedForm])
 
   useEffect(() => {
+    const refreshVirtualBalance = () => {
+      setTopUpsVirtualBalance(getVirtualBalance())
+    }
+
+    window.addEventListener(TOP_UPS_UPDATED_EVENT, refreshVirtualBalance)
+    return () => {
+      window.removeEventListener(TOP_UPS_UPDATED_EVENT, refreshVirtualBalance)
+    }
+  }, [])
+
+  useEffect(() => {
     const currentItemCount = itemFields.length
 
     if (!hasInitializedCartScrollRef.current) {
@@ -365,6 +395,42 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
     previousItemCountRef.current = currentItemCount
   }, [itemFields.length])
+
+  const saveTopUpFromPOS = useCallback(() => {
+    try {
+      registerTopUp({
+        amount: Number(topUpAmountDraft || 0),
+        cost: Number(topUpCostDraft || 0),
+        phoneNumber: topUpPhoneDraft,
+        operator: topUpOperatorDraft,
+        notes: topUpNotesDraft,
+        createdBy: 'POS',
+      })
+
+      setTopUpAmountDraft(undefined)
+      setTopUpCostDraft(undefined)
+      setTopUpPhoneDraft('')
+      setTopUpNotesDraft('')
+      onCloseTopUpModal()
+
+      sileo.success({
+        title: 'Recarga registrada',
+      })
+    } catch (error) {
+      sileo.error({
+        title: 'No se pudo registrar la recarga',
+        description:
+          error instanceof Error ? error.message : 'Error desconocido',
+      })
+    }
+  }, [
+    onCloseTopUpModal,
+    topUpAmountDraft,
+    topUpCostDraft,
+    topUpNotesDraft,
+    topUpOperatorDraft,
+    topUpPhoneDraft,
+  ])
 
   useEffect(() => {
     if (allPresentations.length === 0) {
@@ -1476,6 +1542,18 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                 <Divider />
 
                 <div className="space-y-3">
+                  <Button
+                    fullWidth
+                    variant="flat"
+                    onPress={onOpenTopUpModal}
+                    className="justify-between"
+                  >
+                    <span>Nueva Recarga</span>
+                    <span className="text-xs text-default-500">
+                      Saldo: {formatCurrency(topUpsVirtualBalance)}
+                    </span>
+                  </Button>
+
                   <PosChargeModal
                     total={totals.total}
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -1668,6 +1746,88 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                         {confirmDialog.confirmText}
                       </Button>
                     </ModalFooter>
+                  </ModalContent>
+                </Modal>
+
+                <Modal
+                  isOpen={isTopUpModalOpen}
+                  onOpenChange={onTopUpModalOpenChange}
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Nueva recarga</ModalHeader>
+                        <ModalBody className="space-y-4">
+                          <div className="rounded-large border border-default-200 bg-default-50 p-3 text-sm">
+                            Saldo virtual disponible:{' '}
+                            <b>{formatCurrency(topUpsVirtualBalance)}</b>
+                          </div>
+
+                          <Select
+                            label="Operador"
+                            selectedKeys={[topUpOperatorDraft]}
+                            onSelectionChange={keys => {
+                              const value = keys.currentKey
+                              if (value) setTopUpOperatorDraft(value)
+                            }}
+                          >
+                            <SelectItem key="Tigo">Tigo</SelectItem>
+                            <SelectItem key="Claro">Claro</SelectItem>
+                            <SelectItem key="Hondutel">Hondutel</SelectItem>
+                            <SelectItem key="Otro">Otro</SelectItem>
+                          </Select>
+
+                          <Input
+                            label="Numero de telefono (opcional)"
+                            value={topUpPhoneDraft}
+                            onValueChange={setTopUpPhoneDraft}
+                            placeholder="9999-9999"
+                          />
+
+                          <NumberInput
+                            label="Monto de recarga"
+                            minValue={0}
+                            value={topUpAmountDraft}
+                            onValueChange={setTopUpAmountDraft}
+                            startContent={
+                              <span className="text-default-500 text-sm">L</span>
+                            }
+                          />
+
+                          <NumberInput
+                            label="Costo real"
+                            minValue={0}
+                            value={topUpCostDraft}
+                            onValueChange={setTopUpCostDraft}
+                            startContent={
+                              <span className="text-default-500 text-sm">L</span>
+                            }
+                          />
+
+                          <Textarea
+                            label="Nota"
+                            minRows={3}
+                            value={topUpNotesDraft}
+                            onValueChange={setTopUpNotesDraft}
+                            placeholder="Referencia u observacion"
+                          />
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            variant="light"
+                            onPress={() => {
+                              onClose()
+                              onCloseTopUpModal()
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button color="primary" onPress={saveTopUpFromPOS}>
+                            Guardar recarga
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
                   </ModalContent>
                 </Modal>
 

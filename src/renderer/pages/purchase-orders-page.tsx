@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Plus,
   Search,
-  Filter,
   ShoppingCart,
   Clock,
   CheckCircle,
+  ClipboardList,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -25,19 +25,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 
 import { usePurchaseOrders } from '../features/purchase-orders/hooks/use-purchase-orders'
 import { PurchaseOrdersTable } from '../features/purchase-orders/ui/purchase-orders-table'
 import { PurchaseOrderFormDialog } from '../features/purchase-orders/ui/purchase-order-form-dialog'
+import {
+  SHIFT_HANDOVER_UPDATED_EVENT,
+  getShiftModuleNote,
+  setShiftModuleNote,
+} from '@/features/operations/model/shift-handover-storage'
 
 export function PurchaseOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | undefined>()
-  const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | undefined>()
+  const [shiftNote, setShiftNote] = useState(() =>
+    getShiftModuleNote('purchase-orders')
+  )
 
   const { data: purchaseOrders = [], isLoading, error } = usePurchaseOrders()
+
+  useEffect(() => {
+    const refreshShiftNote = () =>
+      setShiftNote(getShiftModuleNote('purchase-orders'))
+    window.addEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
+    return () =>
+      window.removeEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
+  }, [])
 
   const filteredOrders = purchaseOrders.filter(order => {
     const matchesSearch =
@@ -64,14 +80,45 @@ export function PurchaseOrdersPage() {
       .reduce((sum, o) => sum + o.total, 0),
   }
 
+  const supplierChecklist = useMemo(() => {
+    const pendingOrders = purchaseOrders.filter(
+      order => order.status === 'draft' || order.status === 'sent'
+    )
+    const grouped = new Map<
+      string,
+      { supplierName: string; orders: number; total: number; notes: string[] }
+    >()
+
+    pendingOrders.forEach(order => {
+      const supplierName = order.supplier?.name || 'Proveedor no definido'
+      if (!grouped.has(supplierName)) {
+        grouped.set(supplierName, {
+          supplierName,
+          orders: 0,
+          total: 0,
+          notes: [],
+        })
+      }
+      const item = grouped.get(supplierName)!
+      item.orders += 1
+      item.total += order.total
+      if (order.internalNotes) item.notes.push(order.internalNotes)
+      if (order.notes) item.notes.push(order.notes)
+    })
+
+    return Array.from(grouped.values()).sort((a, b) => b.total - a.total)
+  }, [purchaseOrders])
+
   const handleEdit = (order: PurchaseOrder) => {
     setEditingOrder(order)
     setIsDialogOpen(true)
   }
 
   const handleView = (order: PurchaseOrder) => {
-    setViewingOrder(order)
-    // Here you could open a view-only dialog or navigate to a details page
+    sileo.info({
+      title: `Orden ${order.orderNumber}`,
+      description: 'Usa el menu para editar o cambiar estado.',
+    })
   }
 
   const handleCreate = () => {
@@ -82,6 +129,11 @@ export function PurchaseOrdersPage() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false)
     setEditingOrder(undefined)
+  }
+
+  const handleSaveShiftNote = () => {
+    setShiftModuleNote('purchase-orders', shiftNote)
+    sileo.success({ title: 'Nota de turno guardada en órdenes de compra' })
   }
 
   if (isLoading) {
@@ -114,10 +166,10 @@ export function PurchaseOrdersPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Órdenes de Compra
+            Lista de Compra por Proveedor
           </h1>
           <p className="text-muted-foreground">
-            Gestiona tus listas de compra y órdenes para proveedores
+            Deja al siguiente turno que comprar, cuanto y a quien.
           </p>
         </div>
         <Button onClick={handleCreate}>
@@ -184,6 +236,61 @@ export function PurchaseOrdersPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5" />
+            Checklist para Turno / Proveedor
+          </CardTitle>
+          <CardDescription>
+            Resumen de órdenes pendientes para facilitar el cambio de turno.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {supplierChecklist.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No hay órdenes pendientes para proveedores.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {supplierChecklist.map(item => (
+                <div
+                  key={item.supplierName}
+                  className="rounded-lg border p-3 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold">{item.supplierName}</p>
+                    <Badge variant="outline">
+                      {item.orders} orden{item.orders !== 1 ? 'es' : ''}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Monto pendiente: L {(item.total / 100).toFixed(2)}
+                  </p>
+                  {item.notes.length > 0 && (
+                    <p className="text-sm">
+                      Ultima nota: {item.notes[item.notes.length - 1]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Nota de turno (compras)</p>
+            <Textarea
+              value={shiftNote}
+              onChange={e => setShiftNote(e.target.value)}
+              placeholder="Ej. Comprar gaseosas con proveedor X y confirmar precios."
+            />
+            <Button size="sm" onClick={handleSaveShiftNote}>
+              Guardar nota
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
@@ -279,3 +386,4 @@ export function PurchaseOrdersPage() {
     </div>
   )
 }
+
