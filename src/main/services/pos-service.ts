@@ -24,7 +24,7 @@ export interface POSSaleItem {
 }
 
 export interface POSPayment {
-  method: 'cash' | 'credit'
+  method: 'cash' | 'credit' | 'transfer'
   amount: number
   receivedAmount?: number
   changeAmount?: number
@@ -303,6 +303,8 @@ export const POSService = {
         taxAmount: input.taxAmount || 0,
         discountAmount: input.discountAmount || 0,
         total: input.total,
+        type: 'SALE',
+        originalSaleId: undefined,
         status: 'completed',
         notes: input.notes?.trim() || undefined,
       },
@@ -348,6 +350,12 @@ export const POSService = {
           batchId: batchAllocation.batchId,
           quantity: batchAllocation.quantity,
           unitPrice: roundedUnitPrice,
+          unitCost: batchAllocation.unitCost,
+          subtotal: itemTotalPrice,
+          costTotal: batchAllocation.quantity * batchAllocation.unitCost,
+          profit:
+            itemTotalPrice -
+            batchAllocation.quantity * batchAllocation.unitCost,
           totalPrice: itemTotalPrice,
           discount: item.discount || 0,
           discountType: item.discountType,

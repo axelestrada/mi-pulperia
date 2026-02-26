@@ -1,7 +1,18 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { FileText, Package, ShoppingCart } from 'lucide-react'
 import {
+  Button,
+  Card,
+  Chip,
+  cn,
+  Select,
+  SelectItem,
+  Spinner,
+} from '@heroui/react'
+import { FileText, Package, ShoppingCart } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  CartesianGrid,
+  Cell,
   Line,
   LineChart,
   Pie,
@@ -10,16 +21,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  Cell,
-  CartesianGrid,
 } from 'recharts'
-
-import { PageHeader } from '@/components/ui/page-header'
 import { formatCurrency } from '@/../shared/utils/formatCurrency'
-import { Button, Select, SelectItem, Card, Chip, cn, Spinner } from '@heroui/react'
+import { PageHeader } from '@/components/ui/page-header'
 
 type TimeRange = '7' | '14' | '30'
-type Period = 'week' | 'month'
 
 interface DashboardMetrics {
   sales: {
@@ -59,93 +65,95 @@ export const DashboardPage = () => {
     setTimeRange(value)
   }, [])
 
-  const loadDashboardMetrics = useCallback(async (period: Period) => {
-    try {
-      setIsLoading(true)
+  const loadDashboardMetrics = useCallback(
+    async () => {
+      try {
+        setIsLoading(true)
 
-      const dateFrom = new Date()
-      dateFrom.setDate(dateFrom.getDate() - Number(timeRange))
+        const dateFrom = new Date()
+        dateFrom.setDate(dateFrom.getDate() - Number(timeRange))
 
-      const [metrics, salesReport, topProductsReport] = await Promise.all([
-        window.api.reports.getDashboardMetrics(period),
-        window.api.reports.getSalesReport({
-          dateFrom: dateFrom.toISOString(),
-          dateTo: new Date().toISOString(),
-        }),
-        window.api.reports.getTopProducts({
-          dateFrom: dateFrom.toISOString(),
-          dateTo: new Date().toISOString(),
-          limit: 6,
-          sortBy: 'quantity',
-        }),
-      ])
+        const [metrics, salesReport, topProductsReport] = await Promise.all([
+          window.api.reports.getDashboardMetrics('today'),
+          window.api.reports.getSalesReport({
+            dateFrom: dateFrom.toISOString(),
+            dateTo: new Date().toISOString(),
+          }),
+          window.api.reports.getTopProducts({
+            dateFrom: dateFrom.toISOString(),
+            dateTo: new Date().toISOString(),
+            limit: 6,
+            sortBy: 'quantity',
+          }),
+        ])
 
-      setDashboardMetrics(metrics as DashboardMetrics)
+        setDashboardMetrics(metrics as DashboardMetrics)
 
-      const grouped: Record<string, number> = {}
-      const salesRows = (salesReport?.salesByDate || []) as Array<{
-        date: string | Date
-        totalRevenue?: number
-      }>
-      for (const row of salesRows) {
-        const key = new Date(row.date).toISOString().slice(0, 10)
-        grouped[key] = (grouped[key] || 0) + Number(row.totalRevenue || 0)
+        const grouped: Record<string, number> = {}
+        const salesRows = (salesReport?.salesByDate || []) as Array<{
+          date: string | Date
+          totalRevenue?: number
+        }>
+        for (const row of salesRows) {
+          const key = new Date(row.date).toISOString().slice(0, 10)
+          grouped[key] = (grouped[key] || 0) + Number(row.totalRevenue || 0)
+        }
+
+        const salesTrend = Object.entries(grouped)
+          .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+          .map(([date, totalRevenue]) => ({
+            date: date.slice(5),
+            totalRevenue,
+          }))
+        setSalesByDate(salesTrend)
+
+        const topRows = Array.isArray(topProductsReport)
+          ? (topProductsReport as Array<{
+              productName?: string
+              totalQuantity?: number
+              totalRevenue?: number
+            }>)
+          : []
+        setTopProducts(
+          topRows.map(p => ({
+            name: p.productName || 'Producto',
+            quantity: Number(p.totalQuantity || 0),
+            revenue: Number(p.totalRevenue || 0),
+          }))
+        )
+      } catch (error) {
+        console.error('Error loading dashboard metrics:', error)
+        setDashboardMetrics({
+          sales: {
+            totalSales: 0,
+            totalRevenue: 0,
+            totalProfit: 0,
+            averageTicket: 0,
+          },
+          inventory: {
+            lowStockItems: 0,
+            totalLowStockValue: 0,
+          },
+          credits: {
+            overdueCredits: 0,
+            totalOverdueAmount: 0,
+          },
+          orders: {
+            pendingOrders: 0,
+            totalPendingValue: 0,
+          },
+        })
+        setSalesByDate([])
+        setTopProducts([])
+      } finally {
+        setIsLoading(false)
       }
-
-      const salesTrend = Object.entries(grouped)
-        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-        .map(([date, totalRevenue]) => ({
-          date: date.slice(5),
-          totalRevenue,
-        }))
-      setSalesByDate(salesTrend)
-
-      const topRows = Array.isArray(topProductsReport)
-        ? (topProductsReport as Array<{
-            productName?: string
-            totalQuantity?: number
-            totalRevenue?: number
-          }>)
-        : []
-      setTopProducts(
-        topRows.map(p => ({
-          name: p.productName || 'Producto',
-          quantity: Number(p.totalQuantity || 0),
-          revenue: Number(p.totalRevenue || 0),
-        }))
-      )
-    } catch (error) {
-      console.error('Error loading dashboard metrics:', error)
-      setDashboardMetrics({
-        sales: {
-          totalSales: 0,
-          totalRevenue: 0,
-          totalProfit: 0,
-          averageTicket: 0,
-        },
-        inventory: {
-          lowStockItems: 0,
-          totalLowStockValue: 0,
-        },
-        credits: {
-          overdueCredits: 0,
-          totalOverdueAmount: 0,
-        },
-        orders: {
-          pendingOrders: 0,
-          totalPendingValue: 0,
-        },
-      })
-      setSalesByDate([])
-      setTopProducts([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [timeRange])
+    },
+    [timeRange]
+  )
 
   useEffect(() => {
-    const period: Period = timeRange === '30' ? 'month' : 'week'
-    void loadDashboardMetrics(period)
+    void loadDashboardMetrics()
   }, [timeRange, loadDashboardMetrics])
 
   const profitMargin =
@@ -171,7 +179,8 @@ export const DashboardPage = () => {
         title: 'Ganancia de hoy',
         value: formatCurrency((metrics?.sales.totalProfit || 0) / 100),
         change: `${profitMargin.toFixed(1)}%`,
-        changeType: profitMargin > 0 ? 'positive' as const : 'neutral' as const,
+        changeType:
+          profitMargin > 0 ? ('positive' as const) : ('neutral' as const),
         trendChipPosition: 'top' as const,
         icon: <IconSolarHandMoneyLinear />,
       },
@@ -183,7 +192,7 @@ export const DashboardPage = () => {
         icon: <IconSolarBoxLinear />,
       },
       {
-        title: 'Créditos totales',
+        title: 'Créditos',
         value: formatCurrency((metrics?.credits.totalOverdueAmount || 0) / 100),
         change: `${metrics?.credits.overdueCredits || 0} vencidos`,
         changeType: 'negative' as const,
@@ -193,7 +202,14 @@ export const DashboardPage = () => {
     ]
   }, [dashboardMetrics, profitMargin])
 
-  const pieColors = ['#3366FF', '#70DD35', '#F59E0B', '#EF4444', '#06B6D4', '#8B5CF6']
+  const pieColors = [
+    '#3366FF',
+    '#70DD35',
+    '#F59E0B',
+    '#EF4444',
+    '#06B6D4',
+    '#8B5CF6',
+  ]
 
   if (isLoading) {
     return (
@@ -239,12 +255,9 @@ export const DashboardPage = () => {
 
       <dl className="grid w-full grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
         {cardsData.map(
-          (
-            { title, value, change, changeType, icon, trendChipPosition },
-            index
-          ) => (
+          ({ title, value, change, changeType, icon, trendChipPosition }) => (
             <Card
-              key={index}
+              key={title}
               className="dark:border-default-100 border border-transparent"
             >
               <div className="flex py-4 px-2 xl:px-4">
@@ -280,7 +293,6 @@ export const DashboardPage = () => {
                   <Chip
                     className={cn('absolute right-2 xl:right-4', {
                       'top-4': trendChipPosition === 'top',
-                      'bottom-4': trendChipPosition === 'bottom',
                     })}
                     classNames={{
                       content: 'font-semibold text-[0.65rem]',
@@ -328,8 +340,10 @@ export const DashboardPage = () => {
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card className="border border-default-200">
           <div className="p-4">
-            <h3 className="font-semibold">Rendimiento ({timeRange} días)</h3>
-            <p className="text-sm text-default-500">Ingresos diarios en el período seleccionado</p>
+            <h3 className="font-semibold">Rendimiento</h3>
+            <p className="text-sm text-default-500">
+              Ingresos diarios en el período seleccionado
+            </p>
           </div>
           <div className="h-72 p-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -337,7 +351,9 @@ export const DashboardPage = () => {
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip formatter={(value: number) => formatCurrency(value / 100)} />
+                <Tooltip
+                  formatter={(value: number) => formatCurrency(value / 100)}
+                />
                 <Line
                   type="monotone"
                   dataKey="totalRevenue"
@@ -354,7 +370,9 @@ export const DashboardPage = () => {
         <Card className="border border-default-200">
           <div className="p-4">
             <h3 className="font-semibold">Productos más vendidos</h3>
-            <p className="text-sm text-default-500">Participación por cantidad vendida</p>
+            <p className="text-sm text-default-500">
+              Participación por cantidad vendida
+            </p>
           </div>
           <div className="h-72 p-2">
             {topProducts.length === 0 ? (
@@ -371,9 +389,9 @@ export const DashboardPage = () => {
                     outerRadius={95}
                     label
                   >
-                    {topProducts.map((_, index) => (
+                    {topProducts.map((product, index) => (
                       <Cell
-                        key={`cell-${index}`}
+                        key={`cell-${product.name}`}
                         fill={pieColors[index % pieColors.length]}
                       />
                     ))}

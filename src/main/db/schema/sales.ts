@@ -1,8 +1,13 @@
 import { sql } from 'drizzle-orm'
-import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-
-import { customersTable } from './customers'
+import {
+  type AnySQLiteColumn,
+  index,
+  int,
+  sqliteTable,
+  text,
+} from 'drizzle-orm/sqlite-core'
 import { cashSessionsTable } from './cash-sessions'
+import { customersTable } from './customers'
 
 export const salesTable = sqliteTable(
   'sales',
@@ -20,6 +25,15 @@ export const salesTable = sqliteTable(
     taxAmount: int('tax_amount').notNull().default(0),
     discountAmount: int('discount_amount').notNull().default(0),
     total: int().notNull(), // Final total amount
+
+    type: text()
+      .$type<'SALE' | 'REFUND'>()
+      .notNull()
+      .default('SALE'),
+
+    originalSaleId: int('original_sale_id').references(
+      (): AnySQLiteColumn => salesTable.id
+    ),
 
     status: text()
       .$type<'completed' | 'cancelled' | 'refunded'>()
@@ -43,6 +57,8 @@ export const salesTable = sqliteTable(
     index('idx_sales_cash_session').on(table.cashSessionId),
     index('idx_sales_created_at').on(table.createdAt),
     index('idx_sales_status').on(table.status),
+    index('idx_sales_type').on(table.type),
+    index('idx_sales_original_sale').on(table.originalSaleId),
   ]
 )
 

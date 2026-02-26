@@ -1,24 +1,24 @@
+import { and, asc, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm'
 import { ipcMain } from 'electron'
-import { SalesRepository } from '../repositories/sales-repository'
-import { SaleReturnsRepository } from '../repositories/sale-returns-repository'
-import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
-import { CustomersRepository } from '../repositories/customers-repository'
-import { ExpensesRepository } from '../repositories/expenses-repository'
-import { CreditsRepository } from '../repositories/credits-repository'
-import { PurchaseOrdersRepository } from '../repositories/purchase-orders-repository'
-import { eq, and, gte, lte, sum, count, desc, asc, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { salesTable } from '../db/schema/sales'
-import { saleItemsTable } from '../db/schema/sale-items'
+import { categoriesTable } from '../db/schema/categories'
 import { presentationsTable } from '../db/schema/presentations'
 import { productsTable } from '../db/schema/products'
-import { categoriesTable } from '../db/schema/categories'
+import { saleItemsTable } from '../db/schema/sale-items'
+import { paymentMethodsTable } from '../db/schema/payment-methods'
+import { salesTable } from '../db/schema/sales'
+import { CreditsRepository } from '../repositories/credits-repository'
+import { CustomersRepository } from '../repositories/customers-repository'
+import { ExpensesRepository } from '../repositories/expenses-repository'
+import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
+import { PurchaseOrdersRepository } from '../repositories/purchase-orders-repository'
+import { SalesRepository } from '../repositories/sales-repository'
 
 export function registerReportsIpc() {
   // === SALES REPORTS ===
   ipcMain.handle('reports:getSalesReport', async (_, filters) => {
     try {
-      const { dateFrom, dateTo, customerId, categoryId, productId } = filters
+      const { dateFrom, dateTo, customerId } = filters
 
       const whereConditions = [
         eq(salesTable.deleted, false),
@@ -37,7 +37,6 @@ export function registerReportsIpc() {
         whereConditions.push(eq(salesTable.customerId, customerId))
       }
 
-      // Get sales summary (solo ventas completadas)
       const summary = await db
         .select({
           totalSales: count(salesTable.id),
@@ -47,33 +46,44 @@ export function registerReportsIpc() {
         .where(and(...whereConditions))
         .get()
 
-      const dateFromObj = dateFrom ? new Date(dateFrom) : undefined
-      const dateToObj = dateTo ? new Date(dateTo) : undefined
-      const { totalRefunded, totalReceived } =
-        await SaleReturnsRepository.getTotalRefunded(dateFromObj, dateToObj)
-      const netRevenue = (Number(summary?.totalRevenue) || 0) - totalRefunded + totalReceived
+      const totalRevenue = Number(summary?.totalRevenue) || 0
+      const totalRefundedSummary = await db
+        .select({
+          totalRefunded:
+            sql<number>`coalesce(abs(sum(case when ${salesTable.type} = 'REFUND' then ${salesTable.total} else 0 end)), 0)`.as(
+              'total_refunded'
+            ),
+        })
+        .from(salesTable)
+        .where(and(...whereConditions))
+        .get()
 
-      // Get sales by date
+      const totalRefunded = Number(totalRefundedSummary?.totalRefunded || 0)
+
       const salesByDate = await db
         .select({
           date: salesTable.createdAt,
           totalSales: count(salesTable.id),
           totalRevenue: sum(salesTable.total),
-          totalProfit: sql<number>`0`.as('total_profit'),
+          totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+            'total_profit'
+          ),
         })
         .from(salesTable)
+        .leftJoin(saleItemsTable, eq(saleItemsTable.saleId, salesTable.id))
         .where(and(...whereConditions))
         .groupBy(salesTable.createdAt)
         .orderBy(asc(salesTable.createdAt))
 
-      // Get top products
       const topProducts = await db
         .select({
           productId: productsTable.id,
           productName: productsTable.name,
           totalQuantity: sum(saleItemsTable.quantity),
           totalRevenue: sum(saleItemsTable.totalPrice),
-          totalProfit: sql<number>`0`.as('total_profit'),
+          totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+            'total_profit'
+          ),
         })
         .from(saleItemsTable)
         .leftJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
@@ -81,33 +91,38 @@ export function registerReportsIpc() {
           presentationsTable,
           eq(saleItemsTable.presentationId, presentationsTable.id)
         )
-        .leftJoin(productsTable, eq(presentationsTable.productId, productsTable.id))
+        .leftJoin(
+          productsTable,
+          eq(presentationsTable.productId, productsTable.id)
+        )
         .where(and(...whereConditions))
         .groupBy(productsTable.id, productsTable.name)
         .orderBy(desc(sum(saleItemsTable.totalPrice)))
         .limit(10)
 
-      // Get sales by payment method
       const salesByPaymentMethod = await db
         .select({
-          paymentMethod: salesTable.paymentMethod,
-          totalSales: count(salesTable.id),
-          totalAmount: sum(salesTable.total),
+          paymentMethod: paymentMethodsTable.method,
+          totalSales: sql<number>`count(distinct ${salesTable.id})`.as(
+            'total_sales'
+          ),
+          totalAmount: sum(paymentMethodsTable.amount),
         })
-        .from(salesTable)
+        .from(paymentMethodsTable)
+        .innerJoin(salesTable, eq(paymentMethodsTable.saleId, salesTable.id))
         .where(and(...whereConditions))
-        .groupBy(salesTable.paymentMethod)
+        .groupBy(paymentMethodsTable.method)
 
-      return {
-        summary: {
-          ...summary,
-          totalRevenue: netRevenue,
-          totalRefunded,
-          totalReceivedFromReturns: totalReceived,
-          averageTicket: summary?.totalSales
-            ? netRevenue / Number(summary.totalSales)
-            : 0,
-        },
+        return {
+          summary: {
+            ...summary,
+            totalRevenue,
+            totalRefunded,
+            totalReceivedFromReturns: 0,
+            averageTicket: summary?.totalSales
+              ? totalRevenue / Number(summary.totalSales)
+              : 0,
+          },
         salesByDate,
         topProducts,
         salesByPaymentMethod,
@@ -121,13 +136,18 @@ export function registerReportsIpc() {
   // === INVENTORY REPORTS ===
   ipcMain.handle('reports:getInventoryReport', async (_, filters) => {
     try {
-      const { categoryId, lowStockOnly, expiringOnly, daysToExpire = 30 } = filters
+      const {
+        categoryId,
+        lowStockOnly,
+        expiringOnly,
+        daysToExpire = 30,
+      } = filters
 
       const result = await InventoryBatchesRepository.findAll({
         categoryId,
         hasStock: lowStockOnly,
         expiringInDays: expiringOnly ? daysToExpire : undefined,
-        limit: 1000
+        limit: 1000,
       })
 
       const batches = result.data
@@ -136,36 +156,49 @@ export function registerReportsIpc() {
       const summary = {
         totalProducts: new Set(batches.map(b => b.productId)).size,
         totalBatches: batches.length,
-        totalValue: batches.reduce((sum, b) => sum + (b.quantityAvailable * b.unitCost), 0),
+        totalValue: batches.reduce(
+          (sum, b) => sum + b.quantityAvailable * b.unitCost,
+          0
+        ),
         totalQuantity: batches.reduce((sum, b) => sum + b.quantityAvailable, 0),
         lowStockItems: batches.filter(b => b.quantityAvailable <= 10).length,
         expiringItems: batches.filter(b => {
           if (!b.expirationDate) return false
-          const daysToExp = Math.ceil((new Date(b.expirationDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+          const daysToExp = Math.ceil(
+            (new Date(b.expirationDate).getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24)
+          )
           return daysToExp <= daysToExpire && daysToExp >= 0
         }).length,
       }
 
       // Group by category
-      const byCategory = batches.reduce((acc, batch) => {
-        const categoryName = batch.product?.category?.name || 'Sin categoría'
-        if (!acc[categoryName]) {
-          acc[categoryName] = {
-            totalBatches: 0,
-            totalValue: 0,
-            totalQuantity: 0,
+      const byCategory = batches.reduce(
+        (acc, batch) => {
+          const categoryName = batch.product?.category?.name || 'Sin categoría'
+          if (!acc[categoryName]) {
+            acc[categoryName] = {
+              totalBatches: 0,
+              totalValue: 0,
+              totalQuantity: 0,
+            }
           }
-        }
-        acc[categoryName].totalBatches += 1
-        acc[categoryName].totalValue += batch.quantityAvailable * batch.unitCost
-        acc[categoryName].totalQuantity += batch.quantityAvailable
-        return acc
-      }, {} as Record<string, any>)
+          acc[categoryName].totalBatches += 1
+          acc[categoryName].totalValue +=
+            batch.quantityAvailable * batch.unitCost
+          acc[categoryName].totalQuantity += batch.quantityAvailable
+          return acc
+        },
+        {} as Record<string, any>
+      )
 
       return {
         summary,
         batches,
-        byCategory: Object.entries(byCategory).map(([name, data]) => ({ categoryName: name, ...data })),
+        byCategory: Object.entries(byCategory).map(([name, data]) => ({
+          categoryName: name,
+          ...data,
+        })),
       }
     } catch (error) {
       console.error('Error generating inventory report:', error)
@@ -180,14 +213,14 @@ export function registerReportsIpc() {
 
       const result = await CustomersRepository.list({
         hasOutstandingBalance,
-        limit: 1000
+        limit: 1000,
       })
 
       const customers = result.data
 
       // Get customer sales in date range
       const customerSales = await Promise.all(
-        customers.map(async (customer) => {
+        customers.map(async customer => {
           const salesFilters = {
             customerId: customer.id,
             dateFrom: dateFrom ? new Date(dateFrom) : undefined,
@@ -197,7 +230,10 @@ export function registerReportsIpc() {
           const sales = await SalesRepository.findAll(salesFilters)
 
           const totalSales = sales.data.length
-          const totalSpent = sales.data.reduce((sum, sale) => sum + sale.total, 0)
+          const totalSpent = sales.data.reduce(
+            (sum, sale) => sum + sale.total,
+            0
+          )
           const averageTicket = totalSales > 0 ? totalSpent / totalSales : 0
 
           return {
@@ -205,7 +241,8 @@ export function registerReportsIpc() {
             totalSales,
             totalSpent,
             averageTicket,
-            lastPurchaseDate: sales.data.length > 0 ? sales.data[0].createdAt : null,
+            lastPurchaseDate:
+              sales.data.length > 0 ? sales.data[0].createdAt : null,
           }
         })
       )
@@ -214,11 +251,17 @@ export function registerReportsIpc() {
       const summary = {
         totalCustomers: customers.length,
         activeCustomers: customerSales.filter(c => c.totalSales > 0).length,
-        customersWithBalance: customers.filter(c => c.currentBalance > 0).length,
-        totalOutstandingBalance: customers.reduce((sum, c) => sum + c.currentBalance, 0),
-        averageSpending: customerSales.length > 0
-          ? customerSales.reduce((sum, c) => sum + c.totalSpent, 0) / customerSales.length
-          : 0,
+        customersWithBalance: customers.filter(c => c.currentBalance > 0)
+          .length,
+        totalOutstandingBalance: customers.reduce(
+          (sum, c) => sum + c.currentBalance,
+          0
+        ),
+        averageSpending:
+          customerSales.length > 0
+            ? customerSales.reduce((sum, c) => sum + c.totalSpent, 0) /
+              customerSales.length
+            : 0,
       }
 
       // Top customers by spending
@@ -242,64 +285,133 @@ export function registerReportsIpc() {
     try {
       const { dateFrom, dateTo } = filters
 
-      // Get sales data
-      const salesResult = await SalesRepository.findAll({
-        dateFrom: dateFrom ? new Date(dateFrom) : undefined,
-        dateTo: dateTo ? new Date(dateTo) : undefined,
-        limit: 10000
-      })
+      const whereConditions = [
+        eq(salesTable.deleted, false),
+        eq(salesTable.status, 'completed'),
+      ]
 
-      const sales = salesResult.data
+      if (dateFrom) {
+        whereConditions.push(gte(salesTable.createdAt, new Date(dateFrom)))
+      }
+
+      if (dateTo) {
+        whereConditions.push(lte(salesTable.createdAt, new Date(dateTo)))
+      }
+
+      const sales = await db
+        .select({
+          id: salesTable.id,
+          total: salesTable.total,
+          createdAt: salesTable.createdAt,
+        })
+        .from(salesTable)
+        .where(and(...whereConditions))
 
       // Get expenses data
       const expensesResult = await ExpensesRepository.findAll({
         dateFrom: dateFrom ? new Date(dateFrom) : undefined,
         dateTo: dateTo ? new Date(dateTo) : undefined,
         status: 'paid',
-        limit: 10000
+        limit: 10000,
       })
 
       const expenses = expensesResult.data
 
       // Calculate totals
       const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0)
-      const totalCost = sales.reduce((sum, sale) => sum + (sale.totalCost || 0), 0)
-      const grossProfit = totalRevenue - totalCost
-      const totalExpenses = expenses.reduce((sum, expense) => sum + expense.totalAmount, 0)
+      const costsSummary = await db
+        .select({
+          totalCost:
+            sql<number>`coalesce(sum(${saleItemsTable.costTotal}), 0)`.as(
+              'total_cost'
+            ),
+          grossProfit:
+            sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+              'gross_profit'
+            ),
+        })
+        .from(saleItemsTable)
+        .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
+        .where(and(...whereConditions))
+        .get()
+
+      const totalCost = Number(costsSummary?.totalCost || 0)
+      const grossProfit = Number(costsSummary?.grossProfit || 0)
+      const totalExpenses = expenses.reduce(
+        (sum, expense) => sum + expense.totalAmount,
+        0
+      )
       const netProfit = grossProfit - totalExpenses
 
       // Calculate margins
-      const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0
+      const grossMargin =
+        totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0
       const netMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0
 
       // Group by date
-      const dailyProfits = sales.reduce((acc, sale) => {
-        const date = new Date(sale.createdAt).toISOString().split('T')[0]
-        if (!acc[date]) {
-          acc[date] = {
-            date,
+      const dailyProfits = sales.reduce(
+        (acc, sale) => {
+          const date = new Date(sale.createdAt).toISOString().split('T')[0]
+          if (!acc[date]) {
+            acc[date] = {
+              date,
+              revenue: 0,
+              cost: 0,
+              grossProfit: 0,
+            }
+          }
+          acc[date].revenue += sale.total
+          return acc
+        },
+        {} as Record<string, any>
+      )
+
+      const costsByDate = await db
+        .select({
+          date: sql<string>`date(${salesTable.createdAt}, 'unixepoch')`.as(
+            'date'
+          ),
+          cost: sql<number>`coalesce(sum(${saleItemsTable.costTotal}), 0)`.as(
+            'cost'
+          ),
+          grossProfit:
+            sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+              'gross_profit'
+            ),
+        })
+        .from(saleItemsTable)
+        .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
+        .where(and(...whereConditions))
+        .groupBy(sql`date(${salesTable.createdAt}, 'unixepoch')`)
+
+      for (const row of costsByDate) {
+        if (!dailyProfits[row.date]) {
+          dailyProfits[row.date] = {
+            date: row.date,
             revenue: 0,
             cost: 0,
             grossProfit: 0,
           }
         }
-        acc[date].revenue += sale.total
-        acc[date].cost += sale.totalCost || 0
-        acc[date].grossProfit += (sale.total - (sale.totalCost || 0))
-        return acc
-      }, {} as Record<string, any>)
+
+        dailyProfits[row.date].cost = Number(row.cost || 0)
+        dailyProfits[row.date].grossProfit = Number(row.grossProfit || 0)
+      }
 
       // Add expenses to daily data
       expenses.forEach(expense => {
         const date = new Date(expense.expenseDate).toISOString().split('T')[0]
         if (dailyProfits[date]) {
-          dailyProfits[date].expenses = (dailyProfits[date].expenses || 0) + expense.totalAmount
-          dailyProfits[date].netProfit = dailyProfits[date].grossProfit - (dailyProfits[date].expenses || 0)
+          dailyProfits[date].expenses =
+            (dailyProfits[date].expenses || 0) + expense.totalAmount
+          dailyProfits[date].netProfit =
+            dailyProfits[date].grossProfit - (dailyProfits[date].expenses || 0)
         }
       })
 
-      const profitsByDate = Object.values(dailyProfits).sort((a: any, b: any) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
+      const profitsByDate = Object.values(dailyProfits).sort(
+        (a: any, b: any) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
       )
 
       return {
@@ -328,7 +440,7 @@ export function registerReportsIpc() {
     try {
       const now = new Date()
       let dateFrom: Date
-      let dateTo: Date = now
+      const dateTo: Date = now
 
       switch (period) {
         case 'today':
@@ -347,30 +459,55 @@ export function registerReportsIpc() {
           dateFrom = new Date(now.setHours(0, 0, 0, 0))
       }
 
-      // Get sales metrics
-      const salesResult = await SalesRepository.findAll({
-        dateFrom,
-        dateTo,
-        limit: 10000
-      })
+      const salesWhereConditions = [
+        eq(salesTable.deleted, false),
+        eq(salesTable.status, 'completed'),
+        gte(salesTable.createdAt, dateFrom),
+        lte(salesTable.createdAt, dateTo),
+      ]
 
-      const sales = salesResult.data
-      const totalSales = sales.length
-      const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0)
-      const totalProfit = sales.reduce((sum, sale) => sum + (sale.totalProfit || 0), 0)
+      const salesSummary = await db
+        .select({
+          totalSales: count(salesTable.id),
+          totalRevenue: sum(salesTable.total),
+        })
+        .from(salesTable)
+        .where(and(...salesWhereConditions))
+        .get()
+
+      const salesProfitSummary = await db
+        .select({
+          totalProfit:
+            sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+              'total_profit'
+            ),
+        })
+        .from(saleItemsTable)
+        .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
+        .where(and(...salesWhereConditions))
+        .get()
+
+      const totalSales = Number(salesSummary?.totalSales || 0)
+      const totalRevenue = Number(salesSummary?.totalRevenue || 0)
+      const totalProfit = Number(salesProfitSummary?.totalProfit || 0)
       const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0
 
       // Get low stock items
       const lowStockResult = await InventoryBatchesRepository.findAll({
         hasStock: true,
-        limit: 1000
+        limit: 1000,
       })
 
-      const lowStockItems = lowStockResult.data.filter(batch => batch.quantityAvailable <= 10)
+      const lowStockItems = lowStockResult.data.filter(
+        batch => batch.quantityAvailable <= 10
+      )
 
       // Get overdue credits
       const overdueCredits = await CreditsRepository.findOverdueCredits()
-      const totalOverdueAmount = overdueCredits.reduce((sum, credit) => sum + credit.remainingAmount, 0)
+      const totalOverdueAmount = overdueCredits.reduce(
+        (sum, credit) => sum + credit.remainingAmount,
+        0
+      )
 
       // Get pending orders
       const pendingOrders = await PurchaseOrdersRepository.findPendingOrders()
@@ -384,8 +521,9 @@ export function registerReportsIpc() {
         },
         inventory: {
           lowStockItems: lowStockItems.length,
-          totalLowStockValue: lowStockItems.reduce((sum, item) =>
-            sum + (item.quantityAvailable * item.unitCost), 0
+          totalLowStockValue: lowStockItems.reduce(
+            (sum, item) => sum + item.quantityAvailable * item.unitCost,
+            0
           ),
         },
         credits: {
@@ -394,7 +532,10 @@ export function registerReportsIpc() {
         },
         orders: {
           pendingOrders: pendingOrders.length,
-          totalPendingValue: pendingOrders.reduce((sum, order) => sum + order.total, 0),
+          totalPendingValue: pendingOrders.reduce(
+            (sum, order) => sum + order.total,
+            0
+          ),
         },
       }
     } catch (error) {
@@ -425,7 +566,9 @@ export function registerReportsIpc() {
           categoryName: categoriesTable.name,
           totalQuantity: sum(saleItemsTable.quantity),
           totalRevenue: sum(saleItemsTable.totalPrice),
-          totalProfit: sql<number>`0`.as('total_profit'),
+          totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+            'total_profit'
+          ),
           totalSales: count(saleItemsTable.id),
         })
         .from(saleItemsTable)
@@ -434,14 +577,22 @@ export function registerReportsIpc() {
           presentationsTable,
           eq(saleItemsTable.presentationId, presentationsTable.id)
         )
-        .leftJoin(productsTable, eq(presentationsTable.productId, productsTable.id))
-        .leftJoin(categoriesTable, eq(productsTable.categoryId, categoriesTable.id))
+        .leftJoin(
+          productsTable,
+          eq(presentationsTable.productId, productsTable.id)
+        )
+        .leftJoin(
+          categoriesTable,
+          eq(productsTable.categoryId, categoriesTable.id)
+        )
         .where(and(...whereConditions))
         .groupBy(productsTable.id, productsTable.name, categoriesTable.name)
         .orderBy(
-          sortBy === 'quantity' ? desc(sum(saleItemsTable.quantity)) :
-          sortBy === 'profit' ? desc(sum(saleItemsTable.totalPrice)) :
-          desc(sum(saleItemsTable.totalPrice))
+          sortBy === 'quantity'
+            ? desc(sum(saleItemsTable.quantity))
+            : sortBy === 'profit'
+              ? desc(sum(saleItemsTable.profit))
+              : desc(sum(saleItemsTable.totalPrice))
         )
         .limit(limit)
 
@@ -455,37 +606,57 @@ export function registerReportsIpc() {
   // === EXPORT DATA ===
   ipcMain.handle('reports:exportData', async (_, reportType, filters) => {
     try {
-      let data: any[] = []
+      let _data: any[] = []
 
       switch (reportType) {
-        case 'sales':
-          const salesResult = await SalesRepository.findAll({ ...filters, limit: 10000 })
-          data = salesResult.data
+        case 'sales': {
+          const salesResult = await SalesRepository.findAll({
+            ...filters,
+            limit: 10000,
+          })
+          _data = salesResult.data
           break
-        case 'inventory':
-          const inventoryResult = await InventoryBatchesRepository.findAll({ ...filters, limit: 10000 })
-          data = inventoryResult.data
+        }
+        case 'inventory': {
+          const _inventoryResult = await InventoryBatchesRepository.findAll({
+            ...filters,
+            limit: 10000,
+          })
+          _data = _inventoryResult.data
           break
-        case 'customers':
-          const customersResult = await CustomersRepository.list({ ...filters, limit: 10000 })
-          data = customersResult.data
+        }
+        case 'customers': {
+          const _customersResult = await CustomersRepository.findAll({
+            ...filters,
+            limit: 10000,
+          })
+          _data = _customersResult.data
           break
-        case 'expenses':
-          const expensesResult = await ExpensesRepository.findAll({ ...filters, limit: 10000 })
-          data = expensesResult.data
+        }
+        case 'expenses': {
+          const expensesResult = await ExpensesRepository.findAll({
+            ...filters,
+            limit: 10000,
+          })
+          _data = expensesResult.data
           break
-        case 'credits':
-          const creditsResult = await CreditsRepository.findAll({ ...filters, limit: 10000 })
-          data = creditsResult.data
+        }
+        case 'credits': {
+          const _creditsResult = await CreditsRepository.findAll({
+            ...filters,
+            limit: 10000,
+          })
+          _data = _creditsResult.data
           break
+        }
         default:
           throw new Error(`Unknown report type: ${reportType}`)
       }
 
       return {
-        data,
+        data: _data,
         exportDate: new Date().toISOString(),
-        recordCount: data.length,
+        recordCount: _data.length,
         filters,
       }
     } catch (error) {

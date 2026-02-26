@@ -39,6 +39,7 @@ interface Customer {
 interface CustomersTableProps {
   customers: Customer[]
   onEdit: (customer: Customer) => void
+  onAddPayment: (customer: Customer) => void
 }
 
 const columns = [
@@ -52,7 +53,11 @@ const columns = [
   { key: 'actions', label: 'ACCIONES' },
 ] as const
 
-export function CustomersTable({ customers, onEdit }: CustomersTableProps) {
+export function CustomersTable({
+  customers,
+  onEdit,
+  onAddPayment,
+}: CustomersTableProps) {
   const deleteCustomer = useDeleteCustomer()
 
   const handleDelete = (customer: Customer) => {
@@ -132,8 +137,10 @@ export function CustomersTable({ customers, onEdit }: CustomersTableProps) {
                       <DropdownItem
                         key="balance"
                         startContent={<DollarSign className="h-4 w-4" />}
+                        onPress={() => onAddPayment(customer)}
+                        isDisabled={customer.currentBalance <= 0}
                       >
-                        Ajustar Saldo
+                        Agregar Abono
                       </DropdownItem>
                     </DropdownSection>
                     <DropdownSection title="Zona de Peligro">

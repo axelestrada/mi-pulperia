@@ -133,7 +133,8 @@ export const PosChargeModal = ({
                             selectedKeys={[field.value]}
                           >
                             <SelectItem key="cash">Efectivo</SelectItem>
-                            <SelectItem key="credit">Crédito</SelectItem>
+                            <SelectItem key="credit">Credito</SelectItem>
+                            <SelectItem key="transfer">Transferencia</SelectItem>
                           </Select>
                         )}
                       />
@@ -197,7 +198,7 @@ export const PosChargeModal = ({
                         )
 
                         appendPayment({
-                          method: hasCashPayment ? 'credit' : 'cash',
+                          method: hasCashPayment ? 'transfer' : 'cash',
                           amount: undefined,
                         })
                       }}
@@ -234,3 +235,4 @@ export const PosChargeModal = ({
     </>
   )
 }
+

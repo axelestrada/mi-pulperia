@@ -24,6 +24,10 @@ export const saleItemsTable = sqliteTable(
 
     quantity: int().notNull(),
     unitPrice: int('unit_price').notNull(),
+    unitCost: int('unit_cost').notNull().default(0),
+    subtotal: int().notNull().default(0),
+    costTotal: int('cost_total').notNull().default(0),
+    profit: int().notNull().default(0),
     totalPrice: int('total_price').notNull(),
 
     discount: int().notNull().default(0),

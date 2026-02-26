@@ -1,8 +1,7 @@
 import type { InsertInventoryMovement } from '../db/schema/inventory-movements'
-import { InsertSale, type SelectSale } from '../db/schema/sales'
+import { type SelectSale } from '../db/schema/sales'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { InventoryMovementsRepository } from '../repositories/inventory-movements-repository'
-import { POSRepository } from '../repositories/pos-repository'
 import {
   type CreateSaleData,
   type SalesFilters,
@@ -60,6 +59,8 @@ export const SalesService = {
       throw new Error('Sale must have at least one item')
     }
 
+    const batchesById = new Map<number, Awaited<ReturnType<typeof InventoryBatchesRepository.findById>>>()
+
     for (const item of data.items) {
       if (!Number.isInteger(item.presentationId)) {
         throw new Error('Invalid presentation id')
@@ -78,6 +79,7 @@ export const SalesService = {
       if (!batch) {
         throw new Error(`Batch with id ${item.batchId} not found`)
       }
+      batchesById.set(item.batchId, batch)
 
       if (batch.quantityAvailable < item.quantity) {
         throw new Error(
@@ -138,9 +140,33 @@ export const SalesService = {
       throw new Error('Total payment amount must equal sale total')
     }
 
+    data.items = data.items.map(item => {
+      const batch = batchesById.get(item.batchId)
+      if (!batch) {
+        throw new Error(`Batch with id ${item.batchId} not found`)
+      }
+
+      const subtotal = item.totalPrice
+      const unitCost = batch.unitCost
+      const costTotal = item.quantity * unitCost
+      const profit = subtotal - costTotal
+
+      return {
+        ...item,
+        unitCost,
+        subtotal,
+        costTotal,
+        profit,
+      }
+    })
+
     // Generate sale number if not provided
     if (!data.sale.saleNumber) {
       data.sale.saleNumber = await SalesRepository.generateSaleNumber()
+    }
+
+    if (!data.sale.type) {
+      data.sale.type = 'SALE'
     }
 
     // Set cash session
@@ -151,10 +177,14 @@ export const SalesService = {
 
     // Create inventory movements for each item
     for (const item of data.items) {
+      const batch = batchesById.get(item.batchId)
+      if (!batch) {
+        throw new Error(`Batch with id ${item.batchId} not found`)
+      }
+
       // Create inventory movement
       const movementData: InsertInventoryMovement = {
-        productId: (await InventoryBatchesRepository.findById(item.batchId))!
-          .productId,
+        productId: batch.productId,
         batchId: item.batchId,
         type: 'OUT',
         quantity: -item.quantity, // Negative for outgoing

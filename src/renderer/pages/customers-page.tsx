@@ -5,7 +5,14 @@ import {
   CardBody,
   CardHeader,
   Chip,
+  Form,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  NumberInput,
   Select,
   SelectItem,
   Spinner,
@@ -24,6 +31,7 @@ import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/page-header'
 import { useCredits } from '../features/credits/hooks/use-credits'
 import { useCustomers } from '../features/customers/hooks/use-customers'
+import { useSubtractFromCustomerBalance } from '../features/customers/hooks/use-customers'
 import { CustomerFormDialog } from '../features/customers/ui/customer-form-dialog'
 import { CustomersTable } from '../features/customers/ui/customers-table'
 
@@ -66,6 +74,14 @@ export const CustomersPage = () => {
   const [creditStatusFilter, setCreditStatusFilter] = useState<string>('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>()
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
+  const [paymentCustomer, setPaymentCustomer] = useState<Customer | undefined>()
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>(
+    'cash'
+  )
+  const [paymentAmount, setPaymentAmount] = useState<number | undefined>()
+  const [paymentReference, setPaymentReference] = useState('')
+  const [paymentNotes, setPaymentNotes] = useState('')
 
   const {
     data,
@@ -77,6 +93,7 @@ export const CustomersPage = () => {
   })
 
   const customers = data?.data || []
+  const subtractFromBalance = useSubtractFromCustomerBalance()
 
   const {
     data: credits = [],
@@ -141,13 +158,53 @@ export const CustomersPage = () => {
     setIsDialogOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingCustomer(undefined)
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open)
+    if (!open) {
+      setEditingCustomer(undefined)
+    }
   }
 
   const handleNewCredit = () => {
     navigate('/credits')
+  }
+
+  const handleAddPayment = (customer: Customer) => {
+    setPaymentCustomer(customer)
+    setPaymentMethod('cash')
+    setPaymentAmount(undefined)
+    setPaymentReference('')
+    setPaymentNotes('')
+    setIsPaymentDialogOpen(true)
+  }
+
+  const handlePaymentDialogOpenChange = (open: boolean) => {
+    setIsPaymentDialogOpen(open)
+    if (!open) {
+      setPaymentCustomer(undefined)
+    }
+  }
+
+  const handleSubmitPayment = () => {
+    if (!paymentCustomer) return
+
+    const amount = Number(paymentAmount || 0)
+    if (!Number.isFinite(amount) || amount <= 0) return
+
+    const amountInCents = Math.round(amount * 100)
+    const currentBalance = paymentCustomer.currentBalance
+
+    if (amountInCents > currentBalance) return
+
+    subtractFromBalance.mutate(
+      { id: paymentCustomer.id, amount: amountInCents },
+      {
+        onSuccess: () => {
+          setIsPaymentDialogOpen(false)
+          setPaymentCustomer(undefined)
+        },
+      }
+    )
   }
 
   const isLoading = customersLoading || creditsLoading
@@ -351,6 +408,7 @@ export const CustomersPage = () => {
                   <CustomersTable
                     customers={filteredCustomers}
                     onEdit={handleEdit}
+                    onAddPayment={handleAddPayment}
                   />
                 )}
               </CardBody>
@@ -575,9 +633,111 @@ export const CustomersPage = () => {
 
       <CustomerFormDialog
         open={isDialogOpen}
-        onOpenChange={handleCloseDialog}
+        onOpenChange={handleDialogOpenChange}
         customer={editingCustomer}
       />
+
+      <Modal
+        isOpen={isPaymentDialogOpen}
+        onOpenChange={handlePaymentDialogOpenChange}
+      >
+        <ModalContent>
+          {onClose => (
+            <>
+              <ModalHeader>Registrar Abono</ModalHeader>
+              <Form
+                className="h-auto w-full"
+                onSubmit={e => {
+                  e.preventDefault()
+                  handleSubmitPayment()
+                }}
+              >
+                <ModalBody className="space-y-4 w-full">
+                  <div className="rounded-large bg-default-50 p-4">
+                    <p className="text-small text-default-500">Cliente</p>
+                    <p className="font-semibold">
+                      {paymentCustomer?.name || 'Sin cliente'}
+                    </p>
+                    <p className="text-small text-default-500 mt-2">
+                      Saldo pendiente
+                    </p>
+                    <p className="text-xl font-bold text-danger">
+                      L {((paymentCustomer?.currentBalance || 0) / 100).toFixed(2)}
+                    </p>
+                  </div>
+
+                  <Select
+                    label="Metodo de pago"
+                    selectedKeys={[paymentMethod]}
+                    onSelectionChange={keys => {
+                      const value = keys.currentKey as 'cash' | 'transfer' | null
+                      if (value) setPaymentMethod(value)
+                    }}
+                  >
+                    <SelectItem key="cash">Efectivo</SelectItem>
+                    <SelectItem key="transfer">Transferencia</SelectItem>
+                  </Select>
+
+                  <NumberInput
+                    autoFocus
+                    label="Monto del abono"
+                    minValue={0}
+                    maxValue={(paymentCustomer?.currentBalance || 0) / 100}
+                    placeholder="0.00"
+                    value={paymentAmount}
+                    onValueChange={setPaymentAmount}
+                    startContent={
+                      <span className="text-default-500 text-sm">L</span>
+                    }
+                  />
+
+                  {paymentMethod === 'transfer' && (
+                    <Input
+                      label="Referencia de transferencia"
+                      placeholder="Numero de referencia"
+                      value={paymentReference}
+                      onValueChange={setPaymentReference}
+                    />
+                  )}
+
+                  <Input
+                    label="Nota (opcional)"
+                    placeholder="Observaciones del pago"
+                    value={paymentNotes}
+                    onValueChange={setPaymentNotes}
+                  />
+                </ModalBody>
+                <ModalFooter className="w-full">
+                  <Button
+                    variant="light"
+                    onPress={() => {
+                      onClose()
+                      setPaymentCustomer(undefined)
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    color="primary"
+                    type="submit"
+                    isLoading={subtractFromBalance.isPending}
+                    isDisabled={
+                      !paymentCustomer ||
+                      !paymentAmount ||
+                      paymentAmount <= 0 ||
+                      Math.round((paymentAmount || 0) * 100) >
+                        (paymentCustomer?.currentBalance || 0) ||
+                      (paymentMethod === 'transfer' && !paymentReference.trim())
+                    }
+                  >
+                    Registrar Abono
+                  </Button>
+                </ModalFooter>
+              </Form>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   )
 }

@@ -28,6 +28,11 @@ import useFormPersist from 'react-hook-form-persist'
 import { AutoSizer, Grid } from 'react-virtualized'
 import { z } from 'zod'
 import AvatarMale from '@/assets/images/avatar-male.png'
+import { HtmlMessage } from '@/components/html-message'
+import {
+  TOP_UPS_UPDATED_EVENT,
+  topUpsService,
+} from '@/features/top-ups/services/top-ups-service'
 import {
   type Customer,
   useActiveCustomersForSelection,
@@ -37,7 +42,13 @@ import {
   fromUnitPrecision,
   toUnitPrecision,
 } from '../../../../shared/utils/quantity'
-import { useCurrentOpenSession } from '../../../hooks/use-cash-sessions'
+import { useActiveCashRegisters } from '../../../hooks/use-cash-registers'
+import {
+  useCashSessionSummary,
+  useCloseCashSession,
+  useCurrentOpenSession,
+  useOpenCashSession,
+} from '../../../hooks/use-cash-sessions'
 import {
   type CreatePOSSaleInput,
   type POSPresentation,
@@ -49,10 +60,6 @@ import {
   type PaymentShortcutMethod,
   usePOSShortcuts,
 } from '../hooks/use-pos-shortcuts'
-import {
-  TOP_UPS_UPDATED_EVENT,
-  topUpsService,
-} from '@/features/top-ups/services/top-ups-service'
 import { PosChargeModal } from './pos-charge-modal'
 
 // Form validation schemas
@@ -72,7 +79,7 @@ const saleItemSchema = z.object({
 })
 
 const paymentMethodSchema = z.object({
-  method: z.enum(['cash', 'credit']),
+  method: z.enum(['cash', 'credit', 'transfer']),
   amount: z.coerce
     .number({
       error: 'Ingrese un monto válido',
@@ -90,6 +97,25 @@ const posFormSchema = z.object({
   payments: z
     .array(paymentMethodSchema)
     .min(1, 'Must have at least one payment method'),
+  notes: z.string().optional(),
+})
+
+const openCashFromPOSSchema = z.object({
+  cashRegisterId: z.number().min(1, 'Debe seleccionar una caja'),
+  openedBy: z.string().min(1, 'Usuario requerido'),
+  openingAmount: z.coerce
+    .number()
+    .min(0, 'Monto inicial invalido')
+    .transform(value => value * 100),
+  notes: z.string().optional(),
+})
+
+const closeCashFromPOSSchema = z.object({
+  closedBy: z.string().min(1, 'Usuario requerido'),
+  actualAmount: z.coerce
+    .number()
+    .min(0, 'Monto contado invalido')
+    .transform(value => value * 100),
   notes: z.string().optional(),
 })
 
@@ -220,6 +246,18 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     onClose: onCloseTopUpModal,
     onOpenChange: onTopUpModalOpenChange,
   } = useDisclosure()
+  const {
+    isOpen: isOpenCashModalOpen,
+    onOpen: onOpenOpenCashModal,
+    onClose: onCloseOpenCashModal,
+    onOpenChange: onOpenCashModalOpenChange,
+  } = useDisclosure()
+  const {
+    isOpen: isCloseCashModalOpen,
+    onOpen: onOpenCloseCashModal,
+    onClose: onCloseCloseCashModal,
+    onOpenChange: onCloseCashModalOpenChange,
+  } = useDisclosure()
 
   const [saleDiscount, setSaleDiscount] = useState(0)
   const [saleDiscountType, setSaleDiscountType] = useState<
@@ -272,6 +310,10 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   // Queries
   const { data: openSession, isLoading } = useCurrentOpenSession()
+  const { data: cashRegisters } = useActiveCashRegisters()
+  const { data: openSessionSummary } = useCashSessionSummary(
+    openSession?.id || 0
+  )
   const presentationsData = useAvailablePresentations({
     search: debounceSearchTerm,
     categoryId: selectedCategory,
@@ -285,6 +327,8 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   const createSale = useCreatePOSSale()
   const searchByCode = useSearchByCode()
+  const openCashSessionMutation = useOpenCashSession()
+  const closeCashSessionMutation = useCloseCashSession()
 
   // Form
   const form = useForm<POSFormInput, unknown, POSFormData>({
@@ -296,6 +340,30 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           method: 'cash',
         },
       ],
+    },
+  })
+
+  const openCashForm = useForm<
+    z.input<typeof openCashFromPOSSchema>,
+    unknown,
+    z.infer<typeof openCashFromPOSSchema>
+  >({
+    resolver: zodResolver(openCashFromPOSSchema),
+    defaultValues: {
+      openingAmount: 0,
+      notes: '',
+    },
+  })
+
+  const closeCashForm = useForm<
+    z.input<typeof closeCashFromPOSSchema>,
+    unknown,
+    z.infer<typeof closeCashFromPOSSchema>
+  >({
+    resolver: zodResolver(closeCashFromPOSSchema),
+    defaultValues: {
+      actualAmount: 0,
+      notes: '',
     },
   })
 
@@ -969,10 +1037,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   const setPaymentMethodByShortcut = useCallback(
     (method: PaymentShortcutMethod) => {
-      const mappedMethod = method === 'cash' ? 'cash' : 'credit'
+      const mappedMethod: 'cash' | 'credit' | 'transfer' =
+        method === 'cash' ? 'cash' : method === 'transfer' ? 'transfer' : 'credit'
       const currentPayments = form.getValues('payments') || []
       const amountForCash = fromCents(totals.total)
-      const nextPayments =
+      const nextPayments: {
+        method: 'cash' | 'credit' | 'transfer'
+        amount: unknown
+      }[] =
         currentPayments.length > 0
           ? currentPayments.map((payment, index) => {
               if (index !== 0) return payment
@@ -992,10 +1064,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
       form.setValue('payments', nextPayments)
 
-      if (method !== 'cash') {
+      if (method === 'card') {
         sileo.success({
-          title:
-            method === 'card' ? 'Pago con tarjeta' : 'Pago por transferencia',
+          title: 'Pago con tarjeta',
           description: 'Se registrara como pago a credito en esta version.',
         })
       }
@@ -1127,6 +1198,52 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
     }
   }
 
+  const expectedCloseAmount = React.useMemo(() => {
+    if (!openSession) return 0
+    const salesTotal =
+      Number(openSessionSummary?.salesSummary?.totalAmount) || 0
+    return Number(openSession.openingAmount) + salesTotal
+  }, [openSession, openSessionSummary?.salesSummary?.totalAmount])
+
+  const closeCountedInput = Number(closeCashForm.watch('actualAmount') || 0)
+  const closeDifference = closeCountedInput * 100 - expectedCloseAmount
+
+  const openCashFromPOS = async (
+    data: z.infer<typeof openCashFromPOSSchema>
+  ) => {
+    try {
+      await openCashSessionMutation.mutateAsync(data)
+      openCashForm.reset({ openingAmount: 0, notes: '' })
+      onCloseOpenCashModal()
+      sileo.success({ title: 'Caja abierta desde POS' })
+    } catch (error) {
+      sileo.error({
+        title: 'No se pudo abrir la caja',
+        description: parseError(error),
+      })
+    }
+  }
+
+  const closeCashFromPOS = async (
+    data: z.infer<typeof closeCashFromPOSSchema>
+  ) => {
+    if (!openSession) return
+    try {
+      await closeCashSessionMutation.mutateAsync({
+        id: openSession.id,
+        input: data,
+      })
+      closeCashForm.reset({ actualAmount: 0, notes: '' })
+      onCloseCloseCashModal()
+      sileo.success({ title: 'Caja cerrada desde POS' })
+    } catch (error) {
+      sileo.error({
+        title: 'No se pudo cerrar la caja',
+        description: parseError(error),
+      })
+    }
+  }
+
   usePOSShortcuts({
     isChargeModalOpen,
     focusSearch: () => searchInputRef.current?.querySelector('input')?.focus(),
@@ -1148,7 +1265,13 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
       void resumeLatestPausedSale()
     },
     pauseCurrentSale,
-    goToCashSession: () => navigate('/cash'),
+    goToCashSession: () => {
+      if (openSession) {
+        onOpenCloseCashModal()
+      } else {
+        onOpenOpenCashModal()
+      }
+    },
   })
 
   useEffect(() => {
@@ -1252,7 +1375,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
   if (!openSession) {
     return (
       <div className="grid place-items-center h-[calc(100dvh-84px)]">
-        <Card isBlurred className="p-4 pb-0">
+        <Card isBlurred className="max-w-lg p-4 pb-2">
           <CardHeader className="flex-col items-center gap-2">
             <IconSolarShieldWarningLineDuotone className="size-12 text-warning" />
 
@@ -1261,16 +1384,120 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           <CardBody className="text-center text-default-500">
             Para comenzar a vender, primero debes abrir una caja.
           </CardBody>
-          <CardFooter className="justify-center p-3 pb-7">
+          <CardFooter className="justify-center gap-2 p-3 pb-6">
             <Button
-              onPress={() => navigate('/cash')}
+              onPress={() => onOpenOpenCashModal()}
               color="primary"
               variant="shadow"
             >
-              Abrir Caja
+              Abrir Caja Aqui
+            </Button>
+            <Button onPress={() => navigate('/cash')} variant="bordered">
+              Ir a Caja
             </Button>
           </CardFooter>
         </Card>
+
+        <Modal
+          isOpen={isOpenCashModalOpen}
+          onOpenChange={onOpenCashModalOpenChange}
+        >
+          <ModalContent>
+            {onClose => (
+              <>
+                <ModalHeader>Abrir caja desde POS</ModalHeader>
+                <ModalBody className="space-y-4">
+                  <Select
+                    label="Caja registradora"
+                    selectedKeys={
+                      openCashForm.watch('cashRegisterId')
+                        ? [String(openCashForm.watch('cashRegisterId'))]
+                        : []
+                    }
+                    onSelectionChange={keys => {
+                      openCashForm.setValue(
+                        'cashRegisterId',
+                        Number(keys.currentKey || 0),
+                        { shouldValidate: true }
+                      )
+                    }}
+                    isInvalid={Boolean(
+                      openCashForm.formState.errors.cashRegisterId
+                    )}
+                    errorMessage={
+                      openCashForm.formState.errors.cashRegisterId?.message
+                    }
+                  >
+                    {(cashRegisters || []).map(register => (
+                      <SelectItem key={String(register.id)}>
+                        {register.name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+
+                  <Input
+                    label="Usuario"
+                    placeholder="Nombre del usuario"
+                    value={openCashForm.watch('openedBy') || ''}
+                    onValueChange={value =>
+                      openCashForm.setValue('openedBy', value, {
+                        shouldValidate: true,
+                      })
+                    }
+                    isInvalid={Boolean(openCashForm.formState.errors.openedBy)}
+                    errorMessage={
+                      openCashForm.formState.errors.openedBy?.message
+                    }
+                  />
+
+                  <NumberInput
+                    label="Monto inicial"
+                    value={Number(openCashForm.watch('openingAmount') || 0)}
+                    onValueChange={value =>
+                      openCashForm.setValue(
+                        'openingAmount',
+                        Number(value || 0),
+                        {
+                          shouldValidate: true,
+                        }
+                      )
+                    }
+                    minValue={0}
+                    startContent="L"
+                    isInvalid={Boolean(
+                      openCashForm.formState.errors.openingAmount
+                    )}
+                    errorMessage={
+                      openCashForm.formState.errors.openingAmount?.message
+                    }
+                  />
+
+                  <Textarea
+                    label="Notas"
+                    value={openCashForm.watch('notes') || ''}
+                    onValueChange={value =>
+                      openCashForm.setValue('notes', value)
+                    }
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <Button variant="light" onPress={onClose}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    color="primary"
+                    isLoading={openCashSessionMutation.isPending}
+                    onPress={() =>
+                      void openCashForm.handleSubmit(openCashFromPOS)()
+                    }
+                  >
+                    Abrir Caja
+                  </Button>
+                </ModalFooter>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
       </div>
     )
   }
@@ -1306,11 +1533,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
               const columnCount = Math.floor(width / minColumnWidth) || 1
               const columnWidth = Math.floor(width / columnCount) - 2
 
-              const rowHeight = (rowIndex: number) => {
-                const itemIndex = rowIndex * columnCount
-                const item = allPresentations[itemIndex]
-                return item?.customHeight ?? 215
-              }
+              const rowHeight = 215
 
               const rowCount = Math.ceil(allPresentations.length / columnCount)
 
@@ -1319,7 +1542,7 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                   width={width}
                   height={height}
                   columnWidth={columnWidth}
-                  rowHeight={({ index }) => rowHeight(index)}
+                  rowHeight={rowHeight}
                   columnCount={columnCount}
                   rowCount={rowCount}
                   overscanRowCount={3}
@@ -1363,6 +1586,14 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
           </div>
 
           <div className="flex gap-2">
+            {/* <Button
+              color="danger"
+              variant="bordered"
+              onPress={onOpenCloseCashModal}
+              className='hidden' // TODO: Reestablecer al encontrar un mejor lugar para ponerlo
+            >
+              Cerrar Caja
+            </Button> */}
             <Button variant="bordered" onPress={onOpenPausedSalesModal}>
               <IconSolarPauseCircleLineDuotone className="size-5" />
               Pausadas ({pausedSales.length})
@@ -1581,6 +1812,130 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                 </div>
 
                 <Modal
+                  isOpen={isCloseCashModalOpen}
+                  onOpenChange={onCloseCashModalOpenChange}
+                >
+                  <ModalContent>
+                    {onClose => (
+                      <>
+                        <ModalHeader>Cerrar caja desde POS</ModalHeader>
+                        <ModalBody className="space-y-4">
+                          <div className="rounded-large border border-default-200 bg-default-50 p-3 text-sm">
+                            <div className="font-medium">Resumen de caja</div>
+                            <div className="mt-2 space-y-1">
+                              <div className="flex justify-between">
+                                <span>Monto inicial:</span>
+                                <span>
+                                  {formatCurrency(
+                                    Number(openSession?.openingAmount || 0) /
+                                      100
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Ventas:</span>
+                                <span>
+                                  {openSessionSummary?.salesSummary
+                                    ?.totalSales || 0}
+                                </span>
+                              </div>
+                              <div className="flex justify-between font-medium">
+                                <span>Total esperado:</span>
+                                <span>
+                                  {formatCurrency(expectedCloseAmount / 100)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <Input
+                            label="Usuario de cierre"
+                            placeholder="Nombre del usuario"
+                            value={closeCashForm.watch('closedBy') || ''}
+                            onValueChange={value =>
+                              closeCashForm.setValue('closedBy', value, {
+                                shouldValidate: true,
+                              })
+                            }
+                            isInvalid={Boolean(
+                              closeCashForm.formState.errors.closedBy
+                            )}
+                            errorMessage={
+                              closeCashForm.formState.errors.closedBy?.message
+                            }
+                          />
+
+                          <NumberInput
+                            label="Monto contado"
+                            value={Number(
+                              closeCashForm.watch('actualAmount') || 0
+                            )}
+                            onValueChange={value =>
+                              closeCashForm.setValue(
+                                'actualAmount',
+                                Number(value || 0),
+                                {
+                                  shouldValidate: true,
+                                }
+                              )
+                            }
+                            startContent="L"
+                            minValue={0}
+                            isInvalid={Boolean(
+                              closeCashForm.formState.errors.actualAmount
+                            )}
+                            errorMessage={
+                              closeCashForm.formState.errors.actualAmount
+                                ?.message
+                            }
+                          />
+
+                          <div
+                            className={`rounded-large border p-2 text-sm ${
+                              Math.abs(closeDifference) < 1
+                                ? 'border-success/40 bg-success/10'
+                                : closeDifference > 0
+                                  ? 'border-primary/40 bg-primary/10'
+                                  : 'border-danger/40 bg-danger/10'
+                            }`}
+                          >
+                            {Math.abs(closeDifference) < 1
+                              ? 'Cuadre exacto'
+                              : closeDifference > 0
+                                ? `Sobrante: ${formatCurrency(closeDifference / 100)}`
+                                : `Faltante: ${formatCurrency(Math.abs(closeDifference) / 100)}`}
+                          </div>
+
+                          <Textarea
+                            label="Notas"
+                            value={closeCashForm.watch('notes') || ''}
+                            onValueChange={value =>
+                              closeCashForm.setValue('notes', value)
+                            }
+                          />
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button variant="light" onPress={onClose}>
+                            Cancelar
+                          </Button>
+                          <Button
+                            color="danger"
+                            isLoading={closeCashSessionMutation.isPending}
+                            onPress={() =>
+                              void closeCashForm.handleSubmit(
+                                closeCashFromPOS
+                              )()
+                            }
+                          >
+                            Cerrar Caja
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+
+                <Modal
                   isOpen={isPausedSalesModalOpen}
                   onOpenChange={onPausedSalesModalOpenChange}
                   scrollBehavior="inside"
@@ -1791,7 +2146,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                             value={topUpAmountDraft}
                             onValueChange={setTopUpAmountDraft}
                             startContent={
-                              <span className="text-default-500 text-sm">L</span>
+                              <span className="text-default-500 text-sm">
+                                L
+                              </span>
                             }
                           />
 
@@ -1801,7 +2158,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
                             value={topUpCostDraft}
                             onValueChange={setTopUpCostDraft}
                             startContent={
-                              <span className="text-default-500 text-sm">L</span>
+                              <span className="text-default-500 text-sm">
+                                L
+                              </span>
                             }
                           />
 

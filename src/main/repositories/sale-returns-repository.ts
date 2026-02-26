@@ -6,8 +6,10 @@ import {
   eq,
   getTableColumns,
   gte,
+  inArray,
   like,
   lte,
+  sum,
 } from 'drizzle-orm'
 import { db } from '../db'
 import {
@@ -274,5 +276,36 @@ export const SaleReturnsRepository = {
       .reduce((s, r) => s + Math.abs(r.balanceCents), 0)
 
     return { totalRefunded, totalReceived }
+  },
+
+  getReturnedQuantitiesForSaleItems: async (saleItemIds: number[]) => {
+    if (saleItemIds.length === 0) {
+      return new Map<number, number>()
+    }
+
+    const rows = await db
+      .select({
+        saleItemId: returnItemsTable.saleItemId,
+        returnedQty:
+          sum(returnItemsTable.quantityReturned).mapWith(Number),
+      })
+      .from(returnItemsTable)
+      .leftJoin(
+        saleReturnsTable,
+        eq(returnItemsTable.returnId, saleReturnsTable.id)
+      )
+      .where(
+        and(
+          eq(saleReturnsTable.deleted, false),
+          inArray(returnItemsTable.saleItemId, saleItemIds)
+        )
+      )
+      .groupBy(returnItemsTable.saleItemId)
+
+    const map = new Map<number, number>()
+    for (const row of rows) {
+      map.set(row.saleItemId, Number(row.returnedQty || 0))
+    }
+    return map
   },
 }

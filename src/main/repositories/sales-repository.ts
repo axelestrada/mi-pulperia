@@ -7,7 +7,6 @@ import {
   eq,
   getTableColumns,
   gte,
-  inArray,
   like,
   lte,
   or,
@@ -31,6 +30,7 @@ export interface SalesFilters {
   search?: string
   customerId?: number
   cashSessionId?: number
+  type?: 'SALE' | 'REFUND'
   status?: 'completed' | 'cancelled' | 'refunded'
   page?: number
   limit?: number
@@ -49,6 +49,10 @@ export interface CreateSaleData {
     batchId: number
     quantity: number
     unitPrice: number
+    unitCost: number
+    subtotal: number
+    costTotal: number
+    profit: number
     totalPrice: number
     discount?: number
     discountType?: 'fixed' | 'percentage'
@@ -89,6 +93,10 @@ export interface SaleWithDetails extends SelectSale {
     batchId: number
     quantity: number
     unitPrice: number
+    unitCost: number
+    subtotal: number
+    costTotal: number
+    profit: number
     totalPrice: number
     discount: number
     discountType?: 'fixed' | 'percentage'
@@ -113,6 +121,7 @@ export const SalesRepository = {
       search,
       customerId,
       cashSessionId,
+      type,
       status,
       page = 1,
       limit = 50,
@@ -150,6 +159,10 @@ export const SalesRepository = {
 
     if (status) {
       whereConditions.push(eq(salesTable.status, status))
+    }
+
+    if (type) {
+      whereConditions.push(eq(salesTable.type, type))
     }
 
     if (dateFrom) {
@@ -272,6 +285,10 @@ export const SalesRepository = {
         batchId: saleItemsTable.batchId,
         quantity: saleItemsTable.quantity,
         unitPrice: saleItemsTable.unitPrice,
+        unitCost: saleItemsTable.unitCost,
+        subtotal: saleItemsTable.subtotal,
+        costTotal: saleItemsTable.costTotal,
+        profit: saleItemsTable.profit,
         totalPrice: saleItemsTable.totalPrice,
         discount: saleItemsTable.discount,
         discountType: saleItemsTable.discountType,
