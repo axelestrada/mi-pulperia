@@ -348,6 +348,12 @@ export const POSService = {
           batchId: batchAllocation.batchId,
           quantity: batchAllocation.quantity,
           unitPrice: roundedUnitPrice,
+          unitCost: batchAllocation.unitCost,
+          subtotal: itemTotalPrice,
+          costTotal: batchAllocation.quantity * batchAllocation.unitCost,
+          profit:
+            itemTotalPrice -
+            batchAllocation.quantity * batchAllocation.unitCost,
           totalPrice: itemTotalPrice,
           discount: item.discount || 0,
           discountType: item.discountType,

@@ -7,7 +7,6 @@ import {
   eq,
   getTableColumns,
   gte,
-  inArray,
   like,
   lte,
   or,
@@ -49,6 +48,10 @@ export interface CreateSaleData {
     batchId: number
     quantity: number
     unitPrice: number
+    unitCost: number
+    subtotal: number
+    costTotal: number
+    profit: number
     totalPrice: number
     discount?: number
     discountType?: 'fixed' | 'percentage'
@@ -89,6 +92,10 @@ export interface SaleWithDetails extends SelectSale {
     batchId: number
     quantity: number
     unitPrice: number
+    unitCost: number
+    subtotal: number
+    costTotal: number
+    profit: number
     totalPrice: number
     discount: number
     discountType?: 'fixed' | 'percentage'
@@ -272,6 +279,10 @@ export const SalesRepository = {
         batchId: saleItemsTable.batchId,
         quantity: saleItemsTable.quantity,
         unitPrice: saleItemsTable.unitPrice,
+        unitCost: saleItemsTable.unitCost,
+        subtotal: saleItemsTable.subtotal,
+        costTotal: saleItemsTable.costTotal,
+        profit: saleItemsTable.profit,
         totalPrice: saleItemsTable.totalPrice,
         discount: saleItemsTable.discount,
         discountType: saleItemsTable.discountType,

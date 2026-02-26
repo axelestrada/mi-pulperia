@@ -1,7 +1,6 @@
 import { and, asc, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm'
 import { ipcMain } from 'electron'
 import { db } from '../db'
-import { inventoryBatchesTable } from '../db/schema/inventory-batches'
 import { categoriesTable } from '../db/schema/categories'
 import { presentationsTable } from '../db/schema/presentations'
 import { productsTable } from '../db/schema/products'
@@ -62,9 +61,12 @@ export function registerReportsIpc() {
           date: salesTable.createdAt,
           totalSales: count(salesTable.id),
           totalRevenue: sum(salesTable.total),
-          totalProfit: sql<number>`0`.as('total_profit'),
+          totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+            'total_profit'
+          ),
         })
         .from(salesTable)
+        .leftJoin(saleItemsTable, eq(saleItemsTable.saleId, salesTable.id))
         .where(and(...whereConditions))
         .groupBy(salesTable.createdAt)
         .orderBy(asc(salesTable.createdAt))
@@ -75,7 +77,9 @@ export function registerReportsIpc() {
           productName: productsTable.name,
           totalQuantity: sum(saleItemsTable.quantity),
           totalRevenue: sum(saleItemsTable.totalPrice),
-          totalProfit: sql<number>`0`.as('total_profit'),
+          totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+            'total_profit'
+          ),
         })
         .from(saleItemsTable)
         .leftJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
@@ -277,14 +281,27 @@ export function registerReportsIpc() {
     try {
       const { dateFrom, dateTo } = filters
 
-      // Get sales data
-      const salesResult = await SalesRepository.findAll({
-        dateFrom: dateFrom ? new Date(dateFrom) : undefined,
-        dateTo: dateTo ? new Date(dateTo) : undefined,
-        limit: 10000,
-      })
+      const whereConditions = [
+        eq(salesTable.deleted, false),
+        eq(salesTable.status, 'completed'),
+      ]
 
-      const sales = salesResult.data
+      if (dateFrom) {
+        whereConditions.push(gte(salesTable.createdAt, new Date(dateFrom)))
+      }
+
+      if (dateTo) {
+        whereConditions.push(lte(salesTable.createdAt, new Date(dateTo)))
+      }
+
+      const sales = await db
+        .select({
+          id: salesTable.id,
+          total: salesTable.total,
+          createdAt: salesTable.createdAt,
+        })
+        .from(salesTable)
+        .where(and(...whereConditions))
 
       // Get expenses data
       const expensesResult = await ExpensesRepository.findAll({
@@ -298,11 +315,24 @@ export function registerReportsIpc() {
 
       // Calculate totals
       const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0)
-      const totalCost = sales.reduce(
-        (sum, sale) => sum + (sale.totalCost || 0),
-        0
-      )
-      const grossProfit = totalRevenue - totalCost
+      const costsSummary = await db
+        .select({
+          totalCost:
+            sql<number>`coalesce(sum(${saleItemsTable.costTotal}), 0)`.as(
+              'total_cost'
+            ),
+          grossProfit:
+            sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+              'gross_profit'
+            ),
+        })
+        .from(saleItemsTable)
+        .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
+        .where(and(...whereConditions))
+        .get()
+
+      const totalCost = Number(costsSummary?.totalCost || 0)
+      const grossProfit = Number(costsSummary?.grossProfit || 0)
       const totalExpenses = expenses.reduce(
         (sum, expense) => sum + expense.totalAmount,
         0
@@ -327,12 +357,42 @@ export function registerReportsIpc() {
             }
           }
           acc[date].revenue += sale.total
-          acc[date].cost += sale.totalCost || 0
-          acc[date].grossProfit += sale.total - (sale.totalCost || 0)
           return acc
         },
         {} as Record<string, any>
       )
+
+      const costsByDate = await db
+        .select({
+          date: sql<string>`date(${salesTable.createdAt}, 'unixepoch')`.as(
+            'date'
+          ),
+          cost: sql<number>`coalesce(sum(${saleItemsTable.costTotal}), 0)`.as(
+            'cost'
+          ),
+          grossProfit:
+            sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+              'gross_profit'
+            ),
+        })
+        .from(saleItemsTable)
+        .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
+        .where(and(...whereConditions))
+        .groupBy(sql`date(${salesTable.createdAt}, 'unixepoch')`)
+
+      for (const row of costsByDate) {
+        if (!dailyProfits[row.date]) {
+          dailyProfits[row.date] = {
+            date: row.date,
+            revenue: 0,
+            cost: 0,
+            grossProfit: 0,
+          }
+        }
+
+        dailyProfits[row.date].cost = Number(row.cost || 0)
+        dailyProfits[row.date].grossProfit = Number(row.grossProfit || 0)
+      }
 
       // Add expenses to daily data
       expenses.forEach(expense => {
@@ -414,16 +474,12 @@ export function registerReportsIpc() {
       const salesProfitSummary = await db
         .select({
           totalProfit:
-            sql<number>`coalesce(sum(${saleItemsTable.totalPrice} - (${saleItemsTable.quantity} * ${inventoryBatchesTable.unitCost})), 0)`.as(
+            sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
               'total_profit'
             ),
         })
         .from(saleItemsTable)
         .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
-        .innerJoin(
-          inventoryBatchesTable,
-          eq(saleItemsTable.batchId, inventoryBatchesTable.id)
-        )
         .where(and(...salesWhereConditions))
         .get()
 
@@ -506,7 +562,9 @@ export function registerReportsIpc() {
           categoryName: categoriesTable.name,
           totalQuantity: sum(saleItemsTable.quantity),
           totalRevenue: sum(saleItemsTable.totalPrice),
-          totalProfit: sql<number>`0`.as('total_profit'),
+          totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
+            'total_profit'
+          ),
           totalSales: count(saleItemsTable.id),
         })
         .from(saleItemsTable)
@@ -529,7 +587,7 @@ export function registerReportsIpc() {
           sortBy === 'quantity'
             ? desc(sum(saleItemsTable.quantity))
             : sortBy === 'profit'
-              ? desc(sum(saleItemsTable.totalPrice))
+              ? desc(sum(saleItemsTable.profit))
               : desc(sum(saleItemsTable.totalPrice))
         )
         .limit(limit)
