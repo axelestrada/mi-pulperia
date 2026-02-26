@@ -24,7 +24,7 @@ export interface POSSaleItem {
 }
 
 export interface POSPayment {
-  method: 'cash' | 'credit'
+  method: 'cash' | 'credit' | 'transfer'
   amount: number
   receivedAmount?: number
   changeAmount?: number

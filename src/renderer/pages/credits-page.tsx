@@ -1,23 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Clock, CreditCard, DollarSign, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import type { Selection } from '@heroui/react'
 import {
+  Button,
   Card,
-  CardContent,
-  CardDescription,
+  CardBody,
   CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
+  Chip,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Pagination,
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from '@heroui/react'
+import { AlertTriangle, Clock, CreditCard, DollarSign, Search } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useCredits } from '@/features/credits/hooks/use-credits'
 import {
   SHIFT_HANDOVER_UPDATED_EVENT,
@@ -37,16 +44,29 @@ type CreditItem = {
   id: number
   creditNumber: string
   customerName?: string
+  originalAmount?: number
   remainingAmount: number
   status: 'active' | 'partial' | 'paid' | 'cancelled'
   dueDate?: string | Date
   isOverdue?: boolean
+  description?: string
+  notes?: string
+  createdAt?: string | Date
+}
+
+const getSingleSelectionKey = (keys: Selection, fallback = 'all') => {
+  if (keys === 'all') return fallback
+  return Array.from(keys)[0]?.toString() ?? fallback
 }
 
 export function CreditsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<CreditStatusFilter>('all')
   const [shiftNote, setShiftNote] = useState(() => getShiftModuleNote('credits'))
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 8
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [selectedCredit, setSelectedCredit] = useState<CreditItem | null>(null)
 
   const backendStatus =
     statusFilter === 'all' || statusFilter === 'overdue'
@@ -75,6 +95,10 @@ export function CreditsPage() {
     [credits, statusFilter]
   )
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter, filteredCredits.length])
+
   const stats = useMemo(() => {
     const typedCredits = credits as CreditItem[]
     const overdueCredits = typedCredits.filter(credit => credit.isOverdue)
@@ -101,12 +125,28 @@ export function CreditsPage() {
     sileo.success({ title: 'Nota de turno guardada en créditos' })
   }
 
+  const totalPages = Math.max(1, Math.ceil(filteredCredits.length / pageSize))
+  const paginatedCredits = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredCredits.slice(start, start + pageSize)
+  }, [filteredCredits, currentPage])
+
+  const openDetailModal = (credit: CreditItem) => {
+    setSelectedCredit(credit)
+    setIsDetailOpen(true)
+  }
+
+  const closeDetailModal = () => {
+    setIsDetailOpen(false)
+    setSelectedCredit(null)
+  }
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando créditos...</p>
+      <div className="flex h-64 items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Spinner />
+          <p className="text-default-500">Cargando créditos...</p>
         </div>
       </div>
     )
@@ -114,10 +154,10 @@ export function CreditsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Error al cargar los créditos</p>
-          <Button onClick={() => window.location.reload()}>Reintentar</Button>
+          <p className="mb-4 text-danger">Error al cargar los créditos</p>
+          <Button onPress={() => window.location.reload()}>Reintentar</Button>
         </div>
       </div>
     )
@@ -128,7 +168,7 @@ export function CreditsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Créditos</h1>
-          <p className="text-muted-foreground">
+          <p className="text-default-500">
             Control del libro de créditos y pendientes por cobrar.
           </p>
         </div>
@@ -136,170 +176,244 @@ export function CreditsPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Créditos</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Total Créditos</h3>
+            <CreditCard className="h-4 w-4 text-default-500" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">{stats.active} activos</p>
-          </CardContent>
+            <p className="text-xs text-default-500">{stats.active} activos</p>
+          </CardBody>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vencidos</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Vencidos</h3>
             <AlertTriangle className="h-4 w-4 text-red-500" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-            <p className="text-xs text-muted-foreground">Requieren seguimiento</p>
-          </CardContent>
+            <p className="text-xs text-default-500">Requieren seguimiento</p>
+          </CardBody>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Saldo Total</h3>
+            <DollarSign className="h-4 w-4 text-default-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              L {(stats.totalAmount / 100).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">Por cobrar</p>
-          </CardContent>
+          <CardBody>
+            <div className="text-2xl font-bold">L {(stats.totalAmount / 100).toFixed(2)}</div>
+            <p className="text-xs text-default-500">Por cobrar</p>
+          </CardBody>
         </Card>
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monto Vencido</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Monto Vencido</h3>
             <Clock className="h-4 w-4 text-red-500" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold text-red-600">
               L {(stats.overdueAmount / 100).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">Cobro prioritario</p>
-          </CardContent>
+            <p className="text-xs text-default-500">Cobro prioritario</p>
+          </CardBody>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra créditos por estado</CardDescription>
+          <h3 className="font-semibold">Filtros</h3>
+          <p className="text-sm text-default-500">Busca y filtra créditos por estado</p>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por cliente, documento, número de crédito..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            <Input
+              placeholder="Buscar por cliente, documento, número de crédito..."
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+              startContent={<Search className="h-4 w-4 text-default-400" />}
+            />
+
             <Select
-              value={statusFilter}
-              onValueChange={value => setStatusFilter(value as CreditStatusFilter)}
+              aria-label="Estado del crédito"
+              selectedKeys={[statusFilter]}
+              onSelectionChange={keys =>
+                setStatusFilter(getSingleSelectionKey(keys) as CreditStatusFilter)
+              }
+              className="w-full md:w-52"
             >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="partial">Parciales</SelectItem>
-                <SelectItem value="overdue">Vencidos</SelectItem>
-                <SelectItem value="paid">Pagados</SelectItem>
-                <SelectItem value="cancelled">Cancelados</SelectItem>
-              </SelectContent>
+              <SelectItem key="all">Todos</SelectItem>
+              <SelectItem key="active">Activos</SelectItem>
+              <SelectItem key="partial">Parciales</SelectItem>
+              <SelectItem key="overdue">Vencidos</SelectItem>
+              <SelectItem key="paid">Pagados</SelectItem>
+              <SelectItem key="cancelled">Cancelados</SelectItem>
             </Select>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Nota de Turno</CardTitle>
-          <CardDescription>
+          <h3 className="font-semibold">Nota de Turno</h3>
+          <p className="text-sm text-default-500">
             Deja indicaciones sobre cobros pendientes para la siguiente persona.
-          </CardDescription>
+          </p>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardBody className="space-y-3">
           <Textarea
             value={shiftNote}
-            onChange={e => setShiftNote(e.target.value)}
+            onValueChange={setShiftNote}
             placeholder="Ej. Cobrar hoy a cliente Juan por crédito CR-202602-001."
           />
-          <Button size="sm" onClick={handleSaveShiftNote}>
+          <Button size="sm" onPress={handleSaveShiftNote}>
             Guardar nota
           </Button>
-        </CardContent>
+        </CardBody>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Créditos</CardTitle>
-          <CardDescription>
+          <h3 className="font-semibold">Créditos</h3>
+          <p className="text-sm text-default-500">
             {filteredCredits.length} crédito
             {filteredCredits.length !== 1 ? 's' : ''} encontrado
             {filteredCredits.length !== 1 ? 's' : ''}
-          </CardDescription>
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {filteredCredits.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-default-500">
               No se encontraron créditos con los filtros aplicados.
             </p>
           ) : (
-            <div className="space-y-4">
-              {filteredCredits.map(credit => (
-                <div
-                  key={credit.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-medium">
-                      {credit.customerName || 'Cliente no disponible'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {credit.creditNumber} | Saldo: L{' '}
-                      {((credit.remainingAmount || 0) / 100).toFixed(2)}
+            <>
+              <Table aria-label="Listado de créditos">
+                <TableHeader>
+                  <TableColumn>CLIENTE</TableColumn>
+                  <TableColumn>CRÉDITO</TableColumn>
+                  <TableColumn className="text-right">SALDO</TableColumn>
+                  <TableColumn>VENCE</TableColumn>
+                  <TableColumn>ESTADO</TableColumn>
+                  <TableColumn align="center">ACCIONES</TableColumn>
+                </TableHeader>
+                <TableBody items={paginatedCredits}>
+                  {(credit: CreditItem) => (
+                    <TableRow key={credit.id}>
+                      <TableCell>{credit.customerName || 'Cliente no disponible'}</TableCell>
+                      <TableCell>{credit.creditNumber}</TableCell>
+                      <TableCell className="text-right">
+                        L {((credit.remainingAmount || 0) / 100).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        {credit.dueDate
+                          ? new Date(credit.dueDate).toLocaleDateString('es-HN')
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          size="sm"
+                          variant="flat"
+                          color={
+                            credit.isOverdue
+                              ? 'danger'
+                              : credit.status === 'active'
+                                ? 'primary'
+                                : credit.status === 'partial'
+                                  ? 'warning'
+                                  : credit.status === 'paid'
+                                    ? 'success'
+                                    : 'default'
+                          }
+                        >
+                          {credit.isOverdue
+                            ? 'Vencido'
+                            : credit.status === 'active'
+                              ? 'Activo'
+                              : credit.status === 'partial'
+                                ? 'Parcial'
+                                : credit.status === 'paid'
+                                  ? 'Pagado'
+                                  : 'Cancelado'}
+                        </Chip>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-center">
+                          <Button
+                            size="sm"
+                            variant="bordered"
+                            onPress={() => openDetailModal(credit)}
+                          >
+                            Ver
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-small text-default-500">
+                    Mostrando {paginatedCredits.length} de {filteredCredits.length}
+                  </p>
+                  <Pagination
+                    page={currentPage}
+                    total={totalPages}
+                    showControls
+                    onChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </CardBody>
+      </Card>
+
+      <Modal isOpen={isDetailOpen} onOpenChange={setIsDetailOpen} size="lg">
+        <ModalContent>
+          <>
+            <ModalHeader>Detalle del crédito</ModalHeader>
+            <ModalBody className="space-y-3">
+              {!selectedCredit ? null : (
+                <>
+                  <div>
+                    <p className="text-sm text-default-500">Cliente</p>
+                    <p className="font-medium">
+                      {selectedCredit.customerName || 'Cliente no disponible'}
                     </p>
                   </div>
-                  <div className="text-right">
-                    {credit.dueDate && (
-                      <p className="text-sm text-muted-foreground">
-                        Vence: {new Date(credit.dueDate).toLocaleDateString('es-HN')}
-                      </p>
-                    )}
-                    <Badge
-                      variant={
-                        credit.isOverdue
-                          ? 'destructive'
-                          : credit.status === 'active'
-                            ? 'default'
-                            : credit.status === 'partial'
-                              ? 'outline'
-                              : 'secondary'
-                      }
-                    >
-                      {credit.isOverdue
-                        ? 'Vencido'
-                        : credit.status === 'active'
-                          ? 'Activo'
-                          : credit.status === 'partial'
-                            ? 'Parcial'
-                            : credit.status === 'paid'
-                              ? 'Pagado'
-                              : 'Cancelado'}
-                    </Badge>
+                  <div>
+                    <p className="text-sm text-default-500">Crédito</p>
+                    <p className="font-medium">{selectedCredit.creditNumber}</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  <div>
+                    <p className="text-sm text-default-500">Motivo del crédito</p>
+                    <p className="font-medium">
+                      {selectedCredit.description?.trim() ||
+                        'No se especificó el motivo de este crédito.'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-default-500">Notas</p>
+                    <p className="font-medium">
+                      {selectedCredit.notes?.trim() || 'Sin notas adicionales.'}
+                    </p>
+                  </div>
+                </>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="light" onPress={closeDetailModal}>
+                Cerrar
+              </Button>
+            </ModalFooter>
+          </>
+        </ModalContent>
+      </Modal>
     </div>
   )
 }

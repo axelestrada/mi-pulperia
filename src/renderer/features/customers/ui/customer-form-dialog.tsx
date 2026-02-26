@@ -42,6 +42,7 @@ const customerFormSchema = z.object({
   isActive: z.boolean().default(true),
 })
 
+type CustomerFormInput = z.input<typeof customerFormSchema>
 type CustomerFormData = z.infer<typeof customerFormSchema>
 
 interface Customer {
@@ -74,7 +75,7 @@ export function CustomerFormDialog({
   const createCustomer = useCreateCustomer()
   const updateCustomer = useUpdateCustomer()
 
-  const form = useForm<CustomerFormData>({
+  const form = useForm<CustomerFormInput, unknown, CustomerFormData>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
       name: '',

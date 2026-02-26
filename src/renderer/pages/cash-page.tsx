@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { CreditCard, History, Settings } from 'lucide-react'
 import { Button, Card, CardBody, Tab, Tabs, Textarea } from '@heroui/react'
-
-import { CashSessionManager } from '../features/cash-sessions/components/cash-session-manager'
-import { CashRegistersList } from '../features/cash-sessions/components/cash-registers-list'
+import { CreditCard, History, Settings } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import {
-  SHIFT_HANDOVER_UPDATED_EVENT,
   getShiftModuleNote,
+  SHIFT_HANDOVER_UPDATED_EVENT,
   setShiftModuleNote,
 } from '@/features/operations/model/shift-handover-storage'
 import {
-  topUpsService,
   TOP_UPS_UPDATED_EVENT,
+  topUpsService,
 } from '@/features/top-ups/services/top-ups-service'
+import { CashRegistersList } from '../features/cash-sessions/components/cash-registers-list'
+import { CashSessionManager } from '../features/cash-sessions/components/cash-session-manager'
 
 export const CashPage = () => {
   const [shiftNote, setShiftNote] = useState(() => getShiftModuleNote('cash'))
@@ -102,7 +101,7 @@ export const CashPage = () => {
               <CardBody>
                 <div className="flex items-center justify-center p-8 text-muted-foreground">
                   <History className="h-12 w-12 mb-4 opacity-20" />
-                  <p>El historial de sesiones estarÃ¡ disponible pronto.</p>
+                  <p>El historial de sesiones estará disponible pronto.</p>
                 </div>
               </CardBody>
             </Card>

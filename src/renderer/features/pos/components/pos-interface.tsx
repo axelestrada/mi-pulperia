@@ -79,7 +79,7 @@ const saleItemSchema = z.object({
 })
 
 const paymentMethodSchema = z.object({
-  method: z.enum(['cash', 'credit']),
+  method: z.enum(['cash', 'credit', 'transfer']),
   amount: z.coerce
     .number({
       error: 'Ingrese un monto válido',
@@ -1037,11 +1037,12 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
   const setPaymentMethodByShortcut = useCallback(
     (method: PaymentShortcutMethod) => {
-      const mappedMethod = method === 'cash' ? 'cash' : 'credit'
+      const mappedMethod: 'cash' | 'credit' | 'transfer' =
+        method === 'cash' ? 'cash' : method === 'transfer' ? 'transfer' : 'credit'
       const currentPayments = form.getValues('payments') || []
       const amountForCash = fromCents(totals.total)
       const nextPayments: {
-        method: 'cash' | 'credit'
+        method: 'cash' | 'credit' | 'transfer'
         amount: unknown
       }[] =
         currentPayments.length > 0
@@ -1063,10 +1064,9 @@ export const POSInterface: React.FC<POSInterfaceProps> = () => {
 
       form.setValue('payments', nextPayments)
 
-      if (method !== 'cash') {
+      if (method === 'card') {
         sileo.success({
-          title:
-            method === 'card' ? 'Pago con tarjeta' : 'Pago por transferencia',
+          title: 'Pago con tarjeta',
           description: 'Se registrara como pago a credito en esta version.',
         })
       }
