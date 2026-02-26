@@ -1,59 +1,38 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Chip,
+  Divider,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Select,
+  SelectItem,
+  Textarea,
+} from '@heroui/react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
   AlertCircle,
-  BarChart3,
-  Calculator,
-  Calendar,
   CheckCircle,
   Clock,
   CreditCard,
-  DollarSign,
   PlusCircle,
   Receipt,
   User,
   XCircle,
 } from 'lucide-react'
 import type React from 'react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { formatCurrency } from '../../../../shared/utils/formatCurrency'
-import { Alert, AlertDescription } from '../../../components/ui/alert'
-import { Badge } from '../../../components/ui/badge'
-import { Button } from '../../../components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../../../components/ui/dialog'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../../../components/ui/form'
-import { Input } from '../../../components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../../components/ui/select'
-import { Separator } from '../../../components/ui/separator'
-import { Textarea } from '../../../components/ui/textarea'
 import { useActiveCashRegisters } from '../../../hooks/use-cash-registers'
 import {
   useCashSessionSummary,
@@ -63,14 +42,13 @@ import {
   useUpdateSessionNotes,
 } from '../../../hooks/use-cash-sessions'
 
-// Form validation schemas
 const openSessionSchema = z.object({
   cashRegisterId: z.number().min(1, 'Debe seleccionar una caja'),
   openedBy: z.string().min(1, 'Nombre del usuario es requerido'),
   openingAmount: z.coerce
     .number()
     .min(0, 'El monto inicial no puede ser negativo')
-    .transform(val => val * 100),
+    .transform(value => value * 100),
   notes: z.string().optional(),
 })
 
@@ -79,7 +57,7 @@ const closeSessionSchema = z.object({
   actualAmount: z.coerce
     .number()
     .min(0, 'El monto contado no puede ser negativo')
-    .transform(val => val * 100),
+    .transform(value => value * 100),
   notes: z.string().optional(),
 })
 
@@ -87,7 +65,9 @@ const notesSchema = z.object({
   notes: z.string().optional(),
 })
 
+type OpenSessionFormInput = z.input<typeof openSessionSchema>
 type OpenSessionFormData = z.infer<typeof openSessionSchema>
+type CloseSessionFormInput = z.input<typeof closeSessionSchema>
 type CloseSessionFormData = z.infer<typeof closeSessionSchema>
 type NotesFormData = z.infer<typeof notesSchema>
 
@@ -102,29 +82,33 @@ export const CashSessionManager: React.FC<CashSessionManagerProps> = ({
   const [showCloseDialog, setShowCloseDialog] = useState(false)
   const [showNotesDialog, setShowNotesDialog] = useState(false)
 
-  // Queries
   const { data: openSession, refetch: refetchOpenSession } =
     useCurrentOpenSession()
   const { data: sessionSummary } = useCashSessionSummary(openSession?.id || 0)
   const { data: cashRegisters } = useActiveCashRegisters()
 
-  // Mutations
   const openSessionMutation = useOpenCashSession()
   const closeSessionMutation = useCloseCashSession()
   const updateNotesMutation = useUpdateSessionNotes()
 
-  // Forms
-  const openForm = useForm<OpenSessionFormData>({
+  const openForm = useForm<OpenSessionFormInput, unknown, OpenSessionFormData>({
     resolver: zodResolver(openSessionSchema),
     defaultValues: {
       openingAmount: 0,
+      notes: '',
     },
   })
-
-  const closeForm = useForm<CloseSessionFormData>({
+  const closeForm = useForm<
+    CloseSessionFormInput,
+    unknown,
+    CloseSessionFormData
+  >({
     resolver: zodResolver(closeSessionSchema),
+    defaultValues: {
+      actualAmount: 0,
+      notes: '',
+    },
   })
-
   const notesForm = useForm<NotesFormData>({
     resolver: zodResolver(notesSchema),
     defaultValues: {
@@ -132,41 +116,32 @@ export const CashSessionManager: React.FC<CashSessionManagerProps> = ({
     },
   })
 
-  // Open session
+  const expectedAmount = useMemo(() => {
+    if (!openSession) return 0
+    const sales = Number(sessionSummary?.salesSummary?.totalAmount) || 0
+    return Number(openSession.openingAmount) + sales
+  }, [openSession, sessionSummary?.salesSummary?.totalAmount])
+
+  const countedAmountInput = Number(closeForm.watch('actualAmount') || 0)
+  const differenceInCents = countedAmountInput * 100 - expectedAmount
+
   const onOpenSession = async (data: OpenSessionFormData) => {
     try {
       await openSessionMutation.mutateAsync(data)
       setShowOpenDialog(false)
-      openForm.reset()
-      refetchOpenSession()
+      openForm.reset({ openingAmount: 0, notes: '' })
+      await refetchOpenSession()
       onSessionChange?.()
     } catch (error) {
       console.error('Error opening session:', error)
-
-      // Show user-friendly error message
-      let errorMessage = 'Error al abrir la sesión de caja'
-      if (error instanceof Error) {
-        if (error.message.includes('Cash register not found')) {
-          errorMessage =
-            'No se encontró la caja registradora. Verifique que exista una caja registradora activa.'
-        } else if (error.message.includes('already an open session')) {
-          errorMessage =
-            'Ya existe una sesión abierta para esta caja registradora.'
-        } else if (error.message.includes('inactive cash register')) {
-          errorMessage =
-            'No se puede abrir sesión en una caja registradora inactiva.'
-        }
-      }
-
-      // You can add toast notification here if you have a toast system
       sileo.error({
-        title: 'Error al abrir la sesión de caja',
-        description: errorMessage,
+        title: 'Error al abrir la sesion de caja',
+        description:
+          error instanceof Error ? error.message : 'No se pudo abrir la caja.',
       })
     }
   }
 
-  // Close session
   const onCloseSession = async (data: CloseSessionFormData) => {
     if (!openSession) return
 
@@ -176,15 +151,19 @@ export const CashSessionManager: React.FC<CashSessionManagerProps> = ({
         input: data,
       })
       setShowCloseDialog(false)
-      closeForm.reset()
-      refetchOpenSession()
+      closeForm.reset({ actualAmount: 0, notes: '' })
+      await refetchOpenSession()
       onSessionChange?.()
     } catch (error) {
       console.error('Error closing session:', error)
+      sileo.error({
+        title: 'Error al cerrar la sesion de caja',
+        description:
+          error instanceof Error ? error.message : 'No se pudo cerrar la caja.',
+      })
     }
   }
 
-  // Update notes
   const onUpdateNotes = async (data: NotesFormData) => {
     if (!openSession) return
 
@@ -194,522 +173,405 @@ export const CashSessionManager: React.FC<CashSessionManagerProps> = ({
         notes: data.notes || '',
       })
       setShowNotesDialog(false)
-      refetchOpenSession()
+      await refetchOpenSession()
     } catch (error) {
       console.error('Error updating notes:', error)
     }
   }
 
-  // Calculate expected vs actual difference
-  const difference =
-    sessionSummary && openSession
-      ? (closeForm.watch('actualAmount') * 100 || 0) -
-        (Number(openSession.openingAmount) +
-          (Number(sessionSummary.salesSummary?.totalAmount) || 0))
-      : 0
-
   return (
     <div className="space-y-6">
-      {/* Session Status Card */}
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                {openSession ? (
-                  <>
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    Caja Abierta
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5 text-red-500" />
-                    Caja Cerrada
-                  </>
-                )}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                {openSession
-                  ? `Sesión iniciada el ${format(
-                      new Date(openSession.openedAt),
-                      'PPpp',
-                      { locale: es }
-                    )}`
-                  : 'No hay una sesión activa'}
-              </p>
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              {openSession ? (
+                <>
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  Caja Abierta
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-5 w-5 text-danger" />
+                  Caja Cerrada
+                </>
+              )}
             </div>
-            <Badge variant={openSession ? 'default' : 'secondary'}>
-              {openSession ? 'Activa' : 'Inactiva'}
-            </Badge>
+            <p className="mt-1 text-sm text-default-500">
+              {openSession
+                ? `Sesion iniciada el ${format(
+                    new Date(openSession.openedAt),
+                    'PPpp',
+                    {
+                      locale: es,
+                    }
+                  )}`
+                : 'No hay una sesion activa'}
+            </p>
           </div>
+          <Chip color={openSession ? 'success' : 'default'} variant="flat">
+            {openSession ? 'Activa' : 'Inactiva'}
+          </Chip>
         </CardHeader>
 
         {openSession && (
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(openSession.openingAmount / 100)}
-                </p>
-                <p className="text-sm text-muted-foreground">Monto Inicial</p>
-              </div>
-
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(
-                    (sessionSummary?.salesSummary?.totalAmount || 0) / 100
-                  )}
-                </p>
-                <p className="text-sm text-muted-foreground">Ventas</p>
-              </div>
-
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600">
-                  {sessionSummary?.salesSummary?.totalSales || 0}
-                </p>
-                <p className="text-sm text-muted-foreground">Transacciones</p>
-              </div>
-
-              <div className="text-center">
-                <p className="text-2xl font-bold text-orange-600">
-                  {formatCurrency(
-                    (Number(openSession.openingAmount) +
-                      (Number(sessionSummary?.salesSummary?.totalAmount) ||
-                        0)) /
-                      100
-                  )}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Esperado</p>
-              </div>
+          <CardBody className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                label="Monto Inicial"
+                value={formatCurrency(Number(openSession.openingAmount) / 100)}
+              />
+              <StatCard
+                label="Ventas"
+                value={formatCurrency(
+                  (Number(sessionSummary?.salesSummary?.totalAmount) || 0) / 100
+                )}
+              />
+              <StatCard
+                label="Transacciones"
+                value={String(sessionSummary?.salesSummary?.totalSales || 0)}
+              />
+              <StatCard
+                label="Total Esperado"
+                value={formatCurrency(expectedAmount / 100)}
+              />
             </div>
 
-            <Separator />
+            <Divider />
 
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1 text-sm">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              <span className="inline-flex items-center gap-1">
                 <User className="h-4 w-4" />
-                <span>Abierto por: {openSession.openedBy}</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm">
+                Abierto por: {openSession.openedBy}
+              </span>
+              <span className="inline-flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                <span>
-                  Duración:{' '}
-                  {Math.round(
-                    (Date.now() - new Date(openSession.openedAt).getTime()) /
-                      (1000 * 60)
-                  )}{' '}
-                  min
-                </span>
-              </div>
+                Duracion:{' '}
+                {Math.round(
+                  (Date.now() - new Date(openSession.openedAt).getTime()) /
+                    (1000 * 60)
+                )}{' '}
+                min
+              </span>
               {openSession.cashRegisterName && (
-                <div className="flex items-center gap-1 text-sm">
+                <span className="inline-flex items-center gap-1">
                   <Receipt className="h-4 w-4" />
-                  <span>Caja: {openSession.cashRegisterName}</span>
-                </div>
+                  Caja: {openSession.cashRegisterName}
+                </span>
               )}
             </div>
 
             {openSession.notes && (
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium mb-1">Notas:</p>
+              <div className="rounded-large border border-default-200 bg-default-50 p-3">
+                <p className="text-xs font-medium uppercase text-default-500">
+                  Notas
+                </p>
                 <p className="text-sm">{openSession.notes}</p>
               </div>
             )}
-          </CardContent>
+          </CardBody>
         )}
       </Card>
 
-      {/* Payment Breakdown */}
       {openSession &&
         sessionSummary?.paymentBreakdown &&
         sessionSummary.paymentBreakdown.length > 0 && (
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Desglose de Pagos
-              </CardTitle>
+            <CardHeader className="flex items-center gap-2 text-base font-semibold">
+              <CreditCard className="h-5 w-5" />
+              Desglose de Pagos
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {sessionSummary.paymentBreakdown.map((payment, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center"
-                  >
-                    <span className="capitalize">{payment.method}</span>
-                    <span className="font-medium">
-                      {formatCurrency(payment.totalAmount / 100)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+            <CardBody className="space-y-2">
+              {sessionSummary.paymentBreakdown.map((payment, index) => (
+                <div
+                  key={`${payment.method}-${index}`}
+                  className="flex justify-between"
+                >
+                  <span className="capitalize">{payment.method}</span>
+                  <span className="font-medium">
+                    {formatCurrency(payment.totalAmount / 100)}
+                  </span>
+                </div>
+              ))}
+            </CardBody>
           </Card>
         )}
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-2">
         {!openSession ? (
-          <Dialog open={showOpenDialog} onOpenChange={setShowOpenDialog}>
-            <DialogTrigger asChild>
-              <Button className="flex-1">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Abrir Caja
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Abrir Caja</DialogTitle>
-              </DialogHeader>
-              <Form {...openForm}>
-                <form
-                  onSubmit={openForm.handleSubmit(onOpenSession)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={openForm.control}
-                    name="cashRegisterId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Caja Registradora *</FormLabel>
-                        <Select
-                          value={field.value?.toString() || ''}
-                          onValueChange={value =>
-                            field.onChange(parseInt(value))
-                          }
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar caja" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {cashRegisters?.map(register => (
-                              <SelectItem
-                                key={register.id}
-                                value={register.id.toString()}
-                              >
-                                {register.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={openForm.control}
-                    name="openedBy"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Usuario *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nombre del usuario" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={openForm.control}
-                    name="openingAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Monto Inicial</FormLabel>
-                        <FormControl>
-                          <InputGroup>
-                            <InputGroupAddon>L</InputGroupAddon>
-                            <InputGroupInput
-                              {...field}
-                              placeholder="0.00"
-                              onChange={e => field.onChange(e.target.value)}
-                            />
-                          </InputGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={openForm.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas (Opcional)</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} placeholder="Observaciones..." />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-end gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowOpenDialog(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={openSessionMutation.isPending}
-                    >
-                      {openSessionMutation.isPending
-                        ? 'Abriendo...'
-                        : 'Abrir Caja'}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+          <Button color="primary" onPress={() => setShowOpenDialog(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Abrir Caja
+          </Button>
         ) : (
           <>
-            <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Notas
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Actualizar Notas</DialogTitle>
-                </DialogHeader>
-                <Form {...notesForm}>
-                  <form
-                    onSubmit={notesForm.handleSubmit(onUpdateNotes)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={notesForm.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notas</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Observaciones..."
-                              rows={4}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="flex justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowNotesDialog(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={updateNotesMutation.isPending}
-                      >
-                        {updateNotesMutation.isPending
-                          ? 'Guardando...'
-                          : 'Guardar'}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
-              <DialogTrigger asChild>
-                <Button variant="destructive" className="flex-1">
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Cerrar Caja
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Cerrar Caja</DialogTitle>
-                </DialogHeader>
-
-                {sessionSummary && (
-                  <div className="space-y-3 p-4 bg-gray-50 rounded-lg mb-4">
-                    <h4 className="font-medium">Resumen de la Sesión</h4>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span>Monto inicial:</span>
-                        <span>
-                          {formatCurrency(openSession.openingAmount / 100)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Ventas realizadas:</span>
-                        <span>
-                          {sessionSummary.salesSummary?.totalSales || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total en ventas:</span>
-                        <span>
-                          {formatCurrency(
-                            (sessionSummary.salesSummary?.totalAmount || 0) /
-                              100
-                          )}
-                        </span>
-                      </div>
-                      <Separator className="my-2" />
-                      <div className="flex justify-between font-medium">
-                        <span>Total esperado:</span>
-                        <span>
-                          {formatCurrency(
-                            (Number(openSession.openingAmount) +
-                              (Number(
-                                sessionSummary.salesSummary?.totalAmount
-                              ) || 0)) /
-                              100
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Form {...closeForm}>
-                  <form
-                    onSubmit={closeForm.handleSubmit(onCloseSession)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={closeForm.control}
-                      name="closedBy"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Usuario *</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Nombre del usuario"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={closeForm.control}
-                      name="actualAmount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Monto Contado *</FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>L</InputGroupAddon>
-                              <InputGroupInput
-                                {...field}
-                                placeholder="0.00"
-                                onChange={e =>
-                                  field.onChange(
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Difference indicator */}
-                    {closeForm.watch('actualAmount') !== undefined && (
-                      <div
-                        className={`p-3 rounded-lg ${
-                          Math.abs(difference) < 0.01
-                            ? 'bg-green-50 border border-green-200'
-                            : difference > 0
-                              ? 'bg-blue-50 border border-blue-200'
-                              : 'bg-red-50 border border-red-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          {Math.abs(difference) < 0.01 ? (
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <AlertCircle className="h-4 w-4 text-orange-600" />
-                          )}
-                          <span className="font-medium text-sm">
-                            {Math.abs(difference) < 0.01
-                              ? 'Cuadra perfecto'
-                              : difference > 0
-                                ? `Sobrante: ${formatCurrency(difference)}`
-                                : `Faltante: ${formatCurrency(
-                                    Math.abs(difference)
-                                  )}`}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <FormField
-                      control={closeForm.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notas (Opcional)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Observaciones del cierre..."
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="flex justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowCloseDialog(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={closeSessionMutation.isPending}
-                        variant="destructive"
-                      >
-                        {closeSessionMutation.isPending
-                          ? 'Cerrando...'
-                          : 'Cerrar Caja'}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+            <Button variant="bordered" onPress={() => setShowNotesDialog(true)}>
+              Notas
+            </Button>
+            <Button color="danger" onPress={() => setShowCloseDialog(true)}>
+              <XCircle className="mr-2 h-4 w-4" />
+              Cerrar Caja
+            </Button>
           </>
         )}
       </div>
 
-      {/* Alerts */}
       {!openSession && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
+        <Card className="border-warning/40 bg-warning/10">
+          <CardBody className="flex flex-row items-center gap-2 text-sm">
+            <AlertCircle className="h-4 w-4 text-warning" />
             Debe abrir una caja antes de poder realizar ventas.
-          </AlertDescription>
-        </Alert>
+          </CardBody>
+        </Card>
       )}
+
+      <Modal isOpen={showOpenDialog} onOpenChange={setShowOpenDialog} size="md">
+        <ModalContent>
+          <ModalHeader>Abrir Caja</ModalHeader>
+          <ModalBody className="space-y-4">
+            <Controller
+              control={openForm.control}
+              name="cashRegisterId"
+              render={({ field, fieldState }) => (
+                <Select
+                  label="Caja Registradora *"
+                  selectedKeys={field.value ? [String(field.value)] : []}
+                  onSelectionChange={keys => {
+                    const value = Number(keys.currentKey || 0)
+                    field.onChange(value)
+                  }}
+                  isInvalid={Boolean(fieldState.error)}
+                  errorMessage={fieldState.error?.message}
+                >
+                  {(cashRegisters || []).map(register => (
+                    <SelectItem key={String(register.id)}>
+                      {register.name}
+                    </SelectItem>
+                  ))}
+                </Select>
+              )}
+            />
+
+            <Controller
+              control={openForm.control}
+              name="openedBy"
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Usuario *"
+                  placeholder="Nombre del usuario"
+                  isInvalid={Boolean(fieldState.error)}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={openForm.control}
+              name="openingAmount"
+              render={({ field, fieldState }) => (
+                <Input
+                  type="number"
+                  label="Monto Inicial"
+                  placeholder="0.00"
+                  startContent="L"
+                  value={String(field.value ?? '')}
+                  onValueChange={value => field.onChange(Number(value || 0))}
+                  isInvalid={Boolean(fieldState.error)}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={openForm.control}
+              name="notes"
+              render={({ field }) => (
+                <Textarea
+                  label="Notas"
+                  placeholder="Observaciones..."
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={() => setShowOpenDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              color="primary"
+              onPress={() => openForm.handleSubmit(onOpenSession)}
+              isLoading={openSessionMutation.isPending}
+            >
+              Abrir Caja
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={showNotesDialog}
+        onOpenChange={setShowNotesDialog}
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader>Actualizar Notas</ModalHeader>
+          <ModalBody>
+            <Controller
+              control={notesForm.control}
+              name="notes"
+              render={({ field }) => (
+                <Textarea
+                  label="Notas"
+                  minRows={4}
+                  placeholder="Observaciones..."
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={() => setShowNotesDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              color="primary"
+              onPress={() => notesForm.handleSubmit(onUpdateNotes)}
+              isLoading={updateNotesMutation.isPending}
+            >
+              Guardar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={showCloseDialog}
+        onOpenChange={setShowCloseDialog}
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader>Cerrar Caja</ModalHeader>
+          <ModalBody className="space-y-4">
+            {openSession && (
+              <div className="rounded-large border border-default-200 bg-default-50 p-3 text-sm">
+                <div className="mb-2 font-medium">Resumen de la Sesion</div>
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span>Monto inicial:</span>
+                    <span>
+                      {formatCurrency(openSession.openingAmount / 100)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Ventas realizadas:</span>
+                    <span>{sessionSummary?.salesSummary?.totalSales || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total en ventas:</span>
+                    <span>
+                      {formatCurrency(
+                        (Number(sessionSummary?.salesSummary?.totalAmount) ||
+                          0) / 100
+                      )}
+                    </span>
+                  </div>
+                  <Divider className="my-2" />
+                  <div className="flex justify-between font-medium">
+                    <span>Total esperado:</span>
+                    <span>{formatCurrency(expectedAmount / 100)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Controller
+              control={closeForm.control}
+              name="closedBy"
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Usuario *"
+                  placeholder="Nombre del usuario"
+                  isInvalid={Boolean(fieldState.error)}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={closeForm.control}
+              name="actualAmount"
+              render={({ field, fieldState }) => (
+                <Input
+                  type="number"
+                  label="Monto Contado *"
+                  placeholder="0.00"
+                  startContent="L"
+                  value={String(field.value ?? '')}
+                  onValueChange={value => field.onChange(Number(value || 0))}
+                  isInvalid={Boolean(fieldState.error)}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <div
+              className={`rounded-large border p-3 text-sm ${
+                Math.abs(differenceInCents) < 1
+                  ? 'border-success/40 bg-success/10'
+                  : differenceInCents > 0
+                    ? 'border-primary/40 bg-primary/10'
+                    : 'border-danger/40 bg-danger/10'
+              }`}
+            >
+              {Math.abs(differenceInCents) < 1
+                ? 'Cuadra perfecto'
+                : differenceInCents > 0
+                  ? `Sobrante: ${formatCurrency(differenceInCents / 100)}`
+                  : `Faltante: ${formatCurrency(Math.abs(differenceInCents) / 100)}`}
+            </div>
+
+            <Controller
+              control={closeForm.control}
+              name="notes"
+              render={({ field }) => (
+                <Textarea
+                  label="Notas"
+                  placeholder="Observaciones del cierre..."
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={() => setShowCloseDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              color="danger"
+              onPress={() => closeForm.handleSubmit(onCloseSession)}
+              isLoading={closeSessionMutation.isPending}
+            >
+              Cerrar Caja
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   )
 }
 
+const StatCard = ({ label, value }: { label: string; value: string }) => (
+  <div className="rounded-large border border-default-200 bg-content1 p-3 text-center">
+    <p className="text-xl font-semibold">{value}</p>
+    <p className="text-sm text-default-500">{label}</p>
+  </div>
+)
+
 export default CashSessionManager
+

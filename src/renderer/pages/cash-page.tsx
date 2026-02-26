@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { CreditCard, History, Settings } from 'lucide-react'
-import {
-  Button,
-  Card,
-  CardBody,
-  Tab,
-  Tabs,
-  Textarea,
-} from '@heroui/react'
+import { Button, Card, CardBody, Tab, Tabs, Textarea } from '@heroui/react'
 
 import { CashSessionManager } from '../features/cash-sessions/components/cash-session-manager'
 import { CashRegistersList } from '../features/cash-sessions/components/cash-registers-list'
@@ -89,10 +82,8 @@ export const CashPage = () => {
               </CardBody>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-              <div className="rounded-xl border bg-card text-card-foreground shadow col-span-2 p-6">
-                <CashSessionManager />
-              </div>
+            <div className="grid gap-4">
+              <CashSessionManager />
             </div>
           </div>
         </Tab>
@@ -135,3 +126,4 @@ export const CashPage = () => {
     </div>
   )
 }
+

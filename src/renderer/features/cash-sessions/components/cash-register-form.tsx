@@ -1,36 +1,19 @@
-import React from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from '../../../components/ui/form'
-import {
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from '../../../components/ui/dialog'
-import { Checkbox } from '../../../components/ui/checkbox'
-import {
+  Button,
+  Checkbox,
+  Input,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../../components/ui/select'
-
+} from '@heroui/react'
+import type React from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
 import {
-  CashRegister,
+  type CashRegister,
   useCreateCashRegister,
   useUpdateCashRegister,
 } from '../../../hooks/use-cash-registers'
@@ -42,6 +25,7 @@ const cashRegisterSchema = z.object({
   isDefault: z.boolean().default(false),
 })
 
+type CashRegisterFormInput = z.input<typeof cashRegisterSchema>
 type CashRegisterFormData = z.infer<typeof cashRegisterSchema>
 
 interface CashRegisterFormProps {
@@ -55,12 +39,15 @@ export const CashRegisterForm: React.FC<CashRegisterFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
-  const isEditing = !!cashRegister
-
+  const isEditing = Boolean(cashRegister)
   const createMutation = useCreateCashRegister()
   const updateMutation = useUpdateCashRegister()
 
-  const form = useForm<CashRegisterFormData>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CashRegisterFormInput, unknown, CashRegisterFormData>({
     resolver: zodResolver(cashRegisterSchema),
     defaultValues: {
       name: cashRegister?.name || '',
@@ -84,120 +71,112 @@ export const CashRegisterForm: React.FC<CashRegisterFormProps> = ({
           isDefault: data.isDefault,
         })
       }
+
       onSuccess?.()
     } catch (error) {
       console.error('Error saving cash register:', error)
+      sileo.error({
+        title: 'No se pudo guardar la caja',
+        description: 'Verifique los datos e intente nuevamente.',
+      })
     }
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
-    <div className="space-y-4">
-      <DialogHeader>
-        <DialogTitle>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <ModalHeader className="flex flex-col gap-1">
+        <h3 className="text-lg font-semibold">
           {isEditing ? 'Editar Caja Registradora' : 'Nueva Caja Registradora'}
-        </DialogTitle>
-        <DialogDescription>
+        </h3>
+        <p className="text-sm text-default-500">
           {isEditing
             ? 'Modifique los detalles de la caja registradora.'
             : 'Complete los datos para crear una nueva caja.'}
-        </DialogDescription>
-      </DialogHeader>
+        </p>
+      </ModalHeader>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Ej. Caja Principal" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ubicación (Opcional)</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Ej. Entrada Principal" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {isEditing && (
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione estado" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="active">Activa</SelectItem>
-                      <SelectItem value="inactive">Inactiva</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+      <ModalBody className="space-y-4">
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="Nombre *"
+              placeholder="Ej. Caja Principal"
+              isInvalid={Boolean(errors.name?.message)}
+              errorMessage={errors.name?.message}
             />
           )}
+        />
 
-          <FormField
-            control={form.control}
-            name="isDefault"
+        <Controller
+          control={control}
+          name="location"
+          render={({ field }) => (
+            <Input
+              {...field}
+              value={field.value || ''}
+              label="Ubicacion"
+              placeholder="Ej. Entrada principal"
+              isInvalid={Boolean(errors.location?.message)}
+              errorMessage={errors.location?.message}
+            />
+          )}
+        />
+
+        {isEditing && (
+          <Controller
+            control={control}
+            name="status"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Caja Predeterminada</FormLabel>
-                  <FormDescription>
-                    Esta caja será seleccionada por defecto al abrir sesión.
-                  </FormDescription>
-                </div>
-              </FormItem>
+              <Select
+                label="Estado"
+                selectedKeys={field.value ? [field.value] : []}
+                defaultSelectedKeys={field.value ? [field.value] : undefined}
+                onSelectionChange={keys => {
+                  const next = String(keys.currentKey || 'active') as
+                    | 'active'
+                    | 'inactive'
+                  field.onChange(next)
+                }}
+                isInvalid={Boolean(errors.status?.message)}
+                errorMessage={errors.status?.message}
+              >
+                <SelectItem key="active">Activa</SelectItem>
+                <SelectItem key="inactive">Inactiva</SelectItem>
+              </Select>
             )}
           />
+        )}
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Guardando...' : 'Guardar'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
-    </div>
+        <Controller
+          control={control}
+          name="isDefault"
+          render={({ field }) => (
+            <Checkbox isSelected={field.value} onValueChange={field.onChange}>
+              Caja predeterminada para aperturas de sesion
+            </Checkbox>
+          )}
+        />
+      </ModalBody>
+
+      <ModalFooter>
+        <Button
+          type="button"
+          variant="light"
+          onPress={onCancel}
+          isDisabled={isPending}
+        >
+          Cancelar
+        </Button>
+        <Button type="submit" color="primary" isLoading={isPending}>
+          {isPending ? 'Guardando...' : 'Guardar'}
+        </Button>
+      </ModalFooter>
+    </form>
   )
 }
+
