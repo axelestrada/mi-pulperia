@@ -30,6 +30,7 @@ export interface SalesFilters {
   search?: string
   customerId?: number
   cashSessionId?: number
+  type?: 'SALE' | 'REFUND'
   status?: 'completed' | 'cancelled' | 'refunded'
   page?: number
   limit?: number
@@ -120,6 +121,7 @@ export const SalesRepository = {
       search,
       customerId,
       cashSessionId,
+      type,
       status,
       page = 1,
       limit = 50,
@@ -157,6 +159,10 @@ export const SalesRepository = {
 
     if (status) {
       whereConditions.push(eq(salesTable.status, status))
+    }
+
+    if (type) {
+      whereConditions.push(eq(salesTable.type, type))
     }
 
     if (dateFrom) {

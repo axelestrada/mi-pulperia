@@ -92,6 +92,7 @@ export function NewReturnDialog({
 
   const { data: salesSearch, isFetching: isSearchLoading } = useSales({
     search: appliedSearch || undefined,
+    type: 'SALE',
     status: 'completed',
     limit: 10,
     sortBy: 'createdAt',
@@ -110,9 +111,10 @@ export function NewReturnDialog({
     () => presentationsResult?.data ?? [],
     [presentationsResult?.data]
   )
+  const exchangePresentations = presentations
   const selectedPresentation = useMemo(
-    () => presentations.find(p => p.id === Number(selectedPresentationId)),
-    [presentations, selectedPresentationId]
+    () => exchangePresentations.find(p => p.id === Number(selectedPresentationId)),
+    [exchangePresentations, selectedPresentationId]
   )
 
   const { data: batchesResult, isLoading: isBatchesLoading } = useInventoryBatches({
@@ -311,7 +313,7 @@ export function NewReturnDialog({
     const finalNotes = [reason.trim(), notes.trim()].filter(Boolean).join(' | ')
 
     try {
-      await processReturn.mutateAsync({
+      const result = await processReturn.mutateAsync({
         saleId: selectedSaleId,
         returnItems,
         type: returnType,
@@ -319,14 +321,18 @@ export function NewReturnDialog({
         notes: finalNotes || undefined,
       })
 
+      const balance = Number(result?.return?.balanceCents ?? 0)
+      const hasAdditionalSale = Boolean(result?.additionalSaleId)
       const message =
         returnType === 'refund'
           ? `Devolucion completada. Reembolso: ${formatCurrency(fromCents(returnTotal))}`
-          : difference > 0
-            ? `Cambio completado. Vuelto al cliente: ${formatCurrency(fromCents(difference))}`
-            : difference < 0
-              ? `Cambio completado. Cobrar al cliente: ${formatCurrency(fromCents(Math.abs(difference)))}`
-              : 'Cambio completado. Sin diferencia de precio.'
+          : hasAdditionalSale
+            ? `Cambio completado. Se genero una venta adicional #${result.additionalSaleId}.`
+            : balance > 0
+              ? `Cambio completado. Vuelto al cliente: ${formatCurrency(fromCents(balance))}`
+              : balance < 0
+                ? `Cambio completado. Cobrar al cliente: ${formatCurrency(fromCents(Math.abs(balance)))}`
+                : 'Cambio completado. Sin diferencia de precio.'
 
       toast.success(message)
       onOpenChange(false)
@@ -568,6 +574,10 @@ export function NewReturnDialog({
                         <div className="space-y-3">
                           <Divider />
                           <p className="text-sm font-medium">Productos para cambio</p>
+                          <p className="text-xs text-default-500">
+                            Si agregas productos o cantidades que exceden lo devuelto de la venta
+                            original, se registran automaticamente como una venta adicional.
+                          </p>
                           <div className="grid gap-2 md:grid-cols-[1fr_1fr_110px_auto]">
                             <Select
                               label="Presentacion"
@@ -576,7 +586,7 @@ export function NewReturnDialog({
                                 setSelectedPresentationId(String(keys.currentKey ?? ''))
                               }
                             >
-                              {presentations.map(p => (
+                              {exchangePresentations.map(p => (
                                 <SelectItem key={String(p.id)}>
                                   {p.name} - {formatCurrency(fromCents(p.salePrice))}
                                 </SelectItem>

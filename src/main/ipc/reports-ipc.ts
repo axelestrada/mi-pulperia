@@ -12,7 +12,6 @@ import { CustomersRepository } from '../repositories/customers-repository'
 import { ExpensesRepository } from '../repositories/expenses-repository'
 import { InventoryBatchesRepository } from '../repositories/inventory-batches-repository'
 import { PurchaseOrdersRepository } from '../repositories/purchase-orders-repository'
-import { SaleReturnsRepository } from '../repositories/sale-returns-repository'
 import { SalesRepository } from '../repositories/sales-repository'
 
 export function registerReportsIpc() {
@@ -47,14 +46,19 @@ export function registerReportsIpc() {
         .where(and(...whereConditions))
         .get()
 
-      const dateFromObj = dateFrom ? new Date(dateFrom) : undefined
-      const dateToObj = dateTo ? new Date(dateTo) : undefined
+      const totalRevenue = Number(summary?.totalRevenue) || 0
+      const totalRefundedSummary = await db
+        .select({
+          totalRefunded:
+            sql<number>`coalesce(abs(sum(case when ${salesTable.type} = 'REFUND' then ${salesTable.total} else 0 end)), 0)`.as(
+              'total_refunded'
+            ),
+        })
+        .from(salesTable)
+        .where(and(...whereConditions))
+        .get()
 
-      const { totalRefunded, totalReceived } =
-        await SaleReturnsRepository.getTotalRefunded(dateFromObj, dateToObj)
-
-      const netRevenue =
-        (Number(summary?.totalRevenue) || 0) - totalRefunded + totalReceived
+      const totalRefunded = Number(totalRefundedSummary?.totalRefunded || 0)
 
       const salesByDate = await db
         .select({
@@ -109,16 +113,16 @@ export function registerReportsIpc() {
         .where(and(...whereConditions))
         .groupBy(paymentMethodsTable.method)
 
-      return {
-        summary: {
-          ...summary,
-          totalRevenue: netRevenue,
-          totalRefunded,
-          totalReceivedFromReturns: totalReceived,
-          averageTicket: summary?.totalSales
-            ? netRevenue / Number(summary.totalSales)
-            : 0,
-        },
+        return {
+          summary: {
+            ...summary,
+            totalRevenue,
+            totalRefunded,
+            totalReceivedFromReturns: 0,
+            averageTicket: summary?.totalSales
+              ? totalRevenue / Number(summary.totalSales)
+              : 0,
+          },
         salesByDate,
         topProducts,
         salesByPaymentMethod,

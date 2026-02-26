@@ -165,6 +165,10 @@ export const SalesService = {
       data.sale.saleNumber = await SalesRepository.generateSaleNumber()
     }
 
+    if (!data.sale.type) {
+      data.sale.type = 'SALE'
+    }
+
     // Set cash session
     data.sale.cashSessionId = openSession.id
 

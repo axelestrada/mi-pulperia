@@ -303,6 +303,8 @@ export const POSService = {
         taxAmount: input.taxAmount || 0,
         discountAmount: input.discountAmount || 0,
         total: input.total,
+        type: 'SALE',
+        originalSaleId: undefined,
         status: 'completed',
         notes: input.notes?.trim() || undefined,
       },

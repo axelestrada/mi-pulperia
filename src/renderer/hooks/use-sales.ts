@@ -9,6 +9,8 @@ export interface Sale {
   taxAmount: number
   discountAmount: number
   total: number
+  type: 'SALE' | 'REFUND'
+  originalSaleId?: number
   status: 'completed' | 'cancelled' | 'refunded'
   notes?: string
   createdAt: Date
@@ -61,6 +63,7 @@ export interface SalesFilters {
   search?: string
   customerId?: number
   cashSessionId?: number
+  type?: 'SALE' | 'REFUND'
   status?: 'completed' | 'cancelled' | 'refunded'
   page?: number
   limit?: number
