@@ -1,8 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-
-import { customersTable } from './customers'
 import { cashSessionsTable } from './cash-sessions'
+import { customersTable } from './customers'
 
 export const salesTable = sqliteTable(
   'sales',

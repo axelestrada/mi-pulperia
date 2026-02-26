@@ -1,25 +1,24 @@
-import { db } from '../db'
 import {
-  eq,
   and,
-  like,
-  or,
-  desc,
   asc,
   count,
-  gte,
-  lte,
+  desc,
+  eq,
   gt,
+  gte,
+  like,
+  lte,
+  or,
   sum,
-  isNull,
   like,
   getTableColumns,
 } from 'drizzle-orm'
+import { db } from '../db'
 
 import {
+  type InsertInventoryBatch,
   inventoryBatchesTable,
   type SelectInventoryBatch,
-  type InsertInventoryBatch,
 } from '../db/schema/inventory-batches'
 import { productsTable } from '../db/schema/products'
 
@@ -27,7 +26,7 @@ export interface InventoryBatchesFilters {
   search?: string
   productId?: number
   supplierId?: number
-  hasStock?: boolean // Filter batches with available quantity > 0
+  hasStock?: boolean
   expiringBefore?: Date
   expiringAfter?: Date
   page?: number
@@ -380,7 +379,7 @@ export const InventoryBatchesRepository = {
 
   // Get batches for FEFO allocation
   getBatchesForFEFO: async (productId: number, requestedQuantity: number) =>
-    db
+    db_requestedQuantity
       .select()
       .from(inventoryBatchesTable)
       .where(
