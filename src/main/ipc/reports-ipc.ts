@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm'
 import { ipcMain } from 'electron'
 import { db } from '../db'
+import { inventoryBatchesTable } from '../db/schema/inventory-batches'
 import { categoriesTable } from '../db/schema/categories'
 import { presentationsTable } from '../db/schema/presentations'
 import { productsTable } from '../db/schema/products'
@@ -394,20 +395,41 @@ export function registerReportsIpc() {
           dateFrom = new Date(now.setHours(0, 0, 0, 0))
       }
 
-      // Get sales metrics
-      const salesResult = await SalesRepository.findAll({
-        dateFrom,
-        dateTo,
-        limit: 10000,
-      })
+      const salesWhereConditions = [
+        eq(salesTable.deleted, false),
+        eq(salesTable.status, 'completed'),
+        gte(salesTable.createdAt, dateFrom),
+        lte(salesTable.createdAt, dateTo),
+      ]
 
-      const sales = salesResult.data
-      const totalSales = sales.length
-      const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0)
-      const totalProfit = sales.reduce(
-        (sum, sale) => sum + (sale.totalProfit || 0),
-        0
-      )
+      const salesSummary = await db
+        .select({
+          totalSales: count(salesTable.id),
+          totalRevenue: sum(salesTable.total),
+        })
+        .from(salesTable)
+        .where(and(...salesWhereConditions))
+        .get()
+
+      const salesProfitSummary = await db
+        .select({
+          totalProfit:
+            sql<number>`coalesce(sum(${saleItemsTable.totalPrice} - (${saleItemsTable.quantity} * ${inventoryBatchesTable.unitCost})), 0)`.as(
+              'total_profit'
+            ),
+        })
+        .from(saleItemsTable)
+        .innerJoin(salesTable, eq(saleItemsTable.saleId, salesTable.id))
+        .innerJoin(
+          inventoryBatchesTable,
+          eq(saleItemsTable.batchId, inventoryBatchesTable.id)
+        )
+        .where(and(...salesWhereConditions))
+        .get()
+
+      const totalSales = Number(salesSummary?.totalSales || 0)
+      const totalRevenue = Number(salesSummary?.totalRevenue || 0)
+      const totalProfit = Number(salesProfitSummary?.totalProfit || 0)
       const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0
 
       // Get low stock items

@@ -26,7 +26,6 @@ import { formatCurrency } from '@/../shared/utils/formatCurrency'
 import { PageHeader } from '@/components/ui/page-header'
 
 type TimeRange = '7' | '14' | '30'
-type Period = 'week' | 'month'
 
 interface DashboardMetrics {
   sales: {
@@ -67,7 +66,7 @@ export const DashboardPage = () => {
   }, [])
 
   const loadDashboardMetrics = useCallback(
-    async (period: Period) => {
+    async () => {
       try {
         setIsLoading(true)
 
@@ -75,7 +74,7 @@ export const DashboardPage = () => {
         dateFrom.setDate(dateFrom.getDate() - Number(timeRange))
 
         const [metrics, salesReport, topProductsReport] = await Promise.all([
-          window.api.reports.getDashboardMetrics(period),
+          window.api.reports.getDashboardMetrics('today'),
           window.api.reports.getSalesReport({
             dateFrom: dateFrom.toISOString(),
             dateTo: new Date().toISOString(),
@@ -154,8 +153,7 @@ export const DashboardPage = () => {
   )
 
   useEffect(() => {
-    const period: Period = timeRange === '30' ? 'month' : 'week'
-    void loadDashboardMetrics(period)
+    void loadDashboardMetrics()
   }, [timeRange, loadDashboardMetrics])
 
   const profitMargin =
@@ -432,4 +430,3 @@ export const DashboardPage = () => {
     </div>
   )
 }
-
