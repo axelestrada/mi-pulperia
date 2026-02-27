@@ -1,3 +1,4 @@
+import type { Selection } from '@heroui/react'
 import {
   Button,
   Card,
@@ -15,7 +16,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Pagination,
   Select,
   SelectItem,
   Spinner,
@@ -32,17 +32,19 @@ import { es } from 'date-fns/locale'
 import {
   AlertCircle,
   Ban,
+  Columns3,
   DollarSign,
   Download,
   Eye,
   FileText,
-  Filter,
   MoreVertical,
   Receipt,
   RefreshCw,
+  Search,
   TrendingUp,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { TablePagination } from '../components/table/table-pagination'
 import { UNIT_CONFIG } from '../features/products/ui/product-units'
 import {
   type Sale,
@@ -57,19 +59,23 @@ import {
 
 type SalesStatusFilter = '' | 'completed' | 'cancelled' | 'refunded'
 
-type FiltersState = {
-  search: string
-  status: SalesStatusFilter
-  minAmount: string
-  maxAmount: string
-}
+const INITIAL_VISIBLE_COLUMNS = [
+  'saleNumber',
+  'createdAt',
+  'customer',
+  'total',
+  'status',
+  'actions',
+]
 
-const DEFAULT_FILTERS: FiltersState = {
-  search: '',
-  status: '',
-  minAmount: '',
-  maxAmount: '',
-}
+const columns = [
+  { name: 'NUMERO', uid: 'saleNumber' },
+  { name: 'FECHA', uid: 'createdAt' },
+  { name: 'CLIENTE', uid: 'customer' },
+  { name: 'TOTAL', uid: 'total' },
+  { name: 'ESTADO', uid: 'status' },
+  { name: 'ACCIONES', uid: 'actions' },
+]
 
 const formatQuantity = (value: number) => {
   const formatted = value.toFixed(3)
@@ -77,7 +83,6 @@ const formatQuantity = (value: number) => {
 }
 
 export const SalesPage = () => {
-  const [showFilters, setShowFilters] = useState(false)
   const [showSaleDetail, setShowSaleDetail] = useState(false)
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
@@ -85,10 +90,12 @@ export const SalesPage = () => {
   const [saleToCancel, setSaleToCancel] = useState<Sale | null>(null)
   const [saleToRefund, setSaleToRefund] = useState<Sale | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [draftFilters, setDraftFilters] =
-    useState<FiltersState>(DEFAULT_FILTERS)
-  const [appliedFilters, setAppliedFilters] =
-    useState<FiltersState>(DEFAULT_FILTERS)
+  const [pageSize, setPageSize] = useState(20)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<SalesStatusFilter>('')
+  const [visibleColumns, setVisibleColumns] = useState<Selection>(
+    new Set(INITIAL_VISIBLE_COLUMNS)
+  )
   const [cancelReason, setCancelReason] = useState('')
   const [refundReason, setRefundReason] = useState('')
   const [cancelReasonError, setCancelReasonError] = useState('')
@@ -96,37 +103,15 @@ export const SalesPage = () => {
 
   const filters = useMemo(() => {
     const nextFilters: SalesFilters = {
-      search: appliedFilters.search.trim() || undefined,
-      status: appliedFilters.status || undefined,
-      minAmount:
-        appliedFilters.minAmount.trim() === ''
-          ? undefined
-          : Number(appliedFilters.minAmount),
-      maxAmount:
-        appliedFilters.maxAmount.trim() === ''
-          ? undefined
-          : Number(appliedFilters.maxAmount),
+      search: search.trim() || undefined,
+      status: statusFilter || undefined,
       page: currentPage,
-      limit: 20,
+      limit: pageSize,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     }
-
-    if (
-      typeof nextFilters.minAmount === 'number' &&
-      Number.isNaN(nextFilters.minAmount)
-    ) {
-      delete nextFilters.minAmount
-    }
-    if (
-      typeof nextFilters.maxAmount === 'number' &&
-      Number.isNaN(nextFilters.maxAmount)
-    ) {
-      delete nextFilters.maxAmount
-    }
-
     return nextFilters
-  }, [appliedFilters, currentPage])
+  }, [currentPage, pageSize, search, statusFilter])
 
   const { data: salesData, isLoading } = useSales(filters)
   const { data: selectedSale } = useSale(selectedSaleId || 0)
@@ -145,17 +130,23 @@ export const SalesPage = () => {
 
   const salesList = salesData?.data ?? []
   const pagination = salesData?.pagination
-
-  const onApplyFilters = () => {
-    setAppliedFilters(draftFilters)
-    setCurrentPage(1)
-  }
-
-  const onClearFilters = () => {
-    setDraftFilters(DEFAULT_FILTERS)
-    setAppliedFilters(DEFAULT_FILTERS)
-    setCurrentPage(1)
-  }
+  const totalItems = pagination?.total ?? 0
+  const totalPages = Math.max(1, pagination?.totalPages ?? 1)
+  const statusOptions = useMemo(
+    () => [
+      { name: 'Todos', uid: 'all' },
+      { name: 'Completada', uid: 'completed' },
+      { name: 'Cancelada', uid: 'cancelled' },
+      { name: 'Reembolsada', uid: 'refunded' },
+    ],
+    []
+  )
+  const headerColumns = useMemo(() => {
+    if (visibleColumns === 'all') return columns
+    return columns.filter(column =>
+      Array.from(visibleColumns).includes(column.uid)
+    )
+  }, [visibleColumns])
 
   const onViewSale = (sale: Sale) => {
     setSelectedSaleId(sale.id)
@@ -249,6 +240,159 @@ export const SalesPage = () => {
 
   const money = (cents: number) => formatCurrency(fromCents(cents))
 
+  const renderCell = (sale: Sale, columnKey: string) => {
+    switch (columnKey) {
+      case 'saleNumber':
+        return <span className="font-medium">{sale.saleNumber}</span>
+      case 'createdAt':
+        return format(new Date(sale.createdAt), 'PPp', { locale: es })
+      case 'customer':
+        return (
+          <div>
+            <p>{sale.customerName || 'Cliente general'}</p>
+            {sale.customerDocument && (
+              <p className="text-xs text-default-500">{sale.customerDocument}</p>
+            )}
+          </div>
+        )
+      case 'total':
+        return (
+          <span className="font-medium tabular-nums">
+            {formatCurrency(fromCents(sale.total))}
+          </span>
+        )
+      case 'status':
+        return getStatusBadge(sale.status)
+      case 'actions':
+        return (
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light">
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label={`Acciones de venta ${sale.saleNumber}`}>
+              <DropdownItem
+                key="view"
+                startContent={<Eye className="size-4" />}
+                onPress={() => onViewSale(sale)}
+              >
+                Ver detalle
+              </DropdownItem>
+              {sale.status === 'completed' ? (
+                <DropdownItem
+                  key="cancel"
+                  color="warning"
+                  startContent={<Ban className="size-4" />}
+                  onPress={() => openCancelDialog(sale)}
+                >
+                  Cancelar
+                </DropdownItem>
+              ) : null}
+              {sale.status === 'completed' ? (
+                <DropdownItem
+                  key="refund"
+                  color="danger"
+                  startContent={<RefreshCw className="size-4" />}
+                  onPress={() => openRefundDialog(sale)}
+                >
+                  Reembolsar
+                </DropdownItem>
+              ) : null}
+            </DropdownMenu>
+          </Dropdown>
+        )
+      default:
+        return null
+    }
+  }
+
+  const topContent = useMemo(
+    () => (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            isClearable
+            className="w-full sm:max-w-72"
+            placeholder="Buscar venta, cliente, documento..."
+            startContent={<Search className="size-4 text-default-400" />}
+            value={search}
+            onValueChange={value => {
+              setSearch(value)
+              setCurrentPage(1)
+            }}
+          />
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="flat">Estado</Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              disallowEmptySelection
+              closeOnSelect
+              selectionMode="single"
+              selectedKeys={new Set([statusFilter || 'all'])}
+              onSelectionChange={keys => {
+                const next = Array.from(keys)[0]?.toString() || 'all'
+                setStatusFilter(next === 'all' ? '' : (next as SalesStatusFilter))
+                setCurrentPage(1)
+              }}
+            >
+              {statusOptions.map(status => (
+                <DropdownItem key={status.uid}>{status.name}</DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                variant="flat"
+                startContent={<Columns3 className="size-4 text-default-400" />}
+              >
+                Columnas
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              disallowEmptySelection
+              closeOnSelect={false}
+              selectionMode="multiple"
+              selectedKeys={visibleColumns}
+              onSelectionChange={setVisibleColumns}
+            >
+              {columns.map(column => (
+                <DropdownItem key={column.uid}>{column.name}</DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-small text-default-400">
+            Total {totalItems} ventas
+          </span>
+          <Select
+            label="Elementos por pagina"
+            labelPlacement="outside-left"
+            className="sm:max-w-56"
+            selectedKeys={[String(pageSize)]}
+            classNames={{ label: 'text-default-400' }}
+            onSelectionChange={keys => {
+              const nextPageSize = Number(keys.currentKey ?? pageSize)
+              setPageSize(nextPageSize)
+              setCurrentPage(1)
+            }}
+          >
+            <SelectItem key="10">10</SelectItem>
+            <SelectItem key="20">20</SelectItem>
+            <SelectItem key="50">50</SelectItem>
+          </Select>
+        </div>
+      </div>
+    ),
+    [pageSize, search, statusFilter, statusOptions, totalItems, visibleColumns]
+  )
+
   const rows = [
     { label: 'Subtotal', value: money(selectedSale?.subtotal || 0) },
     (selectedSale?.discountAmount || 0) > 0
@@ -279,13 +423,6 @@ export const SalesPage = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant={showFilters ? 'solid' : 'flat'}
-            startContent={<Filter className="size-4" />}
-            onPress={() => setShowFilters(prev => !prev)}
-          >
-            Filtros
-          </Button>
           <Button
             variant="flat"
             isDisabled
@@ -367,191 +504,54 @@ export const SalesPage = () => {
           </Card>
         </div>
       )}
-
-      {showFilters && (
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2 font-semibold">
-              <Filter className="size-5" />
-              Filtros de Búsqueda
-            </div>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <Input
-                label="Buscar"
-                value={draftFilters.search}
-                onValueChange={value =>
-                  setDraftFilters(prev => ({ ...prev, search: value }))
-                }
-                placeholder="Número de venta, cliente..."
-              />
-
-              <Select
-                label="Estado"
-                selectedKeys={[draftFilters.status || 'all']}
-                onSelectionChange={keys => {
-                  const next = Array.from(keys)[0]?.toString() ?? 'all'
-                  setDraftFilters(prev => ({
-                    ...prev,
-                    status: next === 'all' ? '' : (next as SalesStatusFilter),
-                  }))
-                }}
-              >
-                <SelectItem key="all">Todos los estados</SelectItem>
-                <SelectItem key="completed">Completada</SelectItem>
-                <SelectItem key="cancelled">Cancelada</SelectItem>
-                <SelectItem key="refunded">Reembolsada</SelectItem>
-              </Select>
-
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  label="Monto Mín."
-                  type="number"
-                  step="0.01"
-                  value={draftFilters.minAmount}
-                  onValueChange={value =>
-                    setDraftFilters(prev => ({ ...prev, minAmount: value }))
-                  }
-                  placeholder="0.00"
-                />
-                <Input
-                  label="Monto Máx."
-                  type="number"
-                  step="0.01"
-                  value={draftFilters.maxAmount}
-                  onValueChange={value =>
-                    setDraftFilters(prev => ({ ...prev, maxAmount: value }))
-                  }
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button variant="flat" onPress={onClearFilters}>
-                Limpiar
-              </Button>
-              <Button color="primary" onPress={onApplyFilters}>
-                Aplicar Filtros
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-      )}
-
       <Card>
         <CardHeader className="pb-2">
           <div className="font-semibold">Lista de Ventas</div>
         </CardHeader>
         <CardBody>
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Spinner />
-            </div>
-          ) : salesList.length === 0 ? (
-            <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-default-500">
-              <Receipt className="size-8" />
-              <p>No se encontraron ventas</p>
-            </div>
-          ) : (
-            <>
-              <Table aria-label="Historial de ventas">
-                <TableHeader>
-                  <TableColumn>NÚMERO</TableColumn>
-                  <TableColumn>FECHA</TableColumn>
-                  <TableColumn>CLIENTE</TableColumn>
-                  <TableColumn className="text-right">TOTAL</TableColumn>
-                  <TableColumn className="text-center">ESTADO</TableColumn>
-                  <TableColumn className="text-right">ACCIONES</TableColumn>
-                </TableHeader>
-                <TableBody items={salesList}>
-                  {(sale: Sale) => (
-                    <TableRow key={sale.id}>
-                      <TableCell className="font-medium">
-                        {sale.saleNumber}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(sale.createdAt), 'PPp', {
-                          locale: es,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p>{sale.customerName || 'Cliente general'}</p>
-                          {sale.customerDocument && (
-                            <p className="text-xs text-default-500">
-                              {sale.customerDocument}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(fromCents(sale.total))}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {getStatusBadge(sale.status)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button isIconOnly size="sm" variant="light">
-                              <MoreVertical className="size-4" />
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
-                            aria-label={`Acciones de venta ${sale.saleNumber}`}
-                          >
-                            <DropdownItem
-                              key="view"
-                              startContent={<Eye className="size-4" />}
-                              onPress={() => onViewSale(sale)}
-                            >
-                              Ver detalle
-                            </DropdownItem>
-                            {sale.status === 'completed' ? (
-                              <DropdownItem
-                                key="cancel"
-                                color="warning"
-                                startContent={<Ban className="size-4" />}
-                                onPress={() => openCancelDialog(sale)}
-                              >
-                                Cancelar
-                              </DropdownItem>
-                            ) : null}
-                            {sale.status === 'completed' ? (
-                              <DropdownItem
-                                key="refund"
-                                color="danger"
-                                startContent={<RefreshCw className="size-4" />}
-                                onPress={() => openRefundDialog(sale)}
-                              >
-                                Reembolsar
-                              </DropdownItem>
-                            ) : null}
-                          </DropdownMenu>
-                        </Dropdown>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-
-              {pagination && pagination.totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-small text-default-500">
-                    Mostrando {salesList.length} de {pagination.total}
-                  </p>
-                  <Pagination
-                    page={currentPage}
-                    total={pagination.totalPages}
-                    showControls
-                    onChange={setCurrentPage}
-                  />
-                </div>
+          <Table
+            aria-label="Historial de ventas"
+            topContent={topContent}
+            topContentPlacement="outside"
+            bottomContent={
+              <TablePagination
+                page={currentPage}
+                total={totalPages}
+                onChange={setCurrentPage}
+              />
+            }
+            bottomContentPlacement="outside"
+          >
+            <TableHeader columns={headerColumns}>
+              {column => (
+                <TableColumn
+                  key={column.uid}
+                  align={column.uid === 'actions' ? 'center' : 'start'}
+                >
+                  {column.name}
+                </TableColumn>
               )}
-            </>
-          )}
+            </TableHeader>
+            <TableBody<Sale>
+              items={salesList}
+              emptyContent={
+                <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-default-500">
+                  <Receipt className="size-8" />
+                  <p>No se encontraron ventas</p>
+                </div>
+              }
+              loadingContent={<Spinner />}
+              loadingState={isLoading ? 'loading' : 'idle'}
+            >
+              {item => (
+                <TableRow key={item.id} className="hover:bg-default-100">
+                  {columnKey => (
+                    <TableCell>{renderCell(item, String(columnKey))}</TableCell>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardBody>
       </Card>
 
@@ -883,4 +883,3 @@ export const SalesPage = () => {
     </div>
   )
 }
-
