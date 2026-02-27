@@ -1,48 +1,34 @@
-import { useEffect } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Plus, Trash2, Calculator } from 'lucide-react'
-
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Divider,
   Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import {
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-
+  Textarea,
+} from '@heroui/react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Calculator, Plus, Trash2 } from 'lucide-react'
+import { useEffect } from 'react'
+import { Controller, useFieldArray, useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { useActiveSuppliers } from '../../suppliers/hooks/use-suppliers'
 import {
   useCreatePurchaseOrder,
-  useUpdatePurchaseOrder,
   useGenerateOrderNumber,
+  useUpdatePurchaseOrder,
 } from '../hooks/use-purchase-orders'
 
 const purchaseOrderItemSchema = z.object({
-  presentationId: z.number().min(1, 'Seleccione una presentación'),
-  presentationName: z.string().min(1, 'Nombre de la presentación requerido'),
+  productId: z.number().min(0),
   productName: z.string().min(1, 'Nombre del producto requerido'),
   quantity: z.number().min(1, 'La cantidad debe ser mayor a 0'),
   unitCost: z.number().min(0, 'El costo unitario debe ser positivo'),
@@ -51,7 +37,7 @@ const purchaseOrderItemSchema = z.object({
 })
 
 const purchaseOrderFormSchema = z.object({
-  orderNumber: z.string().min(1, 'El número de orden es requerido'),
+  orderNumber: z.string().min(1, 'El numero de orden es requerido'),
   supplierId: z.number().min(1, 'Seleccione un proveedor'),
   status: z
     .enum(['draft', 'sent', 'partial', 'completed', 'cancelled'])
@@ -69,12 +55,18 @@ const purchaseOrderFormSchema = z.object({
   internalNotes: z.string().optional(),
 })
 
-type PurchaseOrderFormData = z.infer<typeof purchaseOrderFormSchema>
+type PurchaseOrderFormInput = z.input<typeof purchaseOrderFormSchema>
+type PurchaseOrderFormValues = z.output<typeof purchaseOrderFormSchema>
 
 interface PurchaseOrderFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   purchaseOrder?: PurchaseOrder & { items?: PurchaseOrderItem[] }
+}
+
+const getCurrentSelectionKey = (keys: 'all' | Set<React.Key>) => {
+  if (keys === 'all') return null
+  return (keys.values().next().value as string | undefined) ?? null
 }
 
 export function PurchaseOrderFormDialog({
@@ -90,7 +82,7 @@ export function PurchaseOrderFormDialog({
   const createPurchaseOrder = useCreatePurchaseOrder()
   const updatePurchaseOrder = useUpdatePurchaseOrder()
 
-  const form = useForm<PurchaseOrderFormData>({
+  const form = useForm<PurchaseOrderFormInput, unknown, PurchaseOrderFormValues>({
     resolver: zodResolver(purchaseOrderFormSchema),
     defaultValues: {
       orderNumber: '',
@@ -99,8 +91,7 @@ export function PurchaseOrderFormDialog({
       expectedDeliveryDate: '',
       items: [
         {
-          presentationId: 0,
-          presentationName: '',
+          productId: 0,
           productName: '',
           quantity: 1,
           unitCost: 0,
@@ -127,11 +118,10 @@ export function PurchaseOrderFormDialog({
   const watchedDiscount = form.watch('discountAmount')
   const watchedShipping = form.watch('shippingAmount')
 
-  // Calculate totals when items change
   useEffect(() => {
-    const subtotal = watchedItems.reduce((sum, item) => {
+    const subtotal = watchedItems.reduce((sum, item, index) => {
       const itemTotal = (item.quantity || 0) * (item.unitCost || 0)
-      form.setValue(`items.${watchedItems.indexOf(item)}.totalCost`, itemTotal)
+      form.setValue(`items.${index}.totalCost`, itemTotal)
       return sum + itemTotal
     }, 0)
 
@@ -146,20 +136,16 @@ export function PurchaseOrderFormDialog({
     form.setValue('total', total)
   }, [watchedItems, watchedDiscount, watchedShipping, taxRate, form])
 
-  // Set order number when dialog opens for new orders
   useEffect(() => {
     if (open && !isEdit && orderNumber) {
       form.setValue('orderNumber', orderNumber)
     }
   }, [open, isEdit, orderNumber, form])
 
-  // Load existing order data
   useEffect(() => {
     if (purchaseOrder && open) {
       const deliveryDate = purchaseOrder.expectedDeliveryDate
-        ? new Date(purchaseOrder.expectedDeliveryDate)
-            .toISOString()
-            .split('T')[0]
+        ? new Date(purchaseOrder.expectedDeliveryDate).toISOString().split('T')[0]
         : ''
 
       form.reset({
@@ -168,17 +154,15 @@ export function PurchaseOrderFormDialog({
         status: purchaseOrder.status,
         expectedDeliveryDate: deliveryDate,
         items: purchaseOrder.items?.map(item => ({
-          presentationId: item.presentationId || 0,
-          presentationName: item.presentationName || '',
+          productId: item.productId || 0,
           productName: item.productName || '',
           quantity: item.quantity,
-          unitCost: item.unitCost / 100, // Convert from cents
+          unitCost: item.unitCost / 100,
           totalCost: (item.quantity * item.unitCost) / 100,
           notes: item.notes || '',
         })) || [
           {
-            presentationId: 0,
-            presentationName: '',
+            productId: 0,
             productName: '',
             quantity: 1,
             unitCost: 0,
@@ -194,13 +178,39 @@ export function PurchaseOrderFormDialog({
         notes: purchaseOrder.notes || '',
         internalNotes: purchaseOrder.internalNotes || '',
       })
+      return
     }
-  }, [purchaseOrder, open, form])
+
+    if (!purchaseOrder && open) {
+      form.reset({
+        orderNumber: orderNumber || '',
+        supplierId: 0,
+        status: 'draft',
+        expectedDeliveryDate: '',
+        items: [
+          {
+            productId: 0,
+            productName: '',
+            quantity: 1,
+            unitCost: 0,
+            totalCost: 0,
+            notes: '',
+          },
+        ],
+        subtotal: 0,
+        taxAmount: 0,
+        discountAmount: 0,
+        shippingAmount: 0,
+        total: 0,
+        notes: '',
+        internalNotes: '',
+      })
+    }
+  }, [purchaseOrder, open, form, orderNumber])
 
   const addItem = () => {
     append({
-      presentationId: 0,
-      presentationName: '',
+      productId: 0,
       productName: '',
       quantity: 1,
       unitCost: 0,
@@ -215,12 +225,12 @@ export function PurchaseOrderFormDialog({
     }
   }
 
-  const onSubmit = (data: PurchaseOrderFormData) => {
-    const formattedData = {
+  const onSubmit = (data: PurchaseOrderFormValues) => {
+    const formattedData: PurchaseOrderFormData = {
       ...data,
       items: data.items.map(item => ({
         ...item,
-        unitCost: Math.round(item.unitCost * 100), // Convert to cents
+        unitCost: Math.round(item.unitCost * 100),
         totalCost: Math.round(item.totalCost * 100),
       })),
       subtotal: Math.round(data.subtotal * 100),
@@ -229,11 +239,11 @@ export function PurchaseOrderFormDialog({
       shippingAmount: Math.round(data.shippingAmount * 100),
       total: Math.round(data.total * 100),
       expectedDeliveryDate: data.expectedDeliveryDate
-        ? new Date(data.expectedDeliveryDate).getTime()
+        ? new Date(data.expectedDeliveryDate)
         : undefined,
     }
 
-    if (isEdit) {
+    if (isEdit && purchaseOrder) {
       updatePurchaseOrder.mutate(
         { id: purchaseOrder.id, data: formattedData },
         {
@@ -242,394 +252,450 @@ export function PurchaseOrderFormDialog({
           },
         }
       )
-    } else {
-      createPurchaseOrder.mutate(formattedData, {
-        onSuccess: () => {
-          onOpenChange(false)
-        },
-      })
+      return
     }
+
+    createPurchaseOrder.mutate(formattedData, {
+      onSuccess: () => {
+        onOpenChange(false)
+      },
+    })
   }
 
-  const isPending =
-    createPurchaseOrder.isPending || updatePurchaseOrder.isPending
+  const isPending = createPurchaseOrder.isPending || updatePurchaseOrder.isPending
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}
-          </DialogTitle>
-            <DialogDescription>
-              {isEdit
-              ? 'Modifica la lista de compra para el proveedor.'
-              : 'Crea una lista de compra por proveedor para el siguiente turno.'}
-            </DialogDescription>
-        </DialogHeader>
+    <Modal
+      isOpen={open}
+      onOpenChange={onOpenChange}
+      size="5xl"
+      scrollBehavior="outside"
+    >
+      <ModalContent>
+        {onClose => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              <h2>{isEdit ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}</h2>
+              <p className="text-small font-normal text-default-500">
+                {isEdit
+                  ? 'Modifica la lista de compra para el proveedor.'
+                  : 'Crea una lista de compra por proveedor para el siguiente turno.'}
+              </p>
+            </ModalHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Básica</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="orderNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Número de Orden *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="PO-001" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            <Form
+              className="h-auto w-full"
+              onSubmit={event => {
+                event.preventDefault()
+                form.handleSubmit(onSubmit)()
+              }}
+            >
+              <ModalBody className="w-full gap-4">
+                <Card>
+                  <CardHeader>
+                    <h3 className="font-semibold">Informacion Basica</h3>
+                  </CardHeader>
+                  <CardBody className="gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <Controller
+                        control={form.control}
+                        name="orderNumber"
+                        render={({
+                          field: { name, value, onChange, onBlur, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            isRequired
+                            name={name}
+                            label="Numero de Orden"
+                            labelPlacement="outside"
+                            placeholder="PO-001"
+                            value={value}
+                            onBlur={onBlur}
+                            onValueChange={onChange}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="supplierId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Proveedor *</FormLabel>
-                        <Select
-                          value={field.value?.toString() || ''}
-                          onValueChange={value =>
-                            field.onChange(parseInt(value))
-                          }
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar proveedor" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                      <Controller
+                        control={form.control}
+                        name="supplierId"
+                        render={({
+                          field: { value, onChange },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Select
+                            isRequired
+                            label="Proveedor"
+                            labelPlacement="outside"
+                            placeholder="Seleccionar proveedor"
+                            selectedKeys={value ? [String(value)] : []}
+                            onSelectionChange={keys => {
+                              const key = getCurrentSelectionKey(keys)
+                              onChange(key ? parseInt(key, 10) : 0)
+                            }}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          >
                             {suppliers.map(supplier => (
-                              <SelectItem
-                                key={supplier.id}
-                                value={supplier.id.toString()}
-                              >
+                              <SelectItem key={supplier.id.toString()}>
                                 {supplier.name}
                               </SelectItem>
                             ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          </Select>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="expectedDeliveryDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de Entrega Esperada</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                      <Controller
+                        control={form.control}
+                        name="expectedDeliveryDate"
+                        render={({
+                          field: { name, value, onChange, onBlur, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            type="date"
+                            name={name}
+                            label="Fecha de Entrega Esperada"
+                            labelPlacement="outside"
+                            value={value || ''}
+                            onBlur={onBlur}
+                            onValueChange={onChange}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
+                    </div>
+                  </CardBody>
+                </Card>
 
-            {/* Order Items */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Productos</CardTitle>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <h3 className="font-semibold">Productos</h3>
+                    <Button
+                      type="button"
+                      variant="bordered"
+                      size="sm"
+                      startContent={<Plus className="h-4 w-4" />}
+                      onPress={addItem}
+                    >
+                      Agregar Producto
+                    </Button>
+                  </CardHeader>
+                  <CardBody className="gap-4">
+                    {fields.map((itemField, index) => (
+                      <Card key={itemField.id} className="border border-default-100">
+                        <CardBody className="gap-4">
+                          <div className="grid grid-cols-12 gap-4">
+                            <div className="col-span-12 md:col-span-4">
+                              <Controller
+                                control={form.control}
+                                name={`items.${index}.productName`}
+                                render={({
+                                  field: { name, value, onChange, onBlur, ref },
+                                  fieldState: { invalid, error },
+                                }) => (
+                                  <Input
+                                    ref={ref}
+                                    isRequired
+                                    name={name}
+                                    label="Producto"
+                                    labelPlacement="outside"
+                                    placeholder="Nombre del producto"
+                                    value={value}
+                                    onBlur={onBlur}
+                                    onValueChange={onChange}
+                                    isInvalid={invalid}
+                                    errorMessage={error?.message}
+                                  />
+                                )}
+                              />
+                            </div>
+
+                            <div className="col-span-4 md:col-span-2">
+                              <Controller
+                                control={form.control}
+                                name={`items.${index}.quantity`}
+                                render={({
+                                  field: { name, value, onChange, onBlur, ref },
+                                  fieldState: { invalid, error },
+                                }) => (
+                                  <Input
+                                    ref={ref}
+                                    isRequired
+                                    type="number"
+                                    min={1}
+                                    name={name}
+                                    label="Cantidad"
+                                    labelPlacement="outside"
+                                    value={String(value ?? 1)}
+                                    onBlur={onBlur}
+                                    onValueChange={nextValue => {
+                                      onChange(parseInt(nextValue, 10) || 1)
+                                    }}
+                                    isInvalid={invalid}
+                                    errorMessage={error?.message}
+                                  />
+                                )}
+                              />
+                            </div>
+
+                            <div className="col-span-4 md:col-span-2">
+                              <Controller
+                                control={form.control}
+                                name={`items.${index}.unitCost`}
+                                render={({
+                                  field: { name, value, onChange, onBlur, ref },
+                                  fieldState: { invalid, error },
+                                }) => (
+                                  <Input
+                                    ref={ref}
+                                    isRequired
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    name={name}
+                                    label="Costo Unitario"
+                                    labelPlacement="outside"
+                                    value={String(value ?? 0)}
+                                    onBlur={onBlur}
+                                    onValueChange={nextValue => {
+                                      onChange(parseFloat(nextValue) || 0)
+                                    }}
+                                    isInvalid={invalid}
+                                    errorMessage={error?.message}
+                                  />
+                                )}
+                              />
+                            </div>
+
+                            <div className="col-span-3 md:col-span-2">
+                              <Controller
+                                control={form.control}
+                                name={`items.${index}.totalCost`}
+                                render={({ field: { name, value, ref } }) => (
+                                  <Input
+                                    ref={ref}
+                                    type="number"
+                                    step={0.01}
+                                    name={name}
+                                    label="Total"
+                                    labelPlacement="outside"
+                                    value={String(value ?? 0)}
+                                    isReadOnly
+                                  />
+                                )}
+                              />
+                            </div>
+
+                            <div className="col-span-1 flex items-end justify-end">
+                              <Button
+                                type="button"
+                                variant="light"
+                                color="danger"
+                                isIconOnly
+                                onPress={() => removeItem(index)}
+                                isDisabled={fields.length === 1}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <div className="col-span-12">
+                              <Controller
+                                control={form.control}
+                                name={`items.${index}.notes`}
+                                render={({
+                                  field: { name, value, onChange, onBlur, ref },
+                                }) => (
+                                  <Input
+                                    ref={ref}
+                                    name={name}
+                                    label="Notas"
+                                    labelPlacement="outside"
+                                    placeholder="Notas del producto (opcional)"
+                                    value={value || ''}
+                                    onBlur={onBlur}
+                                    onValueChange={onChange}
+                                  />
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </CardBody>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <h3 className="flex items-center gap-2 font-semibold">
+                      <Calculator className="h-5 w-5" />
+                      Totales
+                    </h3>
+                  </CardHeader>
+                  <CardBody className="gap-4">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                      <div>
+                        <p className="text-sm text-default-500">Subtotal</p>
+                        <p className="text-2xl font-bold">
+                          L {(form.watch('subtotal') || 0).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <Controller
+                        control={form.control}
+                        name="discountAmount"
+                        render={({
+                          field: { name, value, onChange, onBlur, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            name={name}
+                            label="Descuento"
+                            labelPlacement="outside"
+                            value={String(value ?? 0)}
+                            onBlur={onBlur}
+                            onValueChange={nextValue => {
+                              onChange(parseFloat(nextValue) || 0)
+                            }}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
+
+                      <div>
+                        <p className="text-sm text-default-500">Impuesto ({taxRate}%)</p>
+                        <p className="text-lg font-semibold">
+                          L {(form.watch('taxAmount') || 0).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <Controller
+                        control={form.control}
+                        name="shippingAmount"
+                        render={({
+                          field: { name, value, onChange, onBlur, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            name={name}
+                            label="Envio"
+                            labelPlacement="outside"
+                            value={String(value ?? 0)}
+                            onBlur={onBlur}
+                            onValueChange={nextValue => {
+                              onChange(parseFloat(nextValue) || 0)
+                            }}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
+                    </div>
+
+                    <Divider />
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-semibold">Total:</span>
+                      <span className="text-2xl font-bold text-primary">
+                        L {(form.watch('total') || 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <h3 className="font-semibold">Notas</h3>
+                  </CardHeader>
+                  <CardBody className="gap-4">
+                    <Controller
+                      control={form.control}
+                      name="notes"
+                      render={({
+                        field: { name, value, onChange, onBlur, ref },
+                        fieldState: { invalid, error },
+                      }) => (
+                        <Textarea
+                          ref={ref}
+                          name={name}
+                          label="Notas para quien compra"
+                          labelPlacement="outside"
+                          placeholder="Que comprar, prioridades, marcas o cantidades sugeridas."
+                          value={value || ''}
+                          onBlur={onBlur}
+                          onValueChange={onChange}
+                          isInvalid={invalid}
+                          errorMessage={error?.message}
+                          minRows={3}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={form.control}
+                      name="internalNotes"
+                      render={({
+                        field: { name, value, onChange, onBlur, ref },
+                        fieldState: { invalid, error },
+                      }) => (
+                        <Textarea
+                          ref={ref}
+                          name={name}
+                          label="Notas de Turno"
+                          labelPlacement="outside"
+                          placeholder="Indicaciones para la persona que queda en turno."
+                          value={value || ''}
+                          onBlur={onBlur}
+                          onValueChange={onChange}
+                          isInvalid={invalid}
+                          errorMessage={error?.message}
+                          minRows={3}
+                        />
+                      )}
+                    />
+                  </CardBody>
+                </Card>
+              </ModalBody>
+
+              <Divider />
+
+              <ModalFooter className="w-full">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addItem}
+                  variant="light"
+                  onPress={() => {
+                    onClose()
+                    onOpenChange(false)
+                  }}
+                  isDisabled={isPending}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Producto
+                  Cancelar
                 </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <div
-                      key={field.id}
-                      className="grid grid-cols-12 gap-4 items-end"
-                    >
-                      <div className="col-span-12 md:col-span-4">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.presentationName`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Presentación *</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Nombre de la presentación"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="col-span-4 md:col-span-2">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.quantity`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Cantidad *</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  {...field}
-                                  onChange={e =>
-                                    field.onChange(
-                                      parseInt(e.target.value) || 1
-                                    )
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="col-span-4 md:col-span-2">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.unitCost`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Costo Unitario *</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  {...field}
-                                  onChange={e =>
-                                    field.onChange(
-                                      parseFloat(e.target.value) || 0
-                                    )
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="col-span-3 md:col-span-2">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.totalCost`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Total</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  readOnly
-                                  className="bg-muted"
-                                  {...field}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="col-span-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeItem(index)}
-                          disabled={fields.length === 1}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="col-span-12">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.notes`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  placeholder="Notas de la presentación (opcional)"
-                                  {...field}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Totals */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5" />
-                  Totales
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Subtotal</label>
-                    <div className="text-2xl font-bold">
-                      L {form.watch('subtotal')?.toFixed(2) || '0.00'}
-                    </div>
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="discountAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descuento</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            {...field}
-                            onChange={e =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div>
-                    <label className="text-sm font-medium">
-                      Impuesto ({taxRate}%)
-                    </label>
-                    <div className="text-lg font-semibold">
-                      L {form.watch('taxAmount')?.toFixed(2) || '0.00'}
-                    </div>
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="shippingAmount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Envío</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            {...field}
-                            onChange={e =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <Separator className="my-4" />
-
-                <div className="flex justify-between items-center">
-                  <span className="text-xl font-semibold">Total:</span>
-                  <span className="text-2xl font-bold text-primary">
-                    L {form.watch('total')?.toFixed(2) || '0.00'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Notes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Notas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notas para quien compra</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Que comprar, prioridades, marcas o cantidades sugeridas."
-                          className="min-h-[80px]"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="internalNotes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notas de Turno</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Indicaciones para la persona que queda en turno."
-                          className="min-h-[80px]"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending
-                  ? 'Guardando...'
-                  : isEdit
-                    ? 'Actualizar'
-                    : 'Crear Orden'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+                <Button type="submit" color="primary" isLoading={isPending}>
+                  {isPending ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear Orden'}
+                </Button>
+              </ModalFooter>
+            </Form>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
 }

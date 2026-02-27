@@ -1,40 +1,39 @@
-import { useEffect, useMemo, useState } from 'react'
+import type { Selection } from '@heroui/react'
 import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Chip,
+  Input,
+  Select,
+  SelectItem,
+  Spinner,
+  Textarea,
+} from '@heroui/react'
+import {
+  CheckCircle,
+  ClipboardList,
+  Clock,
   Plus,
   Search,
   ShoppingCart,
-  Clock,
-  CheckCircle,
-  ClipboardList,
 } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-
-import { usePurchaseOrders } from '../features/purchase-orders/hooks/use-purchase-orders'
-import { PurchaseOrdersTable } from '../features/purchase-orders/ui/purchase-orders-table'
-import { PurchaseOrderFormDialog } from '../features/purchase-orders/ui/purchase-order-form-dialog'
+import { useEffect, useMemo, useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
 import {
   SHIFT_HANDOVER_UPDATED_EVENT,
   getShiftModuleNote,
   setShiftModuleNote,
 } from '@/features/operations/model/shift-handover-storage'
+import { usePurchaseOrders } from '../features/purchase-orders/hooks/use-purchase-orders'
+import { PurchaseOrderFormDialog } from '../features/purchase-orders/ui/purchase-order-form-dialog'
+import { PurchaseOrdersTable } from '../features/purchase-orders/ui/purchase-orders-table'
+
+const getSingleSelectionKey = (keys: Selection, fallback = 'all') => {
+  if (keys === 'all') return fallback
+  return Array.from(keys)[0]?.toString() ?? fallback
+}
 
 export function PurchaseOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -50,6 +49,7 @@ export function PurchaseOrdersPage() {
   useEffect(() => {
     const refreshShiftNote = () =>
       setShiftNote(getShiftModuleNote('purchase-orders'))
+
     window.addEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
     return () =>
       window.removeEventListener(SHIFT_HANDOVER_UPDATED_EVENT, refreshShiftNote)
@@ -63,27 +63,26 @@ export function PurchaseOrdersPage() {
       ) ||
       (order.notes?.toLowerCase() || '').includes(searchTerm.toLowerCase())
 
-    const matchesStatus =
-      statusFilter === 'all' || order.status === statusFilter
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter
 
     return matchesSearch && matchesStatus
   })
 
   const stats = {
     total: purchaseOrders.length,
-    draft: purchaseOrders.filter(o => o.status === 'draft').length,
-    sent: purchaseOrders.filter(o => o.status === 'sent').length,
-    completed: purchaseOrders.filter(o => o.status === 'completed').length,
-    totalValue: purchaseOrders.reduce((sum, o) => sum + o.total, 0),
+    draft: purchaseOrders.filter(order => order.status === 'draft').length,
+    sent: purchaseOrders.filter(order => order.status === 'sent').length,
+    completed: purchaseOrders.filter(order => order.status === 'completed').length,
     pendingValue: purchaseOrders
-      .filter(o => o.status === 'sent' || o.status === 'partial')
-      .reduce((sum, o) => sum + o.total, 0),
+      .filter(order => order.status === 'sent' || order.status === 'partial')
+      .reduce((sum, order) => sum + order.total, 0),
   }
 
   const supplierChecklist = useMemo(() => {
     const pendingOrders = purchaseOrders.filter(
       order => order.status === 'draft' || order.status === 'sent'
     )
+
     const grouped = new Map<
       string,
       { supplierName: string; orders: number; total: number; notes: string[] }
@@ -91,6 +90,7 @@ export function PurchaseOrdersPage() {
 
     pendingOrders.forEach(order => {
       const supplierName = order.supplier?.name || 'Proveedor no definido'
+
       if (!grouped.has(supplierName)) {
         grouped.set(supplierName, {
           supplierName,
@@ -99,7 +99,10 @@ export function PurchaseOrdersPage() {
           notes: [],
         })
       }
-      const item = grouped.get(supplierName)!
+
+      const item = grouped.get(supplierName)
+      if (!item) return
+
       item.orders += 1
       item.total += order.total
       if (order.internalNotes) item.notes.push(order.internalNotes)
@@ -126,22 +129,24 @@ export function PurchaseOrdersPage() {
     setIsDialogOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingOrder(undefined)
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open)
+    if (!open) {
+      setEditingOrder(undefined)
+    }
   }
 
   const handleSaveShiftNote = () => {
     setShiftModuleNote('purchase-orders', shiftNote)
-    sileo.success({ title: 'Nota de turno guardada en órdenes de compra' })
+    sileo.success({ title: 'Nota de turno guardada en ordenes de compra' })
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando órdenes de compra...</p>
+          <Spinner className="mb-4" />
+          <p className="text-default-500">Cargando ordenes de compra...</p>
         </div>
       </div>
     )
@@ -149,123 +154,103 @@ export function PurchaseOrdersPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">
-            Error al cargar las órdenes de compra
-          </p>
-          <Button onClick={() => window.location.reload()}>Reintentar</Button>
+          <p className="mb-4 text-danger">Error al cargar las ordenes de compra</p>
+          <Button onPress={() => window.location.reload()}>Reintentar</Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Lista de Compra por Proveedor
-          </h1>
-          <p className="text-muted-foreground">
-            Deja al siguiente turno que comprar, cuanto y a quien.
-          </p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Orden
-        </Button>
-      </div>
+    <div className="flex flex-1 flex-col space-y-6">
+      <PageHeader
+        title="Lista de Compra por Proveedor"
+        description="Deja al siguiente turno que comprar, cuanto y a quien."
+        actions={
+          <Button startContent={<Plus className="h-4 w-4" />} onPress={handleCreate}>
+            Nueva Orden
+          </Button>
+        }
+      />
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Órdenes</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Total Ordenes</h3>
+            <ShoppingCart className="h-4 w-4 text-default-500" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.draft} borradores
-            </p>
-          </CardContent>
+            <p className="text-xs text-default-500">{stats.draft} borradores</p>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Pendientes</h3>
+            <Clock className="h-4 w-4 text-warning" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.sent}</div>
-            <p className="text-xs text-muted-foreground">
-              Enviadas a proveedores
-            </p>
-          </CardContent>
+          <CardBody>
+            <div className="text-2xl font-bold text-warning">{stats.sent}</div>
+            <p className="text-xs text-default-500">Enviadas a proveedores</p>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completadas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Completadas</h3>
+            <CheckCircle className="h-4 w-4 text-success" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.total > 0
-                ? Math.round((stats.completed / stats.total) * 100)
-                : 0}
-              % del total
+          <CardBody>
+            <div className="text-2xl font-bold text-success">{stats.completed}</div>
+            <p className="text-xs text-default-500">
+              {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}% del total
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Valor Pendiente
-            </CardTitle>
+          <CardHeader className="pb-2">
+            <h3 className="text-sm font-medium">Valor Pendiente</h3>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              L {(stats.pendingValue / 100).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">Por recibir</p>
-          </CardContent>
+          <CardBody>
+            <div className="text-2xl font-bold">L {(stats.pendingValue / 100).toFixed(2)}</div>
+            <p className="text-xs text-default-500">Por recibir</p>
+          </CardBody>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <h3 className="flex items-center gap-2 font-semibold">
             <ClipboardList className="h-5 w-5" />
             Checklist para Turno / Proveedor
-          </CardTitle>
-          <CardDescription>
-            Resumen de órdenes pendientes para facilitar el cambio de turno.
-          </CardDescription>
+          </h3>
+          <p className="text-sm text-default-500">
+            Resumen de ordenes pendientes para facilitar el cambio de turno.
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardBody className="gap-4">
           {supplierChecklist.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No hay órdenes pendientes para proveedores.
+            <p className="text-sm text-default-500">
+              No hay ordenes pendientes para proveedores.
             </p>
           ) : (
             <div className="space-y-3">
               {supplierChecklist.map(item => (
                 <div
                   key={item.supplierName}
-                  className="rounded-lg border p-3 space-y-2"
+                  className="space-y-2 rounded-large border border-default-200 p-3"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold">{item.supplierName}</p>
-                    <Badge variant="outline">
+                    <Chip size="sm" variant="flat">
                       {item.orders} orden{item.orders !== 1 ? 'es' : ''}
-                    </Badge>
+                    </Chip>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-default-500">
                     Monto pendiente: L {(item.total / 100).toFixed(2)}
                   </p>
                   {item.notes.length > 0 && (
@@ -281,68 +266,66 @@ export function PurchaseOrdersPage() {
           <div className="space-y-2">
             <p className="text-sm font-medium">Nota de turno (compras)</p>
             <Textarea
-              value={shiftNote}
-              onChange={e => setShiftNote(e.target.value)}
               placeholder="Ej. Comprar gaseosas con proveedor X y confirmar precios."
+              value={shiftNote}
+              onValueChange={setShiftNote}
+              minRows={3}
             />
-            <Button size="sm" onClick={handleSaveShiftNote}>
+            <Button size="sm" onPress={handleSaveShiftNote}>
               Guardar nota
             </Button>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra órdenes de compra</CardDescription>
+          <h3 className="font-semibold">Filtros</h3>
+          <p className="text-sm text-default-500">Busca y filtra ordenes de compra</p>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por número, proveedor o notas..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="draft">Borrador</SelectItem>
-                <SelectItem value="sent">Enviada</SelectItem>
-                <SelectItem value="partial">Parcial</SelectItem>
-                <SelectItem value="completed">Completada</SelectItem>
-                <SelectItem value="cancelled">Cancelada</SelectItem>
-              </SelectContent>
+            <Input
+              placeholder="Buscar por numero, proveedor o notas..."
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+              startContent={<Search className="h-4 w-4 text-default-400" />}
+            />
+            <Select
+              aria-label="Estado de orden"
+              selectedKeys={[statusFilter]}
+              onSelectionChange={keys =>
+                setStatusFilter(getSingleSelectionKey(keys))
+              }
+              className="w-full md:w-48"
+            >
+              <SelectItem key="all">Todos</SelectItem>
+              <SelectItem key="draft">Borrador</SelectItem>
+              <SelectItem key="sent">Enviada</SelectItem>
+              <SelectItem key="partial">Parcial</SelectItem>
+              <SelectItem key="completed">Completada</SelectItem>
+              <SelectItem key="cancelled">Cancelada</SelectItem>
             </Select>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Results */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Resultados</CardTitle>
-              <CardDescription>
+              <h3 className="font-semibold">Resultados</h3>
+              <p className="text-sm text-default-500">
                 {filteredOrders.length} orden
                 {filteredOrders.length !== 1 ? 'es' : ''} encontrada
                 {filteredOrders.length !== 1 ? 's' : ''}
-              </CardDescription>
+              </p>
             </div>
             {(searchTerm || statusFilter !== 'all') && (
               <Button
-                variant="ghost"
+                variant="light"
                 size="sm"
-                onClick={() => {
+                onPress={() => {
                   setSearchTerm('')
                   setStatusFilter('all')
                 }}
@@ -352,17 +335,19 @@ export function PurchaseOrdersPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {filteredOrders.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
+            <div className="py-8 text-center">
+              <p className="mb-4 text-default-500">
                 {purchaseOrders.length === 0
-                  ? 'No tienes órdenes de compra registradas'
-                  : 'No se encontraron órdenes con los filtros aplicados'}
+                  ? 'No tienes ordenes de compra registradas'
+                  : 'No se encontraron ordenes con los filtros aplicados'}
               </p>
               {purchaseOrders.length === 0 && (
-                <Button onClick={handleCreate}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button
+                  startContent={<Plus className="h-4 w-4" />}
+                  onPress={handleCreate}
+                >
                   Crear Primera Orden
                 </Button>
               )}
@@ -374,16 +359,14 @@ export function PurchaseOrdersPage() {
               onView={handleView}
             />
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Form Dialog */}
       <PurchaseOrderFormDialog
         open={isDialogOpen}
-        onOpenChange={handleCloseDialog}
+        onOpenChange={handleDialogOpenChange}
         purchaseOrder={editingOrder}
       />
     </div>
   )
 }
-
