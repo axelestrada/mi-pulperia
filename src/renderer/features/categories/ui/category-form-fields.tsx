@@ -1,5 +1,4 @@
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
+import { Input, Textarea } from '@heroui/react'
 
 export const CategoryFormFields = () => {
   const { control } = useFormContext<CategoryFormData>()
@@ -9,29 +8,55 @@ export const CategoryFormFields = () => {
       <Controller
         name="name"
         control={control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel>Nombre</FieldLabel>
-            <Input {...field} placeholder="Abarrotes" />
-            {fieldState.error && <FieldError errors={[fieldState.error]} />}
-          </Field>
+        render={({
+          field: { name, value, onChange, onBlur, ref },
+          fieldState: { invalid, error },
+        }) => (
+          <Input
+            ref={ref}
+            isRequired
+            fullWidth
+            errorMessage={error?.message}
+            validationBehavior="aria"
+            isInvalid={invalid}
+            label="Nombre"
+            labelPlacement="outside-top"
+            placeholder="Abarrotes"
+            name={name}
+            value={value}
+            onBlur={onBlur}
+            onChange={onChange}
+          />
         )}
       />
 
       <Controller
         name="description"
         control={control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel>Descripción</FieldLabel>
-            <Textarea
-              {...field}
-              value={field.value ?? ''}
-              placeholder="Productos básicos de despensa"
-              className="min-h-30 resize-none"
-            />
-            {fieldState.error && <FieldError errors={[fieldState.error]} />}
-          </Field>
+        render={({
+          field: { name, value, onChange, onBlur, ref },
+          fieldState: { invalid, error },
+        }) => (
+          <Textarea
+            ref={ref}
+            fullWidth
+            errorMessage={error?.message}
+            disableAnimation
+            disableAutosize
+            classNames={{
+              input: 'min-h-[60px]',
+              inputWrapper: 'py-1.5',
+            }}
+            validationBehavior="aria"
+            isInvalid={invalid}
+            label="Descripcion"
+            labelPlacement="outside-top"
+            placeholder="Productos basicos de despensa"
+            name={name}
+            value={value ?? ''}
+            onBlur={onBlur}
+            onChange={onChange}
+          />
         )}
       />
     </>

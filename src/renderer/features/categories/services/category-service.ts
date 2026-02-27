@@ -1,8 +1,25 @@
-export const categoryService = {
-  async list() {
-    const data = await categoryAdapter.list()
+import type { CategoriesListFilters } from 'shared/types/categories'
 
-    return categorySchema.array().parse(data)
+export const categoryService = {
+  async list(filters?: CategoriesListFilters) {
+    const result = await categoryAdapter.list(filters)
+
+    const { data, error } = categorySchema.array().safeParse(result.data)
+
+    if (error) {
+      console.error('Error al obtener las categorias', error)
+      throw new Error('Error al obtener las categorias')
+    }
+
+    return {
+      data,
+      pagination: {
+        totalItems: result.total,
+        currentPage: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
+      },
+    }
   },
 
   async create(payload: CategoryFormData) {

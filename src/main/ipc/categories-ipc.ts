@@ -2,10 +2,11 @@ import { ipcMain } from 'electron'
 
 import { CategoriesService } from '../services/categories-service'
 import { InsertCategory, SelectCategory } from '../db/schema/categories'
+import { CategoriesListFilters } from 'shared/types/categories'
 
 export const registerCategoriesHandlers = () => {
-  ipcMain.handle('categories:list', async () => {
-    return CategoriesService.list()
+  ipcMain.handle('categories:list', async (_, filters?: CategoriesListFilters) => {
+    return CategoriesService.list(filters)
   })
 
   ipcMain.handle('categories:create', async (_, category: InsertCategory) => {

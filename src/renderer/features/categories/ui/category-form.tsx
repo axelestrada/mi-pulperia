@@ -1,4 +1,4 @@
-import { Field, FieldGroup } from "@/components/ui/field"
+import { Button, Form, ModalBody } from '@heroui/react'
 
 type Props = {
   category: Category | null
@@ -15,22 +15,38 @@ export const CategoryForm = ({ category, onClose }: Props) => {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <FieldGroup>
+      <Form
+        className="w-full h-auto"
+        onSubmit={event => {
+          event.preventDefault()
+          handleSubmit(onSubmit)()
+        }}
+      >
+        <ModalBody className="gap-4 w-full">
           <CategoryFormFields />
 
-          <Field orientation="horizontal" className="justify-end">
-            <Button type="button" onPress={onClose}>
+          <div className="flex w-full justify-end gap-2">
+            <Button
+              color="danger"
+              variant="light"
+              type="button"
+              onPress={onClose}
+            >
               Cancelar
             </Button>
 
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Spinner />}
+            <Button
+              color="primary"
+              variant="shadow"
+              type="submit"
+              isLoading={isSubmitting}
+            >
               {isEditing ? 'Actualizar' : 'Guardar'}
             </Button>
-          </Field>
-        </FieldGroup>
-      </form>
+          </div>
+        </ModalBody>
+      </Form>
     </FormProvider>
   )
 }
+

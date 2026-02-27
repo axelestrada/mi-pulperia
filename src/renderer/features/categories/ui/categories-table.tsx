@@ -4,7 +4,11 @@ type Props = {
 }
 
 export const CategoriesTable = ({ onCreate, onEdit }: Props) => {
-  const { data: categories = [] } = useCategories()
+  const { data: categoriesResult } = useCategories({
+    page: 1,
+    pageSize: 1000,
+  })
+  const categories = categoriesResult?.data ?? []
 
   if (categories.length === 0) {
     return <CategoriesEmptyState onCreate={onCreate} />

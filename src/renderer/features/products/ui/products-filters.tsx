@@ -12,7 +12,11 @@ export const ProductsFilters = ({ onCreate, onFiltersChange }: Props) => {
   const [categories, setCategories] = useState<string[]>([])
   const [status, setStatus] = useState<string[]>([])
 
-  const { data: categoriesData = [] } = useCategories()
+  const { data: categoriesResult } = useCategories({
+    page: 1,
+    pageSize: 1000,
+  })
+  const categoriesData = categoriesResult?.data ?? []
 
   useEffect(() => {
     onFiltersChange({ search, categories: categories.map(Number), status })

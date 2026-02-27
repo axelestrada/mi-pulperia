@@ -30,6 +30,7 @@ import { CashSessionsFilters } from './repositories/cash-sessions-repository'
 import { POSFilters } from './repositories/pos-repository'
 import { SalesFilters, CreateSaleData } from './repositories/sales-repository'
 import { ProductsListFilters } from './domains/products/products-list-filters'
+import { CategoriesListFilters } from '../shared/types/categories'
 
 contextBridge.exposeInMainWorld('api', {
   products: {
@@ -59,7 +60,8 @@ contextBridge.exposeInMainWorld('api', {
     delete: (id: number) => ipcRenderer.invoke('presentations:delete', id),
   },
   categories: {
-    list: () => ipcRenderer.invoke('categories:list'),
+    list: (filters?: CategoriesListFilters): Promise<PaginatedResult<SelectCategory>> =>
+      ipcRenderer.invoke('categories:list', filters),
     create: (category: InsertCategory) =>
       ipcRenderer.invoke('categories:create', category),
     update: (id: SelectCategory['id'], category: Partial<SelectCategory>) =>

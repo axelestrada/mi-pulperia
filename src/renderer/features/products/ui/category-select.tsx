@@ -27,7 +27,12 @@ type Props = Pick<
 >
 
 export const CategorySelect = (props: Props) => {
-  const { data: categories = [] } = useCategories()
+  const { data: categoriesResult } = useCategories({
+    page: 1,
+    pageSize: 1000,
+    status: ['active'],
+  })
+  const categories = categoriesResult?.data ?? []
 
   const items = categories.map(category => ({
     key: category.id,
