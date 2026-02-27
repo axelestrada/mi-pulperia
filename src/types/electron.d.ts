@@ -207,6 +207,7 @@ import {
   CreateSaleData,
 } from 'main/repositories/sales-repository'
 import { ProductsListFilters } from '../main/domains/products/products-list-filters'
+import { CategoriesListFilters } from 'shared/types/categories'
 
 export {}
 
@@ -239,7 +240,9 @@ declare global {
         delete: (id: PresentationDTO['id']) => Promise<void>
       }
       categories: {
-        list: () => Promise<Category[]>
+        list: (
+          filters?: CategoriesListFilters
+        ) => Promise<PaginatedResult<Category>>
         create: (category: CategoryFormData) => Promise<Category>
         update: (
           id: Category['id'],

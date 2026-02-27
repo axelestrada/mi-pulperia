@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 import { purchaseOrderAdapter } from '../api/purchase-order-adapter'
 
@@ -43,10 +42,13 @@ export function useCreatePurchaseOrder() {
     mutationFn: purchaseOrderAdapter.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
-      toast.success('Orden de compra creada exitosamente')
+      sileo.success({ title: 'Orden de compra creada exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al crear orden de compra: ${error.message}`)
+      sileo.error({
+        title: 'Error al crear orden de compra',
+        description: error.message,
+      })
     },
   })
 }
@@ -65,10 +67,13 @@ export function useUpdatePurchaseOrder() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })
-      toast.success('Orden de compra actualizada exitosamente')
+      sileo.success({ title: 'Orden de compra actualizada exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al actualizar orden de compra: ${error.message}`)
+      sileo.error({
+        title: 'Error al actualizar orden de compra',
+        description: error.message,
+      })
     },
   })
 }
@@ -80,10 +85,13 @@ export function useDeletePurchaseOrder() {
     mutationFn: purchaseOrderAdapter.remove,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
-      toast.success('Orden de compra eliminada exitosamente')
+      sileo.success({ title: 'Orden de compra eliminada exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al eliminar orden de compra: ${error.message}`)
+      sileo.error({
+        title: 'Error al eliminar orden de compra',
+        description: error.message,
+      })
     },
   })
 }
@@ -102,10 +110,13 @@ export function useUpdateOrderStatus() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })
-      toast.success('Estado de la orden actualizado exitosamente')
+      sileo.success({ title: 'Estado de la orden actualizado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al actualizar estado: ${error.message}`)
+      sileo.error({
+        title: 'Error al actualizar estado',
+        description: error.message,
+      })
     },
   })
 }
@@ -118,10 +129,13 @@ export function useSendOrderToSupplier() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })
-      toast.success('Orden enviada al proveedor exitosamente')
+      sileo.success({ title: 'Orden enviada al proveedor exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al enviar orden: ${error.message}`)
+      sileo.error({
+        title: 'Error al enviar orden',
+        description: error.message,
+      })
     },
   })
 }
@@ -134,10 +148,13 @@ export function useMarkOrderAsCompleted() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })
-      toast.success('Orden marcada como completada')
+      sileo.success({ title: 'Orden marcada como completada' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al completar orden: ${error.message}`)
+      sileo.error({
+        title: 'Error al completar orden',
+        description: error.message,
+      })
     },
   })
 }
@@ -151,10 +168,13 @@ export function useCancelOrder() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
       queryClient.invalidateQueries({ queryKey: ['purchase-orders', id] })
-      toast.success('Orden cancelada exitosamente')
+      sileo.success({ title: 'Orden cancelada exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al cancelar orden: ${error.message}`)
+      sileo.error({
+        title: 'Error al cancelar orden',
+        description: error.message,
+      })
     },
   })
 }

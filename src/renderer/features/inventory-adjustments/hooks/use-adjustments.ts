@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 import { adjustmentAdapter } from '../api/adjustment-adapter'
 
@@ -53,10 +52,13 @@ export function useCreateInventoryAdjustment() {
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments'] })
       queryClient.invalidateQueries({ queryKey: ['inventory-batches'] })
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      toast.success('Ajuste de inventario creado exitosamente')
+      sileo.success({ title: 'Ajuste de inventario creado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al crear ajuste: ${error.message}`)
+      sileo.error({
+        title: 'Error al crear ajuste',
+        description: error.message,
+      })
     },
   })
 }
@@ -77,10 +79,13 @@ export function useUpdateInventoryAdjustment() {
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments', id] })
       queryClient.invalidateQueries({ queryKey: ['inventory-batches'] })
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      toast.success('Ajuste actualizado exitosamente')
+      sileo.success({ title: 'Ajuste actualizado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al actualizar ajuste: ${error.message}`)
+      sileo.error({
+        title: 'Error al actualizar ajuste',
+        description: error.message,
+      })
     },
   })
 }
@@ -94,10 +99,13 @@ export function useDeleteInventoryAdjustment() {
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments'] })
       queryClient.invalidateQueries({ queryKey: ['inventory-batches'] })
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      toast.success('Ajuste eliminado exitosamente')
+      sileo.success({ title: 'Ajuste eliminado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al eliminar ajuste: ${error.message}`)
+      sileo.error({
+        title: 'Error al eliminar ajuste',
+        description: error.message,
+      })
     },
   })
 }
@@ -112,10 +120,13 @@ export function useApproveAdjustment() {
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments', id] })
       queryClient.invalidateQueries({ queryKey: ['inventory-batches'] })
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      toast.success('Ajuste aprobado y aplicado exitosamente')
+      sileo.success({ title: 'Ajuste aprobado y aplicado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al aprobar ajuste: ${error.message}`)
+      sileo.error({
+        title: 'Error al aprobar ajuste',
+        description: error.message,
+      })
     },
   })
 }
@@ -128,10 +139,13 @@ export function useCancelAdjustment() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments'] })
       queryClient.invalidateQueries({ queryKey: ['inventory-adjustments', id] })
-      toast.success('Ajuste cancelado exitosamente')
+      sileo.success({ title: 'Ajuste cancelado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al cancelar ajuste: ${error.message}`)
+      sileo.error({
+        title: 'Error al cancelar ajuste',
+        description: error.message,
+      })
     },
   })
 }

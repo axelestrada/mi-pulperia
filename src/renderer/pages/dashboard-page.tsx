@@ -39,6 +39,8 @@ interface DashboardMetrics {
     totalLowStockValue: number
   }
   credits: {
+    activeCredits: number
+    totalActiveAmount: number
     overdueCredits: number
     totalOverdueAmount: number
   }
@@ -135,6 +137,8 @@ export const DashboardPage = () => {
             totalLowStockValue: 0,
           },
           credits: {
+            activeCredits: 0,
+            totalActiveAmount: 0,
             overdueCredits: 0,
             totalOverdueAmount: 0,
           },
@@ -193,9 +197,9 @@ export const DashboardPage = () => {
       },
       {
         title: 'Créditos',
-        value: formatCurrency((metrics?.credits.totalOverdueAmount || 0) / 100),
-        change: `${metrics?.credits.overdueCredits || 0} vencidos`,
-        changeType: 'negative' as const,
+        value: formatCurrency((metrics?.credits.totalActiveAmount || 0) / 100),
+        change: `${metrics?.credits.activeCredits || 0} activos`,
+        changeType: 'neutral' as const,
         trendChipPosition: 'top' as const,
         icon: <IconSolarBanknote2Linear />,
       },

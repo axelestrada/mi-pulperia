@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import { CreditsRepository } from '../repositories/credits-repository'
+import { CustomersService } from '../services/customers-service'
 
 export function registerCreditsIpc() {
   ipcMain.handle('credits:list', async (_, filters) => {
@@ -14,7 +15,22 @@ export function registerCreditsIpc() {
 
   ipcMain.handle('credits:create', async (_, creditData) => {
     try {
-      return await CreditsRepository.create(creditData)
+      const created = await CreditsRepository.create(creditData)
+
+      const customerId = Number(creditData?.credit?.customerId)
+      const remainingAmount = Number(creditData?.credit?.remainingAmount || 0)
+      const creditType = creditData?.credit?.type
+
+      if (
+        Number.isInteger(customerId) &&
+        customerId > 0 &&
+        remainingAmount > 0 &&
+        (creditType === 'manual_credit' || creditType === 'sale_credit')
+      ) {
+        await CustomersService.addToBalance(customerId, remainingAmount)
+      }
+
+      return created
     } catch (error) {
       console.error('Error creating credit:', error)
       throw error

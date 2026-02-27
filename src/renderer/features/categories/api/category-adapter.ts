@@ -1,6 +1,8 @@
+import type { CategoriesListFilters } from 'shared/types/categories'
+
 export const categoryAdapter = {
-  list() {
-    return window.api.categories.list()
+  list(filters?: CategoriesListFilters) {
+    return window.api.categories.list(filters)
   },
 
   create(payload: CategoryFormData) {

@@ -11,6 +11,28 @@ import { PaginatedResult } from 'shared/types/pagination'
 import { UNIT_CONFIG } from 'main/domains/products/products-units'
 import { toUnitPrecision } from '../../../shared/utils/quantity'
 
+const parseUniqueField = (message: string): 'barcode' | 'sku' | null => {
+  if (message.includes('presentations.barcode')) return 'barcode'
+  if (message.includes('presentations.sku')) return 'sku'
+  return null
+}
+
+const toDomainError = (error: unknown) => {
+  if (!(error instanceof Error)) {
+    return new Error('Error al guardar la presentación')
+  }
+
+  const field = parseUniqueField(error.message)
+  if (field === 'barcode') {
+    return new Error('El código de barras ya existe en otra presentación')
+  }
+  if (field === 'sku') {
+    return new Error('El SKU ya existe en otra presentación')
+  }
+
+  return error
+}
+
 export const PresentationsService = {
   async list(
     filters: PresentationsListFilters = {}
@@ -47,24 +69,28 @@ export const PresentationsService = {
       throw new Error('Unidad inválida')
     }
 
-    const row = await PresentationsRepository.create({
-      ...input,
-      factor:
-        input.isBase
-          ? unitConfig.unitPrecision
-          : input.factorType === 'fixed'
-          ? Math.max(
-              1,
-              Number.isInteger(input.factor || 0)
-                ? (input.factor as number)
-                : toUnitPrecision(input.factor || 0, unitConfig.unitPrecision)
-            )
-          : null,
-      factorType: input.isBase ? 'fixed' : input.factorType,
-      unitPrecision: unitConfig.unitPrecision,
-    })
+    try {
+      const row = await PresentationsRepository.create({
+        ...input,
+        factor:
+          input.isBase
+            ? unitConfig.unitPrecision
+            : input.factorType === 'fixed'
+            ? Math.max(
+                1,
+                Number.isInteger(input.factor || 0)
+                  ? (input.factor as number)
+                  : toUnitPrecision(input.factor || 0, unitConfig.unitPrecision)
+              )
+            : null,
+        factorType: input.isBase ? 'fixed' : input.factorType,
+        unitPrecision: unitConfig.unitPrecision,
+      })
 
-    return toPresentationDTO(row)
+      return toPresentationDTO(row)
+    } catch (error) {
+      throw toDomainError(error)
+    }
   },
 
   async update(id: number, input: UpdatePresentationDTO) {
@@ -96,15 +122,19 @@ export const PresentationsService = {
             )
         : null
 
-    const row = await PresentationsRepository.update(id, {
-      ...input,
-      unit: nextUnit,
-      unitPrecision: unitConfig.unitPrecision,
-      factorType: current.isBase ? 'fixed' : nextFactorType,
-      factor: normalizedFactor,
-    })
+    try {
+      const row = await PresentationsRepository.update(id, {
+        ...input,
+        unit: nextUnit,
+        unitPrecision: unitConfig.unitPrecision,
+        factorType: current.isBase ? 'fixed' : nextFactorType,
+        factor: normalizedFactor,
+      })
 
-    return toPresentationDTO(row)
+      return toPresentationDTO(row)
+    } catch (error) {
+      throw toDomainError(error)
+    }
   },
 
   async toggleActive(id: number) {

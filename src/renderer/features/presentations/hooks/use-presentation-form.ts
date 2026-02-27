@@ -27,23 +27,30 @@ export function usePresentationForm({
   const { mutateAsync: updatePresentation, isPending: isUpdating } =
     useUpdatePresentation(product.id)
 
-  const onSubmit = (values: PresentationFormData) => {
-    if (mode === 'edit' && presentation) {
-      updatePresentation(
-        {
+  const onSubmit = async (values: PresentationFormData) => {
+    try {
+      if (mode === 'edit' && presentation) {
+        await updatePresentation({
           data: values,
           id: presentation.id,
-        },
-        { onSuccess }
-      )
-    } else {
-      createPresentation(
-        {
+        })
+        sileo.success({ title: 'Presentación actualizada correctamente.' })
+      } else {
+        await createPresentation({
           ...values,
           productId: product.id,
-        },
-        { onSuccess }
-      )
+        })
+        sileo.success({ title: 'Presentación creada correctamente.' })
+      }
+
+      onSuccess()
+    } catch (error) {
+      console.error(error)
+
+      sileo.error({
+        title: 'Error al guardar la presentación.',
+        description: parseError(error),
+      })
     }
   }
 

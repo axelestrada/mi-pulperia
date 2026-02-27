@@ -54,11 +54,11 @@ const data = {
           url: 'categories',
           icon: <IconSolarWidget2Outline className="size-5" />,
         },
-        {
-          title: 'Promociones',
-          url: 'promotions',
-          icon: <IconSolarSaleLinear className="size-5" />,
-        },
+        // {
+        //   title: 'Promociones',
+        //   url: 'promotions',
+        //   icon: <IconSolarSaleLinear className="size-5" />,
+        // },
       ],
     },
     {

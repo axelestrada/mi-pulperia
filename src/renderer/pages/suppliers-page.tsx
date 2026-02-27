@@ -1,27 +1,25 @@
-import { useState } from 'react'
-import { Plus, Search, Filter } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import type { Selection } from '@heroui/react'
 import {
+  Button,
   Card,
-  CardContent,
-  CardDescription,
+  CardBody,
   CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
+  Input,
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
+  Spinner,
+} from '@heroui/react'
+import { Building2, Plus, Search, Wallet } from 'lucide-react'
+import { useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
 import { useSuppliers } from '../features/suppliers/hooks/use-suppliers'
-import { SuppliersTable } from '../features/suppliers/ui/suppliers-table'
 import { SupplierFormDialog } from '../features/suppliers/ui/supplier-form-dialog'
+import { SuppliersTable } from '../features/suppliers/ui/suppliers-table'
+
+const getSingleSelectionKey = (keys: Selection, fallback = 'all') => {
+  if (keys === 'all') return fallback
+  return Array.from(keys)[0]?.toString() ?? fallback
+}
 
 export function SuppliersPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -63,17 +61,19 @@ export function SuppliersPage() {
     setIsDialogOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingSupplier(undefined)
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open)
+    if (!open) {
+      setEditingSupplier(undefined)
+    }
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando proveedores...</p>
+          <Spinner className="mb-4" />
+          <p className="text-default-500">Cargando proveedores...</p>
         </div>
       </div>
     )
@@ -81,136 +81,129 @@ export function SuppliersPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Error al cargar los proveedores</p>
-          <Button onClick={() => window.location.reload()}>Reintentar</Button>
+          <p className="mb-4 text-danger">Error al cargar los proveedores</p>
+          <Button onPress={() => window.location.reload()}>Reintentar</Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Proveedores</h1>
-          <p className="text-muted-foreground">
-            Gestiona la información de tus proveedores y sus términos
-            comerciales
-          </p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Proveedor
-        </Button>
-      </div>
+    <div className="flex flex-1 flex-col space-y-6">
+      <PageHeader
+        title="Proveedores"
+        description="Gestiona la informacion de tus proveedores y sus terminos comerciales"
+        actions={
+          <Button
+            startContent={<Plus className="h-4 w-4" />}
+            onPress={handleCreate}
+          >
+            Nuevo Proveedor
+          </Button>
+        }
+      />
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Proveedores
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Total Proveedores</h3>
+            <Building2 className="h-4 w-4 text-default-500" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{suppliers.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {activeSuppliers} activos
-            </p>
-          </CardContent>
+            <p className="text-xs text-default-500">{activeSuppliers} activos</p>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Proveedores Activos
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Proveedores Activos</h3>
+            <Building2 className="h-4 w-4 text-success" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{activeSuppliers}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-default-500">
               {suppliers.length > 0
                 ? Math.round((activeSuppliers / suppliers.length) * 100)
                 : 0}
               % del total
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo Total</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Saldo Total</h3>
+            <Wallet
+              className={`h-4 w-4 ${
+                totalBalance > 0 ? 'text-danger' : 'text-success'
+              }`}
+            />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">
-              <span
-                className={totalBalance > 0 ? 'text-red-600' : 'text-green-600'}
-              >
+              <span className={totalBalance > 0 ? 'text-danger' : 'text-success'}>
                 L {(Math.abs(totalBalance) / 100).toFixed(2)}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-default-500">
               {totalBalance > 0
                 ? 'Por pagar'
                 : totalBalance < 0
                   ? 'A favor'
                   : 'Sin saldo'}
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra proveedores</CardDescription>
+          <h3 className="font-semibold">Filtros</h3>
+          <p className="text-sm text-default-500">Busca y filtra proveedores</p>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre, empresa, contacto o email..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
+            <Input
+              placeholder="Buscar por nombre, empresa, contacto o email..."
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+              startContent={<Search className="h-4 w-4 text-default-400" />}
+            />
+            <Select
+              aria-label="Estado de proveedor"
+              selectedKeys={[statusFilter]}
+              onSelectionChange={keys =>
+                setStatusFilter(getSingleSelectionKey(keys))
+              }
+              className="w-full md:w-44"
+            >
+              <SelectItem key="all">Todos</SelectItem>
+              <SelectItem key="active">Activos</SelectItem>
+              <SelectItem key="inactive">Inactivos</SelectItem>
             </Select>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Results */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Resultados</CardTitle>
-              <CardDescription>
+              <h3 className="font-semibold">Resultados</h3>
+              <p className="text-sm text-default-500">
                 {filteredSuppliers.length} proveedor
                 {filteredSuppliers.length !== 1 ? 'es' : ''} encontrado
                 {filteredSuppliers.length !== 1 ? 's' : ''}
-              </CardDescription>
+              </p>
             </div>
             {(searchTerm || statusFilter !== 'all') && (
               <Button
-                variant="ghost"
+                variant="light"
                 size="sm"
-                onClick={() => {
+                onPress={() => {
                   setSearchTerm('')
                   setStatusFilter('all')
                 }}
@@ -220,17 +213,19 @@ export function SuppliersPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {filteredSuppliers.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
+            <div className="py-8 text-center">
+              <p className="mb-4 text-default-500">
                 {suppliers.length === 0
                   ? 'No tienes proveedores registrados'
                   : 'No se encontraron proveedores con los filtros aplicados'}
               </p>
               {suppliers.length === 0 && (
-                <Button onClick={handleCreate}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button
+                  startContent={<Plus className="h-4 w-4" />}
+                  onPress={handleCreate}
+                >
                   Crear Primer Proveedor
                 </Button>
               )}
@@ -238,13 +233,12 @@ export function SuppliersPage() {
           ) : (
             <SuppliersTable suppliers={filteredSuppliers} onEdit={handleEdit} />
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Form Dialog */}
       <SupplierFormDialog
         open={isDialogOpen}
-        onOpenChange={handleCloseDialog}
+        onOpenChange={handleDialogOpenChange}
         supplier={editingSupplier}
       />
     </div>

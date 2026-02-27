@@ -1,30 +1,27 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Modal, ModalContent, ModalHeader } from '@heroui/react'
 
 type Props = {
   open: boolean
-  setOpen: (open: boolean) => void
+  onOpenChange: (open: boolean) => void
   category: Category | null
 }
 
-export const CategoryFormDialog = ({ category, open, setOpen }: Props) => {
+export const CategoryFormDialog = ({ category, open, onOpenChange }: Props) => {
   const isEdit = Boolean(category)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Editar Categoría' : 'Nueva Categoría'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? 'Modifique los detalles de la categoría.'
-              : 'Complete el formulario para crear una nueva categoría.'}
-          </DialogDescription>
-        </DialogHeader>
+    <Modal isOpen={open} onOpenChange={onOpenChange}>
+      <ModalContent>
+        {onClose => (
+          <>
+            <ModalHeader>
+              {isEdit ? 'Editar Categoría' : 'Nueva Categoría'}
+            </ModalHeader>
 
-        <CategoryForm category={category} onClose={() => setOpen(false)} />
-      </DialogContent>
-    </Dialog>
+            <CategoryForm category={category} onClose={onClose} />
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
 }

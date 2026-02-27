@@ -7,6 +7,7 @@ import { productsTable } from '../db/schema/products'
 import { saleItemsTable } from '../db/schema/sale-items'
 import { paymentMethodsTable } from '../db/schema/payment-methods'
 import { salesTable } from '../db/schema/sales'
+import { creditsTable } from '../db/schema/credits'
 import { CreditsRepository } from '../repositories/credits-repository'
 import { CustomersRepository } from '../repositories/customers-repository'
 import { ExpensesRepository } from '../repositories/expenses-repository'
@@ -15,6 +16,10 @@ import { PurchaseOrdersRepository } from '../repositories/purchase-orders-reposi
 import { SalesRepository } from '../repositories/sales-repository'
 
 export function registerReportsIpc() {
+  const totalQuantityExpr = sql<number>`
+    coalesce(sum(${saleItemsTable.quantity} * 1.0 / nullif(${productsTable.unitPrecision}, 0)), 0)
+  `
+
   // === SALES REPORTS ===
   ipcMain.handle('reports:getSalesReport', async (_, filters) => {
     try {
@@ -79,7 +84,7 @@ export function registerReportsIpc() {
         .select({
           productId: productsTable.id,
           productName: productsTable.name,
-          totalQuantity: sum(saleItemsTable.quantity),
+          totalQuantity: totalQuantityExpr.as('total_quantity'),
           totalRevenue: sum(saleItemsTable.totalPrice),
           totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
             'total_profit'
@@ -96,7 +101,11 @@ export function registerReportsIpc() {
           eq(presentationsTable.productId, productsTable.id)
         )
         .where(and(...whereConditions))
-        .groupBy(productsTable.id, productsTable.name)
+        .groupBy(
+          productsTable.id,
+          productsTable.name,
+          productsTable.unitPrecision
+        )
         .orderBy(desc(sum(saleItemsTable.totalPrice)))
         .limit(10)
 
@@ -440,11 +449,12 @@ export function registerReportsIpc() {
     try {
       const now = new Date()
       let dateFrom: Date
-      const dateTo: Date = now
+      const dateTo: Date = new Date(now)
 
       switch (period) {
         case 'today':
-          dateFrom = new Date(now.setHours(0, 0, 0, 0))
+          dateFrom = new Date(now)
+          dateFrom.setHours(0, 0, 0, 0)
           break
         case 'week':
           dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -456,7 +466,8 @@ export function registerReportsIpc() {
           dateFrom = new Date(now.getFullYear(), 0, 1)
           break
         default:
-          dateFrom = new Date(now.setHours(0, 0, 0, 0))
+          dateFrom = new Date(now)
+          dateFrom.setHours(0, 0, 0, 0)
       }
 
       const salesWhereConditions = [
@@ -509,6 +520,19 @@ export function registerReportsIpc() {
         0
       )
 
+      // Get active credits (active + partial)
+      const activeCreditsStats = await db
+        .select({
+          activeCredits: count(creditsTable.id),
+          totalActiveAmount: sum(creditsTable.remainingAmount),
+        })
+        .from(creditsTable)
+        .where(and(
+          eq(creditsTable.deleted, false),
+          sql`${creditsTable.status} in ('active', 'partial')`
+        ))
+        .get()
+
       // Get pending orders
       const pendingOrders = await PurchaseOrdersRepository.findPendingOrders()
 
@@ -527,6 +551,8 @@ export function registerReportsIpc() {
           ),
         },
         credits: {
+          activeCredits: Number(activeCreditsStats?.activeCredits || 0),
+          totalActiveAmount: Number(activeCreditsStats?.totalActiveAmount || 0),
           overdueCredits: overdueCredits.length,
           totalOverdueAmount,
         },
@@ -564,7 +590,7 @@ export function registerReportsIpc() {
           productId: productsTable.id,
           productName: productsTable.name,
           categoryName: categoriesTable.name,
-          totalQuantity: sum(saleItemsTable.quantity),
+          totalQuantity: totalQuantityExpr.as('total_quantity'),
           totalRevenue: sum(saleItemsTable.totalPrice),
           totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
             'total_profit'
@@ -586,10 +612,15 @@ export function registerReportsIpc() {
           eq(productsTable.categoryId, categoriesTable.id)
         )
         .where(and(...whereConditions))
-        .groupBy(productsTable.id, productsTable.name, categoriesTable.name)
+        .groupBy(
+          productsTable.id,
+          productsTable.name,
+          categoriesTable.name,
+          productsTable.unitPrecision
+        )
         .orderBy(
           sortBy === 'quantity'
-            ? desc(sum(saleItemsTable.quantity))
+            ? desc(totalQuantityExpr)
             : sortBy === 'profit'
               ? desc(sum(saleItemsTable.profit))
               : desc(sum(saleItemsTable.totalPrice))

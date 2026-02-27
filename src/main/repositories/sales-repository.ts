@@ -10,6 +10,7 @@ import {
   like,
   lte,
   or,
+  sql,
   sum,
 } from 'drizzle-orm'
 import { db } from '../db'
@@ -472,6 +473,10 @@ export const SalesRepository = {
 
   // Get top selling products
   getTopSellingProducts: async (limit = 10, dateFrom?: Date, dateTo?: Date) => {
+    const totalQuantityExpr = sql<number>`
+      coalesce(sum(${saleItemsTable.quantity} * 1.0 / nullif(${productsTable.unitPrecision}, 0)), 0)
+    `
+
     const whereConditions = [
       eq(salesTable.status, 'completed'),
       eq(salesTable.deleted, false),
@@ -491,7 +496,7 @@ export const SalesRepository = {
         productName: productsTable.name,
         presentationId: presentationsTable.id,
         presentationName: presentationsTable.name,
-        totalQuantity: sum(saleItemsTable.quantity),
+        totalQuantity: totalQuantityExpr.as('total_quantity'),
         totalRevenue: sum(saleItemsTable.totalPrice),
         salesCount: count(saleItemsTable.id),
       })
@@ -506,8 +511,15 @@ export const SalesRepository = {
         eq(presentationsTable.productId, productsTable.id)
       )
       .where(and(...whereConditions))
-      .groupBy(saleItemsTable.presentationId)
-      .orderBy(desc(sum(saleItemsTable.quantity)))
+      .groupBy(
+        saleItemsTable.presentationId,
+        productsTable.id,
+        productsTable.name,
+        presentationsTable.id,
+        presentationsTable.name,
+        productsTable.unitPrecision
+      )
+      .orderBy(desc(totalQuantityExpr))
       .limit(limit)
   },
 }

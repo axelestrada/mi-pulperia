@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 export function useCustomers(filters?: any) {
   return useQuery({
@@ -49,10 +48,13 @@ export function useCreateCustomer() {
       window.api.customers.create(customerData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Cliente creado exitosamente')
+      sileo.success({ title: 'Cliente creado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al crear cliente: ${error.message}`)
+      sileo.error({
+        title: 'Error al crear cliente',
+        description: error.message,
+      })
     },
   })
 }
@@ -66,10 +68,13 @@ export function useUpdateCustomer() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       queryClient.invalidateQueries({ queryKey: ['customers', id] })
-      toast.success('Cliente actualizado exitosamente')
+      sileo.success({ title: 'Cliente actualizado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al actualizar cliente: ${error.message}`)
+      sileo.error({
+        title: 'Error al actualizar cliente',
+        description: error.message,
+      })
     },
   })
 }
@@ -81,10 +86,13 @@ export function useDeleteCustomer() {
     mutationFn: (id: number) => window.api.customers.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success('Cliente eliminado exitosamente')
+      sileo.success({ title: 'Cliente eliminado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al eliminar cliente: ${error.message}`)
+      sileo.error({
+        title: 'Error al eliminar cliente',
+        description: error.message,
+      })
     },
   })
 }
@@ -98,10 +106,13 @@ export function useUpdateCustomerBalance() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       queryClient.invalidateQueries({ queryKey: ['customers', id] })
-      toast.success('Saldo actualizado exitosamente')
+      sileo.success({ title: 'Saldo actualizado exitosamente' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al actualizar saldo: ${error.message}`)
+      sileo.error({
+        title: 'Error al actualizar saldo',
+        description: error.message,
+      })
     },
   })
 }
@@ -115,10 +126,13 @@ export function useAddToCustomerBalance() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       queryClient.invalidateQueries({ queryKey: ['customers', id] })
-      toast.success('Monto agregado al saldo')
+      sileo.success({ title: 'Monto agregado al saldo' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al agregar al saldo: ${error.message}`)
+      sileo.error({
+        title: 'Error al agregar al saldo',
+        description: error.message,
+      })
     },
   })
 }
@@ -132,10 +146,13 @@ export function useSubtractFromCustomerBalance() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       queryClient.invalidateQueries({ queryKey: ['customers', id] })
-      toast.success('Monto descontado del saldo')
+      sileo.success({ title: 'Monto descontado del saldo' })
     },
     onError: (error: Error) => {
-      toast.error(`Error al descontar del saldo: ${error.message}`)
+      sileo.error({
+        title: 'Error al descontar del saldo',
+        description: error.message,
+      })
     },
   })
 }
@@ -145,7 +162,10 @@ export function useCanExtendCredit() {
     mutationFn: ({ id, amount }: { id: number; amount: number }) =>
       window.api.customers.canExtendCredit(id, amount),
     onError: (error: Error) => {
-      toast.error(`Error al verificar crédito: ${error.message}`)
+      sileo.error({
+        title: 'Error al verificar crédito',
+        description: error.message,
+      })
     },
   })
 }
