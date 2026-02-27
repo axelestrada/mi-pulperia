@@ -594,7 +594,7 @@ export const SalesPage = () => {
       <Modal
         isOpen={showSaleDetail}
         onOpenChange={setShowSaleDetail}
-        scrollBehavior="inside"
+        scrollBehavior="outside"
         size="3xl"
       >
         <ModalContent>
