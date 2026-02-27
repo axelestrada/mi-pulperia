@@ -7,6 +7,7 @@ import { productsTable } from '../db/schema/products'
 import { saleItemsTable } from '../db/schema/sale-items'
 import { paymentMethodsTable } from '../db/schema/payment-methods'
 import { salesTable } from '../db/schema/sales'
+import { creditsTable } from '../db/schema/credits'
 import { CreditsRepository } from '../repositories/credits-repository'
 import { CustomersRepository } from '../repositories/customers-repository'
 import { ExpensesRepository } from '../repositories/expenses-repository'
@@ -440,11 +441,12 @@ export function registerReportsIpc() {
     try {
       const now = new Date()
       let dateFrom: Date
-      const dateTo: Date = now
+      const dateTo: Date = new Date(now)
 
       switch (period) {
         case 'today':
-          dateFrom = new Date(now.setHours(0, 0, 0, 0))
+          dateFrom = new Date(now)
+          dateFrom.setHours(0, 0, 0, 0)
           break
         case 'week':
           dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -456,7 +458,8 @@ export function registerReportsIpc() {
           dateFrom = new Date(now.getFullYear(), 0, 1)
           break
         default:
-          dateFrom = new Date(now.setHours(0, 0, 0, 0))
+          dateFrom = new Date(now)
+          dateFrom.setHours(0, 0, 0, 0)
       }
 
       const salesWhereConditions = [
@@ -509,6 +512,19 @@ export function registerReportsIpc() {
         0
       )
 
+      // Get active credits (active + partial)
+      const activeCreditsStats = await db
+        .select({
+          activeCredits: count(creditsTable.id),
+          totalActiveAmount: sum(creditsTable.remainingAmount),
+        })
+        .from(creditsTable)
+        .where(and(
+          eq(creditsTable.deleted, false),
+          sql`${creditsTable.status} in ('active', 'partial')`
+        ))
+        .get()
+
       // Get pending orders
       const pendingOrders = await PurchaseOrdersRepository.findPendingOrders()
 
@@ -527,6 +543,8 @@ export function registerReportsIpc() {
           ),
         },
         credits: {
+          activeCredits: Number(activeCreditsStats?.activeCredits || 0),
+          totalActiveAmount: Number(activeCreditsStats?.totalActiveAmount || 0),
           overdueCredits: overdueCredits.length,
           totalOverdueAmount,
         },
