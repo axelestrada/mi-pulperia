@@ -23,7 +23,6 @@ import {
 } from '@heroui/react'
 import { AlertTriangle, ArrowLeftRight, Plus, RotateCcw, Search, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { useInventoryBatches } from '@/features/inventory/batches/hooks/use-inventory-batches'
 import { usePosPresentations } from '@/features/presentations/hooks/use-pos-presentations'
 import {
@@ -215,7 +214,7 @@ export function NewReturnDialog({
 
   const addExchangeProduct = () => {
     if (!selectedPresentation) {
-      toast.error('Selecciona una presentacion para el cambio')
+      sileo.error({ title: 'Selecciona una presentacion para el cambio' })
       return
     }
 
@@ -223,7 +222,7 @@ export function NewReturnDialog({
     const unitPrice = selectedPresentation.salePrice
 
     if (!batches.length) {
-      toast.error('No hay lotes con stock para esta presentacion')
+      sileo.error({ title: 'No hay lotes con stock para esta presentacion' })
       return
     }
 
@@ -241,7 +240,10 @@ export function NewReturnDialog({
     }, 0)
 
     if (qty > totalAvailable) {
-      toast.error(`Stock insuficiente. Disponible para cambio: ${totalAvailable}`)
+      sileo.error({
+        title: 'Stock insuficiente para el cambio',
+        description: `Disponible para cambio: ${totalAvailable}`,
+      })
       return
     }
 
@@ -353,13 +355,14 @@ export function NewReturnDialog({
                 ? `Cambio completado. Cobrar al cliente: ${formatCurrency(fromCents(Math.abs(balance)))}`
                 : 'Cambio completado. Sin diferencia de precio.'
 
-      toast.success(message)
+      sileo.success({ title: message })
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Error al procesar la devolucion'
-      )
+      sileo.error({
+        title: 'Error al procesar la devolucion',
+        description: error instanceof Error ? error.message : undefined,
+      })
     }
   }
 

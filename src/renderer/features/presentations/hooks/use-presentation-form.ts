@@ -34,20 +34,21 @@ export function usePresentationForm({
           data: values,
           id: presentation.id,
         })
-        toast.success('Presentación actualizada correctamente.')
+        sileo.success({ title: 'Presentación actualizada correctamente.' })
       } else {
         await createPresentation({
           ...values,
           productId: product.id,
         })
-        toast.success('Presentación creada correctamente.')
+        sileo.success({ title: 'Presentación creada correctamente.' })
       }
 
       onSuccess()
     } catch (error) {
       console.error(error)
 
-      toast.error('Error al guardar la presentación.', {
+      sileo.error({
+        title: 'Error al guardar la presentación.',
         description: parseError(error),
       })
     }

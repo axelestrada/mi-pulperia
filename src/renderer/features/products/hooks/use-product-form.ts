@@ -19,16 +19,17 @@ export const useProductForm = (
           id: product.id,
           data,
         })
-        toast.success('Producto actualizado correctamente.')
+        sileo.success({ title: 'Producto actualizado correctamente.' })
       } else {
         await createProduct(data)
-        toast.success('Producto creado correctamente.')
+        sileo.success({ title: 'Producto creado correctamente.' })
       }
       onSuccess()
     } catch (error) {
       console.error(error)
 
-      toast.error('Error al guardar el producto.', {
+      sileo.error({
+        title: 'Error al guardar el producto.',
         description: parseError(error),
       })
     }
