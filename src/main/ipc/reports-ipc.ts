@@ -16,6 +16,10 @@ import { PurchaseOrdersRepository } from '../repositories/purchase-orders-reposi
 import { SalesRepository } from '../repositories/sales-repository'
 
 export function registerReportsIpc() {
+  const totalQuantityExpr = sql<number>`
+    coalesce(sum(${saleItemsTable.quantity} * 1.0 / nullif(${productsTable.unitPrecision}, 0)), 0)
+  `
+
   // === SALES REPORTS ===
   ipcMain.handle('reports:getSalesReport', async (_, filters) => {
     try {
@@ -80,7 +84,7 @@ export function registerReportsIpc() {
         .select({
           productId: productsTable.id,
           productName: productsTable.name,
-          totalQuantity: sum(saleItemsTable.quantity),
+          totalQuantity: totalQuantityExpr.as('total_quantity'),
           totalRevenue: sum(saleItemsTable.totalPrice),
           totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
             'total_profit'
@@ -97,7 +101,11 @@ export function registerReportsIpc() {
           eq(presentationsTable.productId, productsTable.id)
         )
         .where(and(...whereConditions))
-        .groupBy(productsTable.id, productsTable.name)
+        .groupBy(
+          productsTable.id,
+          productsTable.name,
+          productsTable.unitPrecision
+        )
         .orderBy(desc(sum(saleItemsTable.totalPrice)))
         .limit(10)
 
@@ -582,7 +590,7 @@ export function registerReportsIpc() {
           productId: productsTable.id,
           productName: productsTable.name,
           categoryName: categoriesTable.name,
-          totalQuantity: sum(saleItemsTable.quantity),
+          totalQuantity: totalQuantityExpr.as('total_quantity'),
           totalRevenue: sum(saleItemsTable.totalPrice),
           totalProfit: sql<number>`coalesce(sum(${saleItemsTable.profit}), 0)`.as(
             'total_profit'
@@ -604,10 +612,15 @@ export function registerReportsIpc() {
           eq(productsTable.categoryId, categoriesTable.id)
         )
         .where(and(...whereConditions))
-        .groupBy(productsTable.id, productsTable.name, categoriesTable.name)
+        .groupBy(
+          productsTable.id,
+          productsTable.name,
+          categoriesTable.name,
+          productsTable.unitPrecision
+        )
         .orderBy(
           sortBy === 'quantity'
-            ? desc(sum(saleItemsTable.quantity))
+            ? desc(totalQuantityExpr)
             : sortBy === 'profit'
               ? desc(sum(saleItemsTable.profit))
               : desc(sum(saleItemsTable.totalPrice))
