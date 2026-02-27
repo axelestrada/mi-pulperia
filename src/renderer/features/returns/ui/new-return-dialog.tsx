@@ -21,19 +21,19 @@ import {
   TableRow,
   Textarea,
 } from '@heroui/react'
+import { AlertTriangle, ArrowLeftRight, Plus, RotateCcw, Search, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { fromCents } from '../../../../shared/utils/currency'
-import { formatCurrency } from '../../../../shared/utils/formatCurrency'
+import { useInventoryBatches } from '@/features/inventory/batches/hooks/use-inventory-batches'
+import { usePosPresentations } from '@/features/presentations/hooks/use-pos-presentations'
 import {
   type ProcessExchangeItem,
   type ProcessReturnItem,
   useProcessReturn,
 } from '@/hooks/use-returns'
 import { useSale, useSales } from '@/hooks/use-sales'
-import { usePosPresentations } from '@/features/presentations/hooks/use-pos-presentations'
-import { useInventoryBatches } from '@/features/inventory/batches/hooks/use-inventory-batches'
-import { ArrowLeftRight, Plus, RotateCcw, Search, Trash2, AlertTriangle } from 'lucide-react'
+import { fromCents } from '../../../../shared/utils/currency'
+import { formatCurrency } from '../../../../shared/utils/formatCurrency'
 
 const SHRINKAGE_REASONS = [
   'Producto danado',
@@ -84,7 +84,6 @@ export function NewReturnDialog({
   const [notes, setNotes] = useState('')
 
   const [selectedPresentationId, setSelectedPresentationId] = useState('')
-  const [selectedBatchId, setSelectedBatchId] = useState('')
   const [exchangeQty, setExchangeQty] = useState('1')
   const [exchangeRows, setExchangeRows] = useState<ExchangeRow[]>([])
 
@@ -140,7 +139,6 @@ export function NewReturnDialog({
     setReason('')
     setNotes('')
     setSelectedPresentationId('')
-    setSelectedBatchId('')
     setExchangeQty('1')
     setExchangeRows([])
   }, [open])
@@ -159,10 +157,6 @@ export function NewReturnDialog({
       }))
     )
   }, [selectedSale?.items, returnRows.length])
-
-  useEffect(() => {
-    setSelectedBatchId('')
-  }, [selectedPresentationId])
 
   const selectedRows = useMemo(
     () => returnRows.filter(r => r.selected && r.quantityReturned > 0),
@@ -220,63 +214,88 @@ export function NewReturnDialog({
   }
 
   const addExchangeProduct = () => {
-    if (!selectedPresentation || !selectedBatchId) {
-      toast.error('Selecciona presentacion y lote para el cambio')
-      return
-    }
-
-    const batch = batches.find(b => b.id === Number(selectedBatchId))
-    if (!batch) {
-      toast.error('El lote seleccionado ya no esta disponible')
+    if (!selectedPresentation) {
+      toast.error('Selecciona una presentacion para el cambio')
       return
     }
 
     const qty = Math.max(1, Math.floor(Number(exchangeQty) || 1))
+    const unitPrice = selectedPresentation.salePrice
 
-    const existing = exchangeRows.find(
-      row =>
-        row.presentationId === selectedPresentation.id &&
-        row.batchId === Number(selectedBatchId)
-    )
-
-    const nextQty = (existing?.quantity || 0) + qty
-
-    if (nextQty > batch.quantityAvailable) {
-      toast.error(
-        `Stock insuficiente. Disponible en lote: ${batch.quantityAvailable}`
-      )
+    if (!batches.length) {
+      toast.error('No hay lotes con stock para esta presentacion')
       return
     }
 
-    const unitPrice = selectedPresentation.salePrice
-    const totalPrice = nextQty * unitPrice
-
-    if (existing) {
-      setExchangeRows(prev =>
-        prev.map(row =>
-          row.presentationId === selectedPresentation.id &&
-          row.batchId === Number(selectedBatchId)
-            ? { ...row, quantity: nextQty, totalPrice }
-            : row
-        )
+    const allocatedByBatch = new Map<number, number>()
+    for (const row of exchangeRows) {
+      allocatedByBatch.set(
+        row.batchId,
+        (allocatedByBatch.get(row.batchId) ?? 0) + row.quantity
       )
-    } else {
-      setExchangeRows(prev => [
-        ...prev,
-        {
-          presentationId: selectedPresentation.id,
-          presentationName: selectedPresentation.name,
-          batchId: Number(selectedBatchId),
-          batchCode: batch.batchCode || `Lote #${batch.id}`,
-          quantity: qty,
-          unitPrice,
-          totalPrice: qty * unitPrice,
-        },
-      ])
     }
 
+    const totalAvailable = batches.reduce((sum, batch) => {
+      const reserved = allocatedByBatch.get(batch.id) ?? 0
+      return sum + Math.max(0, batch.quantityAvailable - reserved)
+    }, 0)
+
+    if (qty > totalAvailable) {
+      toast.error(`Stock insuficiente. Disponible para cambio: ${totalAvailable}`)
+      return
+    }
+
+    const allocations: Array<{ batchId: number; batchCode: string; quantity: number }> = []
+    let remaining = qty
+    for (const batch of batches) {
+      if (remaining <= 0) break
+      const reserved = allocatedByBatch.get(batch.id) ?? 0
+      const available = Math.max(0, batch.quantityAvailable - reserved)
+      if (available <= 0) continue
+
+      const quantity = Math.min(available, remaining)
+      allocations.push({
+        batchId: batch.id,
+        batchCode: batch.batchCode || `Lote #${batch.id}`,
+        quantity,
+      })
+      remaining -= quantity
+    }
+
+    setExchangeRows(prev => {
+      const next = [...prev]
+
+      for (const allocation of allocations) {
+        const existingIndex = next.findIndex(
+          row =>
+            row.presentationId === selectedPresentation.id &&
+            row.batchId === allocation.batchId
+        )
+
+        if (existingIndex >= 0) {
+          const nextQty = next[existingIndex].quantity + allocation.quantity
+          next[existingIndex] = {
+            ...next[existingIndex],
+            quantity: nextQty,
+            totalPrice: nextQty * unitPrice,
+          }
+        } else {
+          next.push({
+            presentationId: selectedPresentation.id,
+            presentationName: selectedPresentation.name,
+            batchId: allocation.batchId,
+            batchCode: allocation.batchCode,
+            quantity: allocation.quantity,
+            unitPrice,
+            totalPrice: allocation.quantity * unitPrice,
+          })
+        }
+      }
+
+      return next
+    })
+
     setSelectedPresentationId('')
-    setSelectedBatchId('')
     setExchangeQty('1')
   }
 
@@ -345,7 +364,7 @@ export function NewReturnDialog({
   }
 
   return (
-    <Modal isOpen={open} onOpenChange={onOpenChange} scrollBehavior="inside" size="3xl">
+    <Modal isOpen={open} onOpenChange={onOpenChange} scrollBehavior="outside" size="3xl">
       <ModalContent>
         {onClose => (
           <>
@@ -578,7 +597,7 @@ export function NewReturnDialog({
                             Si agregas productos o cantidades que exceden lo devuelto de la venta
                             original, se registran automaticamente como una venta adicional.
                           </p>
-                          <div className="grid gap-2 md:grid-cols-[1fr_1fr_110px_auto]">
+                          <div className="grid gap-2 md:grid-cols-[1fr_110px_auto]">
                             <Select
                               label="Presentacion"
                               selectedKeys={selectedPresentationId ? [selectedPresentationId] : []}
@@ -589,22 +608,6 @@ export function NewReturnDialog({
                               {exchangePresentations.map(p => (
                                 <SelectItem key={String(p.id)}>
                                   {p.name} - {formatCurrency(fromCents(p.salePrice))}
-                                </SelectItem>
-                              ))}
-                            </Select>
-
-                            <Select
-                              label="Lote"
-                              selectedKeys={selectedBatchId ? [selectedBatchId] : []}
-                              isDisabled={!selectedPresentation}
-                              onSelectionChange={keys =>
-                                setSelectedBatchId(String(keys.currentKey ?? ''))
-                              }
-                            >
-                              {batches.map(batch => (
-                                <SelectItem key={String(batch.id)}>
-                                  {(batch.batchCode || `Lote #${batch.id}`) +
-                                    ` (Stock: ${batch.quantityAvailable})`}
                                 </SelectItem>
                               ))}
                             </Select>

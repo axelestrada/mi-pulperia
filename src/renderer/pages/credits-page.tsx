@@ -25,7 +25,8 @@ import {
 } from '@heroui/react'
 import { AlertTriangle, Clock, CreditCard, DollarSign, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useCredits } from '@/features/credits/hooks/use-credits'
+import { useCreateCredit, useCredits } from '@/features/credits/hooks/use-credits'
+import { useActiveCustomers } from '@/features/customers/hooks/use-customers'
 import {
   SHIFT_HANDOVER_UPDATED_EVENT,
   getShiftModuleNote,
@@ -66,12 +67,21 @@ export function CreditsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 8
   const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [selectedCredit, setSelectedCredit] = useState<CreditItem | null>(null)
+  const [manualCustomerId, setManualCustomerId] = useState('')
+  const [manualAmount, setManualAmount] = useState('')
+  const [manualDueDate, setManualDueDate] = useState('')
+  const [manualDescription, setManualDescription] = useState('')
+  const [manualNotes, setManualNotes] = useState('')
 
   const backendStatus =
     statusFilter === 'all' || statusFilter === 'overdue'
       ? undefined
       : statusFilter
+
+  const createCredit = useCreateCredit()
+  const { data: activeCustomers = [] } = useActiveCustomers()
 
   const { data: credits = [], isLoading, error } = useCredits({
     search: searchTerm || undefined,
@@ -141,6 +151,76 @@ export function CreditsPage() {
     setSelectedCredit(null)
   }
 
+  const openCreateModal = () => {
+    setManualCustomerId('')
+    setManualAmount('')
+    setManualDueDate('')
+    setManualDescription('')
+    setManualNotes('')
+    setIsCreateOpen(true)
+  }
+
+  const handleCreateManualCredit = async () => {
+    const customerId = Number(manualCustomerId)
+    const amount = Number(manualAmount)
+    const amountInCents = Math.round(amount * 100)
+
+    if (!Number.isInteger(customerId) || customerId <= 0) {
+      sileo.error({ title: 'Selecciona un cliente para el crédito' })
+      return
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      sileo.error({ title: 'Ingresa un monto válido' })
+      return
+    }
+
+    if (!manualDescription.trim()) {
+      sileo.error({ title: 'Ingresa un motivo para el crédito' })
+      return
+    }
+
+    const dueDate = manualDueDate ? new Date(`${manualDueDate}T00:00:00`) : undefined
+
+    if (dueDate && Number.isNaN(dueDate.getTime())) {
+      sileo.error({ title: 'La fecha de vencimiento no es válida' })
+      return
+    }
+
+    try {
+      const creditNumber = await window.api.credits.generateCreditNumber()
+
+      await createCredit.mutateAsync({
+        credit: {
+          creditNumber,
+          customerId,
+          type: 'manual_credit',
+          amount: amountInCents,
+          originalAmount: amountInCents,
+          paidAmount: 0,
+          remainingAmount: amountInCents,
+          status: 'active',
+          dueDate,
+          interestRate: 0,
+          lateFeesAmount: 0,
+          description: manualDescription.trim(),
+          notes: manualNotes.trim() || undefined,
+          createdBy: 'MANUAL',
+        },
+      })
+
+
+      sileo.success({ title: 'Crédito manual creado correctamente' })
+      setIsCreateOpen(false)
+    } catch (createError) {
+      sileo.error({
+        title: 'No se pudo crear el crédito manual',
+        description:
+          createError instanceof Error ? createError.message : 'Ocurrió un error inesperado',
+      })
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -172,6 +252,9 @@ export function CreditsPage() {
             Control del libro de créditos y pendientes por cobrar.
           </p>
         </div>
+        <Button className="bg-foreground text-background" onPress={openCreateModal}>
+          Nuevo crédito manual
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -409,6 +492,71 @@ export function CreditsPage() {
             <ModalFooter>
               <Button variant="light" onPress={closeDetailModal}>
                 Cerrar
+              </Button>
+            </ModalFooter>
+          </>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isCreateOpen} onOpenChange={setIsCreateOpen} size="lg">
+        <ModalContent>
+          <>
+            <ModalHeader>Nuevo crédito manual</ModalHeader>
+            <ModalBody className="space-y-3">
+              <Select
+                label="Cliente"
+                selectedKeys={manualCustomerId ? [manualCustomerId] : []}
+                onSelectionChange={keys => setManualCustomerId(String(keys.currentKey ?? ''))}
+              >
+                {activeCustomers.map(customer => (
+                  <SelectItem key={String(customer.id)}>
+                    {customer.name}
+                    {customer.document ? ` - ${customer.document}` : ''}
+                  </SelectItem>
+                ))}
+              </Select>
+
+              <Input
+                label="Monto (L)"
+                type="number"
+                min={0.01}
+                step="0.01"
+                value={manualAmount}
+                onValueChange={setManualAmount}
+                placeholder="0.00"
+              />
+
+              <Input
+                label="Fecha de vencimiento (opcional)"
+                type="date"
+                value={manualDueDate}
+                onValueChange={setManualDueDate}
+              />
+
+              <Input
+                label="Motivo"
+                value={manualDescription}
+                onValueChange={setManualDescription}
+                placeholder="Ej. Crédito manual por saldo pendiente"
+              />
+
+              <Textarea
+                label="Notas (opcional)"
+                value={manualNotes}
+                onValueChange={setManualNotes}
+                placeholder="Notas adicionales"
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="light" onPress={() => setIsCreateOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                color="primary"
+                onPress={handleCreateManualCredit}
+                isLoading={createCredit.isPending}
+              >
+                Crear crédito
               </Button>
             </ModalFooter>
           </>
