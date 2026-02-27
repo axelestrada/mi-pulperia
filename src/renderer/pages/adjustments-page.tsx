@@ -1,34 +1,31 @@
-import { useState } from 'react'
+import type { Selection } from '@heroui/react'
 import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Input,
+  Select,
+  SelectItem,
+  Spinner,
+} from '@heroui/react'
+import {
+  AlertTriangle,
+  Calculator,
   Plus,
   Search,
-  Filter,
   TrendingDown,
-  Calculator,
-  AlertTriangle,
 } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
+import { useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
 import { useInventoryAdjustments } from '../features/inventory-adjustments/hooks/use-adjustments'
 import { AdjustmentFormDialog } from '../features/inventory-adjustments/ui/adjustment-form-dialog'
 import { AdjustmentsTable } from '../features/inventory-adjustments/ui/adjustments-table'
+
+const getSingleSelectionKey = (keys: Selection, fallback = 'all') => {
+  if (keys === 'all') return fallback
+  return Array.from(keys)[0]?.toString() ?? fallback
+}
 
 export function AdjustmentsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -81,19 +78,19 @@ export function AdjustmentsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingAdjustment(undefined)
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open)
+    if (!open) {
+      setEditingAdjustment(undefined)
+    }
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">
-            Cargando ajustes de inventario...
-          </p>
+          <Spinner className="mb-4" />
+          <p className="text-default-500">Cargando ajustes de inventario...</p>
         </div>
       </div>
     )
@@ -101,152 +98,140 @@ export function AdjustmentsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Error al cargar los ajustes</p>
-          <Button onClick={() => window.location.reload()}>Reintentar</Button>
+          <p className="mb-4 text-danger">Error al cargar los ajustes</p>
+          <Button onPress={() => window.location.reload()}>Reintentar</Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Ajustes y Merma</h1>
-          <p className="text-muted-foreground">
-            Gestiona ajustes de inventario y mermas por lote específico
-          </p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Ajuste
-        </Button>
-      </div>
+    <div className="flex flex-1 flex-col space-y-6">
+      <PageHeader
+        title="Ajustes y Merma"
+        description="Gestiona ajustes de inventario y mermas por lote especifico"
+        actions={
+          <Button startContent={<Plus className="h-4 w-4" />} onPress={handleCreate}>
+            Nuevo Ajuste
+          </Button>
+        }
+      />
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Ajustes</CardTitle>
-            <Calculator className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Total Ajustes</h3>
+            <Calculator className="h-4 w-4 text-default-500" />
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-default-500">
               {stats.adjustments} ajustes, {stats.shrinkages} mermas
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Pendientes</h3>
+            <AlertTriangle className="h-4 w-4 text-warning" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {stats.pending}
-            </div>
-            <p className="text-xs text-muted-foreground">Por aprobar</p>
-          </CardContent>
+          <CardBody>
+            <div className="text-2xl font-bold text-warning">{stats.pending}</div>
+            <p className="text-xs text-default-500">Por aprobar</p>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Impacto Total</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Impacto Total</h3>
           </CardHeader>
-          <CardContent>
+          <CardBody>
             <div
               className={`text-2xl font-bold ${
-                stats.totalCostImpact >= 0 ? 'text-green-600' : 'text-red-600'
+                stats.totalCostImpact >= 0 ? 'text-success' : 'text-danger'
               }`}
             >
               L {Math.abs(stats.totalCostImpact / 100).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalCostImpact >= 0 ? 'Ganancia' : 'Pérdida'} acumulada
+            <p className="text-xs text-default-500">
+              {stats.totalCostImpact >= 0 ? 'Ganancia' : 'Perdida'} acumulada
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mermas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-500" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <h3 className="text-sm font-medium">Mermas</h3>
+            <TrendingDown className="h-4 w-4 text-danger" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+          <CardBody>
+            <div className="text-2xl font-bold text-danger">
               L {Math.abs(stats.shrinkageImpact / 100).toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">Pérdidas por merma</p>
-          </CardContent>
+            <p className="text-xs text-default-500">Perdidas por merma</p>
+          </CardBody>
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>
-            Busca y filtra ajustes de inventario
-          </CardDescription>
+          <h3 className="font-semibold">Filtros</h3>
+          <p className="text-sm text-default-500">Busca y filtra ajustes de inventario</p>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por número, razón o notas..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="adjustment">Ajustes</SelectItem>
-                <SelectItem value="shrinkage">Mermas</SelectItem>
-              </SelectContent>
+            <Input
+              placeholder="Buscar por numero, razon o notas..."
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+              startContent={<Search className="h-4 w-4 text-default-400" />}
+            />
+            <Select
+              aria-label="Tipo de ajuste"
+              selectedKeys={[typeFilter]}
+              onSelectionChange={keys => setTypeFilter(getSingleSelectionKey(keys))}
+              className="w-full md:w-44"
+            >
+              <SelectItem key="all">Todos</SelectItem>
+              <SelectItem key="adjustment">Ajustes</SelectItem>
+              <SelectItem key="shrinkage">Mermas</SelectItem>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="draft">Borrador</SelectItem>
-                <SelectItem value="approved">Aprobado</SelectItem>
-                <SelectItem value="cancelled">Cancelado</SelectItem>
-              </SelectContent>
+            <Select
+              aria-label="Estado del ajuste"
+              selectedKeys={[statusFilter]}
+              onSelectionChange={keys =>
+                setStatusFilter(getSingleSelectionKey(keys))
+              }
+              className="w-full md:w-44"
+            >
+              <SelectItem key="all">Todos</SelectItem>
+              <SelectItem key="draft">Borrador</SelectItem>
+              <SelectItem key="approved">Aprobado</SelectItem>
+              <SelectItem key="cancelled">Cancelado</SelectItem>
             </Select>
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Results */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Resultados</CardTitle>
-              <CardDescription>
+              <h3 className="font-semibold">Resultados</h3>
+              <p className="text-sm text-default-500">
                 {filteredAdjustments.length} ajuste
                 {filteredAdjustments.length !== 1 ? 's' : ''} encontrado
                 {filteredAdjustments.length !== 1 ? 's' : ''}
-              </CardDescription>
+              </p>
             </div>
             {(searchTerm || typeFilter !== 'all' || statusFilter !== 'all') && (
               <Button
-                variant="ghost"
+                variant="light"
                 size="sm"
-                onClick={() => {
+                onPress={() => {
                   setSearchTerm('')
                   setTypeFilter('all')
                   setStatusFilter('all')
@@ -257,17 +242,16 @@ export function AdjustmentsPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardBody>
           {filteredAdjustments.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
+            <div className="py-8 text-center">
+              <p className="mb-4 text-default-500">
                 {adjustments.length === 0
                   ? 'No tienes ajustes de inventario registrados'
                   : 'No se encontraron ajustes con los filtros aplicados'}
               </p>
               {adjustments.length === 0 && (
-                <Button onClick={handleCreate}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button startContent={<Plus className="h-4 w-4" />} onPress={handleCreate}>
                   Crear Primer Ajuste
                 </Button>
               )}
@@ -278,13 +262,12 @@ export function AdjustmentsPage() {
               onEdit={handleEdit}
             />
           )}
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {/* Form Dialog */}
       <AdjustmentFormDialog
         open={isDialogOpen}
-        onOpenChange={handleCloseDialog}
+        onOpenChange={handleDialogOpenChange}
         adjustment={editingAdjustment}
       />
     </div>
