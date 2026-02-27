@@ -1,36 +1,28 @@
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
+  Button,
+  Card,
+  CardBody,
   Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Switch,
+  Textarea,
+} from '@heroui/react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { useCreateSupplier, useUpdateSupplier } from '../hooks/use-suppliers'
 
 const supplierFormSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   companyName: z.string().optional(),
   contactPerson: z.string().optional(),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  email: z.string().email('Email invalido').optional().or(z.literal('')),
   phone: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
@@ -38,11 +30,11 @@ const supplierFormSchema = z.object({
   taxId: z.string().optional(),
   paymentTerms: z
     .number()
-    .min(0, 'Los términos de pago deben ser positivos')
+    .min(0, 'Los terminos de pago deben ser positivos')
     .default(30),
   creditLimit: z
     .number()
-    .min(0, 'El límite de crédito debe ser positivo')
+    .min(0, 'El limite de credito debe ser positivo')
     .default(0),
   bankName: z.string().optional(),
   bankAccount: z.string().optional(),
@@ -50,6 +42,7 @@ const supplierFormSchema = z.object({
   isActive: z.boolean().default(true),
 })
 
+type SupplierFormInput = z.input<typeof supplierFormSchema>
 type SupplierFormData = z.infer<typeof supplierFormSchema>
 
 interface SupplierFormDialogProps {
@@ -67,7 +60,7 @@ export function SupplierFormDialog({
   const createSupplier = useCreateSupplier()
   const updateSupplier = useUpdateSupplier()
 
-  const form = useForm<SupplierFormData>({
+  const form = useForm<SupplierFormInput, unknown, SupplierFormData>({
     resolver: zodResolver(supplierFormSchema),
     defaultValues: {
       name: '',
@@ -101,13 +94,16 @@ export function SupplierFormDialog({
         country: supplier.country || '',
         taxId: supplier.taxId || '',
         paymentTerms: supplier.paymentTerms,
-        creditLimit: supplier.creditLimit / 100, // Convert from cents
+        creditLimit: supplier.creditLimit / 100,
         bankName: supplier.bankName || '',
         bankAccount: supplier.bankAccount || '',
         notes: supplier.notes || '',
         isActive: supplier.isActive,
       })
-    } else if (!supplier && open) {
+      return
+    }
+
+    if (!supplier && open) {
       form.reset({
         name: '',
         companyName: '',
@@ -131,10 +127,10 @@ export function SupplierFormDialog({
   const onSubmit = (data: SupplierFormData) => {
     const formattedData = {
       ...data,
-      creditLimit: Math.round(data.creditLimit * 100), // Convert to cents
+      creditLimit: Math.round(data.creditLimit * 100),
     }
 
-    if (isEdit) {
+    if (isEdit && supplier) {
       updateSupplier.mutate(
         { id: supplier.id, data: formattedData },
         {
@@ -143,292 +139,378 @@ export function SupplierFormDialog({
           },
         }
       )
-    } else {
-      createSupplier.mutate(formattedData, {
-        onSuccess: () => {
-          onOpenChange(false)
-        },
-      })
+      return
     }
+
+    createSupplier.mutate(formattedData, {
+      onSuccess: () => {
+        onOpenChange(false)
+      },
+    })
   }
 
   const isPending = createSupplier.isPending || updateSupplier.isPending
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Editar Proveedor' : 'Nuevo Proveedor'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? 'Modifica la información del proveedor.'
-              : 'Completa la información para crear un nuevo proveedor.'}
-          </DialogDescription>
-        </DialogHeader>
+    <Modal
+      isOpen={open}
+      onOpenChange={onOpenChange}
+      size="3xl"
+      scrollBehavior="outside"
+    >
+      <ModalContent>
+        {onClose => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              <h2>{isEdit ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
+              <p className="text-small font-normal text-default-500">
+                {isEdit
+                  ? 'Modifica la informacion del proveedor.'
+                  : 'Completa la informacion para crear un nuevo proveedor.'}
+              </p>
+            </ModalHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nombre del proveedor" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre de la Empresa</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Empresa S.A." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="contactPerson"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Persona de Contacto</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Juan Pérez" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="proveedor@empresa.com"
-                        {...field}
+            <Form
+              className="h-auto w-full"
+              onSubmit={event => {
+                event.preventDefault()
+                form.handleSubmit(onSubmit)()
+              }}
+            >
+              <ModalBody className="w-full gap-4">
+                <Card>
+                  <CardBody className="gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <Controller
+                        control={form.control}
+                        name="name"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            isRequired
+                            name={name}
+                            label="Nombre"
+                            labelPlacement="outside"
+                            placeholder="Nombre del proveedor"
+                            value={value}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
-                      <Input placeholder="8888-8888" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="taxId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>RUC/Cédula</FormLabel>
-                    <FormControl>
-                      <Input placeholder="281-010180-1001K" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ciudad</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Managua" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>País</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nicaragua" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="paymentTerms"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Términos de Pago (días)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        {...field}
-                        onChange={e =>
-                          field.onChange(parseInt(e.target.value) || 0)
-                        }
+                      <Controller
+                        control={form.control}
+                        name="companyName"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Nombre de la empresa"
+                            labelPlacement="outside"
+                            placeholder="Empresa S.A."
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="creditLimit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Límite de Crédito (L)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        {...field}
-                        onChange={e =>
-                          field.onChange(parseFloat(e.target.value) || 0)
-                        }
+                      <Controller
+                        control={form.control}
+                        name="contactPerson"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Persona de contacto"
+                            labelPlacement="outside"
+                            placeholder="Juan Perez"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="bankName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Banco</FormLabel>
-                    <FormControl>
-                      <Input placeholder="BAC" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <Controller
+                        control={form.control}
+                        name="email"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            type="email"
+                            name={name}
+                            label="Email"
+                            labelPlacement="outside"
+                            placeholder="proveedor@empresa.com"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
 
-              <FormField
-                control={form.control}
-                name="bankAccount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número de Cuenta</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123456789" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <Controller
+                        control={form.control}
+                        name="phone"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Telefono"
+                            labelPlacement="outside"
+                            placeholder="8888-8888"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
+                      />
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dirección</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dirección completa" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <Controller
+                        control={form.control}
+                        name="taxId"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="RUC/Cedula"
+                            labelPlacement="outside"
+                            placeholder="281-010180-1001K"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
+                      />
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notas</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Notas adicionales sobre el proveedor"
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <Controller
+                        control={form.control}
+                        name="city"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Ciudad"
+                            labelPlacement="outside"
+                            placeholder="Managua"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
+                      />
 
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Estado Activo</FormLabel>
-                    <div className="text-sm text-muted-foreground">
-                      Determina si el proveedor está disponible para nuevas
-                      órdenes
+                      <Controller
+                        control={form.control}
+                        name="country"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Pais"
+                            labelPlacement="outside"
+                            placeholder="Nicaragua"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
+                      />
+
+                      <Controller
+                        control={form.control}
+                        name="paymentTerms"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            type="number"
+                            name={name}
+                            label="Terminos de pago (dias)"
+                            labelPlacement="outside"
+                            min={0}
+                            value={String(value ?? 0)}
+                            onValueChange={nextValue => {
+                              onChange(parseInt(nextValue, 10) || 0)
+                            }}
+                            onBlur={onBlur}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
+
+                      <Controller
+                        control={form.control}
+                        name="creditLimit"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            type="number"
+                            name={name}
+                            label="Limite de credito (L)"
+                            labelPlacement="outside"
+                            min={0}
+                            step={0.01}
+                            value={String(value ?? 0)}
+                            onValueChange={nextValue => {
+                              onChange(parseFloat(nextValue) || 0)
+                            }}
+                            onBlur={onBlur}
+                            isInvalid={invalid}
+                            errorMessage={error?.message}
+                          />
+                        )}
+                      />
+
+                      <Controller
+                        control={form.control}
+                        name="bankName"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Banco"
+                            labelPlacement="outside"
+                            placeholder="BAC"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
+                      />
+
+                      <Controller
+                        control={form.control}
+                        name="bankAccount"
+                        render={({
+                          field: { value, onChange, onBlur, name, ref },
+                        }) => (
+                          <Input
+                            ref={ref}
+                            name={name}
+                            label="Numero de cuenta"
+                            labelPlacement="outside"
+                            placeholder="123456789"
+                            value={value || ''}
+                            onValueChange={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
+                      />
                     </div>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+                    <Controller
+                      control={form.control}
+                      name="address"
+                      render={({
+                        field: { value, onChange, onBlur, name, ref },
+                      }) => (
+                        <Input
+                          ref={ref}
+                          name={name}
+                          label="Direccion"
+                          labelPlacement="outside"
+                          placeholder="Direccion completa"
+                          value={value || ''}
+                          onValueChange={onChange}
+                          onBlur={onBlur}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={form.control}
+                      name="notes"
+                      render={({
+                        field: { value, onChange, onBlur, name, ref },
+                      }) => (
+                        <Textarea
+                          ref={ref}
+                          name={name}
+                          label="Notas"
+                          labelPlacement="outside"
+                          placeholder="Notas adicionales sobre el proveedor"
+                          value={value || ''}
+                          onValueChange={onChange}
+                          onBlur={onBlur}
+                          minRows={3}
+                        />
+                      )}
+                    />
+
+                    <div className="flex items-center justify-between rounded-large border border-default-200 px-4 py-3">
+                      <div>
+                        <p className="font-medium">Estado activo</p>
+                        <p className="text-sm text-default-500">
+                          Determina si el proveedor esta disponible para nuevas
+                          ordenes
+                        </p>
+                      </div>
+                      <Controller
+                        control={form.control}
+                        name="isActive"
+                        render={({ field: { value, onChange } }) => (
+                          <Switch isSelected={value} onValueChange={onChange} />
+                        )}
+                      />
+                    </div>
+                  </CardBody>
+                </Card>
+              </ModalBody>
+
+              <ModalFooter className="w-full">
+                <Button
+                  type="button"
+                  variant="light"
+                  onPress={() => {
+                    onClose()
+                    onOpenChange(false)
+                  }}
+                  isDisabled={isPending}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" color="primary" isLoading={isPending}>
+                  {isPending ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear'}
+                </Button>
+              </ModalFooter>
+            </Form>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
 }
+
